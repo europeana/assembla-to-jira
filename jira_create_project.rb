@@ -2,19 +2,11 @@
 
 load './lib/common.rb'
 
-# PAYLOAD = {
-#   key: 'DP',
-#   name: 'Dummy Project',
-#   projectTypeKey: 'software',
-#   description: 'Description of Dummy Project',
-#   lead: 'kiffin.gish'
-# }
-
 PAYLOAD = {
-  key: 'DP2',
-  name: '2nd Dummy Project',
+  key: 'DP',
+  name: 'Kiffin\'s Dummy Project',
   projectTypeKey: 'software',
-  description: '2nd Description of Dummy Project',
+  description: 'Description of Kiffin\'s Dummy Project',
   lead: 'kiffin.gish'
 }
 

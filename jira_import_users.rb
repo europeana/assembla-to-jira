@@ -4,8 +4,6 @@ load './lib/common.rb'
 
 SPACE_NAME = 'Europeana Collections'
 
-JIRA_HEADERS = { 'Authorization': "Basic #{JIRA_API_AUTHORIZATION}", 'Content-type': 'application/json'}
-
 @jira_users = []
 
 def get_user(username)
