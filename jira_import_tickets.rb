@@ -7,6 +7,37 @@ JIRA_PROJECT_NAME = 'Europeana Collections' + (@debug ? ' | TEST' : '')
 
 @jira_tickets = []
 
+# Assembla ticket fields:
+# ----------------------
+# id
+# number
+# summary
+# description
+# priority
+# completed_date
+# component_id
+# created_on
+# permission_type
+# importance
+# is_story
+# milestone_id
+# notification_list
+# space_id
+# state
+# status
+# story_importance
+# updated_at
+# working_hours
+# estimate
+# total_estimate
+# total_invested_hours
+# total_working_hours
+# assigned_to_id
+# reporter_id
+# custom_fields
+# hierarchy_type
+# due_date
+
 # Custom fields:
 # -------------
 # 10000 Development
@@ -44,8 +75,8 @@ def create_ticket(ticket)
     "fields": {
        "project": {
          "id": @project['id']
-       }
-    #   "summary": "something's wrong",
+       },
+       "summary": @project['summary'],
     #   "issuetype": {
     #     "id": "10000"
     #   },
