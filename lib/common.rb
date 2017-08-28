@@ -6,6 +6,8 @@ require 'fileutils'
 require 'dotenv/load'
 require 'rest-client'
 
+@debug = true
+
 SPACE_NAMES = [
   'Europeana APIs',
   'Europeana Infrastructure',
@@ -23,10 +25,15 @@ JIRA_API_PASSWORD = ENV['JIRA_API_PASSWORD']
 JIRA_API_AUTHORIZATION = ENV['JIRA_API_AUTHORIZATION']
 JIRA_HEADERS = { 'Authorization': "Basic #{JIRA_API_AUTHORIZATION}", 'Content-Type': 'application/json' }
 
-URL_JIRA_PROJECT = "#{JIRA_API_HOST}/project"
+URL_JIRA_PROJECTS = "#{JIRA_API_HOST}/project"
 URL_JIRA_ISSUE_TYPES = "#{JIRA_API_HOST}/issuetype"
+URL_JIRA_PRIORITIES = "#{JIRA_API_HOST}/priority"
+URL_JIRA_FIELDS = "#{JIRA_API_HOST}/field"
+URL_JIRA_ISSUES = "#{JIRA_API_HOST}/issue"
 
 OUTPUT_DIR = 'data'
+OUTPUT_DIR_ASSEMBLA = "#{OUTPUT_DIR}/assembla"
+OUTPUT_DIR_JIRA = "#{OUTPUT_DIR}/jira"
 
 def build_counter(opts)
   opts[:counter] ? "[#{opts[:counter]}/#{opts[:total]}] " : ''
@@ -147,3 +154,83 @@ def csv_to_array(pathname)
   fields = fields.map {|f| f.downcase.tr(' ', '_')}
   csv.collect { |record| Hash[*fields.zip(record).flatten ] }
 end
+
+def jira_get_projects
+  result = nil
+  begin
+    response = RestClient::Request.execute(method: :get, url: URL_JIRA_PROJECTS, headers: JIRA_HEADERS)
+    result = JSON.parse(response)
+    if result
+      result.each do |r|
+        r.delete_if {|k,v| k.to_s =~ /expand|self|avatarurls/i}
+      end
+      puts "GET #{URL_JIRA_PROJECTS} => OK (#{result.length})"
+    end
+  rescue => e
+    puts "GET #{URL_JIRA_PROJECTS} => NOK (#{e.message})"
+  end
+  result
+end
+
+def get_project_by_name(name)
+  result = nil
+  begin
+    response = RestClient::Request.execute(method: :get, url: URL_JIRA_PROJECTS, headers: JIRA_HEADERS)
+    body = JSON.parse(response.body)
+    result = body.find{|h| h['name'] == name}
+    if result
+      result.delete_if { |k,v| k =~ /expand|self|avatarurls/i}
+      puts "GET #{URL_JIRA_PROJECTS} name='#{name}' => OK"
+    end
+  rescue => e
+    puts "GET #{URL_JIRA_PROJECTS} name='#{name}' => NOK (#{e.message})"
+  end
+  result
+end
+
+def jira_get_priorities
+  result = []
+  begin
+    response = RestClient::Request.execute(method: :get, url: URL_JIRA_PRIORITIES, headers: JIRA_HEADERS)
+    result = JSON.parse(response.body)
+    if result
+      result.each do |r|
+        r.delete_if { |k,v| k =~ /self|statuscolor|iconurl/i}
+      end
+      puts "GET #{URL_JIRA_PRIORITIES} => (#{result.length})"
+    end
+  rescue => e
+    puts "GET #{URL_JIRA_PRIORITIES} => NOK (#{e.message})"
+  end
+  result
+end
+
+def jira_get_issue_types
+  result = nil
+  begin
+    response = RestClient::Request.execute(method: :get, url: URL_JIRA_ISSUE_TYPES, headers: JIRA_HEADERS)
+    result = JSON.parse(response)
+    if result
+      result.each do |r|
+        r.delete_if {|k,v| k.to_s =~ /self|iconurl|avatarid/i}
+      end
+      puts "GET #{URL_JIRA_ISSUE_TYPES} => OK (#{result.length})"
+    end
+  rescue => e
+    puts "GET #{URL_JIRA_ISSUE_TYPES} => NOK (#{e.message})"
+  end
+  result
+end
+
+def get_fields
+  result = []
+  begin
+    response = RestClient::Request.execute(method: :get, url: URL_JIRA_FIELDS, headers: JIRA_HEADERS)
+    result = JSON.parse(response.body)
+    puts "GET #{URL_JIRA_FIELDS} => (#{result.length})"
+  rescue => e
+    puts "GET #{URL_JIRA_FIELDS} => NOK (#{e.message})"
+  end
+  result
+end
+

@@ -3,4 +3,4 @@
 load './lib/common.rb'
 
 FileUtils.mkdir_p(dirname) unless File.directory?(OUTPUT_DIR_JIRA)
-write_csv_file("#{OUTPUT_DIR_JIRA}/jira-issue-types.csv", jira_get_issue_types)
+write_csv_file("#{OUTPUT_DIR_JIRA}/jira-priorities.csv", jira_get_priorities)
