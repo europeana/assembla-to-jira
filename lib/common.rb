@@ -139,7 +139,7 @@ def write_csv_file(filename, results)
 end
 
 def get_output_dirname(space, dir = nil)
-  dirname = "#{OUTPUT_DIR}/#{normalize_name(space['name'])}" + (dir ? "/#{normalize_name(dir)}": '')
+  dirname = "#{OUTPUT_DIR}/#{dir ? (normalize_name(dir) + '/' ) : ''}#{normalize_name(space['name'])}"
   FileUtils.mkdir_p(dirname) unless File.directory?(dirname)
   dirname
 end
@@ -222,7 +222,7 @@ def jira_get_issue_types
   result
 end
 
-def get_fields
+def jira_get_fields
   result = []
   begin
     response = RestClient::Request.execute(method: :get, url: URL_JIRA_FIELDS, headers: JIRA_HEADERS)

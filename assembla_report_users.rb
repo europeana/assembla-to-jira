@@ -61,7 +61,7 @@ end
 
 SPACE_NAMES.each do |name|
   space = get_space(name)
-  output_dirname = get_output_dirname(space)
+  output_dirname = get_output_dirname(space, 'assembla')
   csv_to_array("#{output_dirname}/users.csv").each do |row|
     @users << row
   end
@@ -73,7 +73,7 @@ SPACE_NAMES.each do |name|
     next unless name == 'Europeana Collections'
   end
   space = get_space(name)
-  output_dirname = get_output_dirname(space)
+  output_dirname = get_output_dirname(space, 'assembla')
   puts "#{name}: found #{@users.length} users"
   @users.each do |user|
     create_user_index(user, space)

@@ -80,7 +80,7 @@ ITEMS.each do |item|
   end
 end
 
-dirname = get_output_dirname(space)
+dirname = get_output_dirname(space, 'assembla')
 
 ITEMS.each do |item|
   name = item[:name]

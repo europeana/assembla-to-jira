@@ -50,7 +50,7 @@ def create_user(user)
 end
 
 space = get_space(SPACE_NAME)
-dirname = get_output_dirname(space)
+dirname = get_output_dirname(space, 'assembla')
 users_csv = "#{dirname}/report-user-activity.csv"
 jira_users_csv = "#{dirname}/jira-users.csv"
 
