@@ -38,8 +38,8 @@ JIRA_PROJECT_NAME = 'Europeana Collections' + (@debug ? ' | TEST' : '')
 # hierarchy_type (0 - No plan level, 1 - Subtask, 2 - Story, 3 - Epic)
 # # due_date
 
-# Jira custom fields:
-# ------------------
+# Jira issue fields:
+# -----------------
 # * issuetype
 # timespent
 # * project
@@ -161,11 +161,14 @@ def create_ticket_jira(ticket)
         'assembla'
       ],
       'description': ticket['description'],
-      'created': ticket['created_on'],
-      'updated': ticket['updated_at'],
+      # Field 'created' and 'updated' cannot be set. It is not on the appropriate screen, or unknown
+      # 'created': ticket['created_on'],
+      # 'updated': ticket['updated_at'],
+
+      # IMPORTANT: The following custom fields MUST be on the create issue screen for this project
       "#{@customfield_assembla['id']}": ticket['number'],
       # 10103 Sprint
-      #"customfield_10103": milestone_name,
+      "customfield_10103": milestone_name,
       # 10104 Rank
       "customfield_10104": ticket['importance'],
       # 10105 Story Points
@@ -181,11 +184,14 @@ def create_ticket_jira(ticket)
     puts "POST #{URL_JIRA_ISSUES} => OK #{body.to_json}"
     @jira_tickets << body
     result = true
+  rescue RestClient::ExceptionWithResponse => e
+    errmsg = JSON.parse(e.response)
+    puts "POST #{URL_JIRA_ISSUES} => NOK (#{errmsg['errors'].inspect})"
+    exit
   rescue => e
     puts "POST #{URL_JIRA_ISSUES} => NOK (#{e.message})"
+    exit
   end
-
-  puts "done"
 end
 
 # Ensure that the project exists, otherwise ask the user to create it first.
