@@ -158,7 +158,8 @@ def create_ticket_jira(ticket)
         'name': priority_name
       },
       'labels': [
-        'assembla'
+        'assembla',
+        milestone_name
       ],
       'description': ticket['description'],
       # Field 'created' and 'updated' cannot be set. It is not on the appropriate screen, or unknown
@@ -166,9 +167,11 @@ def create_ticket_jira(ticket)
       # 'updated': ticket['updated_at'],
 
       # IMPORTANT: The following custom fields MUST be on the create issue screen for this project
+      #  Admin > Issues > Screens > Configure screen > 'ECT: Scrum Default Issue Screen'
+      # Assembla
       "#{@customfield_assembla['id']}": ticket['number'],
       # 10103 Sprint
-      "customfield_10103": milestone_name,
+      # "customfield_10103": milestone_name,
       # 10104 Rank
       "customfield_10104": ticket['importance'],
       # 10105 Story Points
