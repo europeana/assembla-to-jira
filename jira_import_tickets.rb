@@ -6,6 +6,9 @@ SPACE_NAME = 'Europeana Collections'
 JIRA_PROJECT_NAME = 'Europeana Collections' + (@debug ? ' | TEST' : '')
 
 @jira_tickets = []
+@fields_jira = []
+
+CUSTOM_FIELD_NAMES = %w(Assembla-Id Assembla-Milestone Assembla-Theme Assembla-Status)
 
 # Assembla ticket fields:
 # ----------------------
@@ -172,7 +175,8 @@ def create_ticket_jira(ticket)
 
       # IMPORTANT: The following custom fields MUST be on the create issue screen for this project
       #  Admin > Issues > Screens > Configure screen > 'ECT: Scrum Default Issue Screen'
-      # Assembla
+      # Assembla:1
+
       "#{@customfield_assembla['id']}": ticket['number'],
       # 10103 Sprint
       # "customfield_10103": milestone_name,
@@ -270,12 +274,21 @@ else
   exit
 end
 
-@customfield_assembla = jira_get_field_by_name('Assembla')
-if @customfield_assembla
-  puts "Assembla id = '#{@customfield_assembla['id']}'"
-else
-  puts "Assembla custom field is missing, please define in Jira"
-  exit
+puts
+puts "Custom fields:"
+
+@customfield_name_to_id = {}
+
+CUSTOM_FIELD_NAMES.each do |name|
+  field = jira_get_field_by_name(name)
+  if field
+    id = field['id']
+    @customfield_name_to_id[name] = id
+    puts "#{name}='#{id}'"
+  else
+    puts "Custom field '#{name}' is missing, please define in Jira"
+    exit
+  end
 end
 
 @tickets_assembla.each do |ticket|

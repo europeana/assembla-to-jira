@@ -4,6 +4,21 @@ Tool for migrating data from Assembla to Jira.
 
 ## Introduction
 
+## Preparations
+
+You will need to goto to the Jira website and login as admin.
+
+Create the following issue type:
+* spike
+
+Create the following custom fields (text field read-only):
+* Assembla-id
+* Assembla-theme
+* Assembla-status
+* Assembla-milestone
+
+and include each one in the Scrum Default Issue Screen for the project
+
 ## Assembla ticket fields:
 * id
 * number
