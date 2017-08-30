@@ -111,7 +111,7 @@ def create_csv_files(space, items)
 end
 
 def create_csv_file(space, item)
-  dirname = get_output_dirname(space)
+  dirname = get_output_dirname(space, 'assembla')
   filename = "#{dirname}/#{normalize_name(item[:name])}.csv"
   write_csv_file(filename, item[:results])
 end

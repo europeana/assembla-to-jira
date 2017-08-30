@@ -106,6 +106,8 @@ Tool for migrating data from Assembla to Jira.
 
 ## Mappings
 
+* status - The value of this field is set automatically. It is never present on any editable form, and defaults to `TO DO` on ticket creation.
+
 ## License
 
 Licensed under the EUPL V.1.1.

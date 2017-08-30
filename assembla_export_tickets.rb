@@ -5,13 +5,13 @@ load './lib/common.rb'
 SPACE_NAME = 'Europeana Collections'
 
 ITEMS = [
-  { name: 'ticket_comments' },
-  { name: 'attachments' },
-  { name: 'tags' },
-  { name: 'ticket_associations' }
+  { name: 'ticket_comments', ticket_id: false },
+  { name: 'attachments', ticket_id: false },
+  { name: 'tags', ticket_id: true },
+  { name: 'ticket_associations', ticket_id: false }
 ].freeze
 
-RELATIONSHIP_NAMES = %w{Parent Child Related Duplicate Sibling Story Subtask Dependent Block}.freeze
+RELATIONSHIP_NAMES = %w{parent child related duplicate sibling story subtask dependent block}.freeze
 
 PER_PAGE = 100.freeze
 
@@ -68,8 +68,9 @@ ITEMS.each do |item|
   name = item[:name]
   item[:results] = []
   tickets.each_with_index do |ticket, index|
-    ticket[name] = get_ticket_attr(space['id'], ticket['number'], name, { counter: index+1, total: @total_tickets})
+    ticket[name] = get_ticket_attr(space['id'], ticket['number'], name, counter: index+1, total: @total_tickets)
     ticket[name].each do |result|
+      result = result.merge(ticket_id: ticket['number']) if item[:ticket_id]
       item[:results] << result
     end
     total += ticket[name].length
@@ -79,8 +80,6 @@ ITEMS.each do |item|
     end
   end
 end
-
-dirname = get_output_dirname(space, 'assembla')
 
 ITEMS.each do |item|
   name = item[:name]

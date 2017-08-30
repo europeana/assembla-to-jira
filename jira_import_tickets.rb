@@ -137,6 +137,7 @@ def create_ticket_jira(ticket)
       break
     end
   end
+  status_name =
 
   payload = {
     'create': {},
@@ -156,6 +157,9 @@ def create_ticket_jira(ticket)
       },
       'priority': {
         'name': priority_name
+      },
+      'status': {
+          'name': status_name
       },
       'labels': [
         'assembla',
