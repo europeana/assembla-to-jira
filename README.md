@@ -8,8 +8,13 @@ Tool for migrating data from Assembla to Jira.
 
 You will need to goto to the Jira website and login as admin.
 
+Create the following projects:
+* Europeana Collection
+* Europeana APIs
+* Europeana Infrastructure
+
 Create the following issue type:
-* spike
+* Spike
 
 Create the following custom fields (text field read-only):
 * Assembla-id
@@ -17,7 +22,16 @@ Create the following custom fields (text field read-only):
 * Assembla-status
 * Assembla-milestone
 
-and include each one in the Scrum Default Issue Screen for the project
+Important: be sure to include each custom field in the project's Scrum Default Issue Screen.
+
+## Run migration
+
+```
+$ruby assembla_export_space.rb
+$ruby assembla_export_users.rb
+$ruby assembla_export_tickets.rb
+$ruby assembla_report_users.rb
+```
 
 ## Assembla ticket fields:
 * id

@@ -9,6 +9,7 @@ JIRA_PROJECT_NAME = 'Europeana Collections' + (@debug ? ' | TEST' : '')
 @fields_jira = []
 
 CUSTOM_FIELD_NAMES = %w(Assembla-Id Assembla-Milestone Assembla-Theme Assembla-Status)
+ISSUE_TYPE_NAMES = %w(unknown sub-task story epic task spike bug)
 
 # Assembla ticket fields:
 # ----------------------
@@ -116,93 +117,129 @@ def jira_get_field_by_name(name)
 end
 
 def create_ticket_jira(ticket)
+
+  project_id = @project['id']
+  description = ticket['description']
+
+  story_rank = ticket['importance']
+  story_points = ticket['story_importance']
+
   summary = ticket['summary']
   reporter_name = @user_id_to_login[ticket['reporter_id']]
   assignee_name = @user_id_to_login[ticket['assigned_to_id']]
   priority_name = @priority_id_to_name[ticket['priority']]
+
+  status_name = ticket['status']
+
+  ticket_id = ticket['number']
+  labels = ['assembla']
+  @tags_assembla.each do |tag|
+   labels << tag['name'] if tag['ticket_id'] == ticket_id
+  end
+
+  custom_fields = JSON.parse(ticket['custom_fields'].gsub('=>',':'))
+  theme_name = custom_fields['Theme']
   milestone_id = ticket['milestone_id']
+  if milestone_id && milestone_id.length > 0
+    milestone_name = @milestone_id_to_name[milestone_id] || milestone_id
+  else
+    milestone_name = ''
+  end
   milestone_name = milestone_id ? @milestone_id_to_name[milestone_id] : ''
   issue_type_id = case ticket['hierarchy_type'].to_i
   when 1
+    issue_type_name = 'sub-task'
     @issue_type_name_to_id['sub-task']
   when 2
+    issue_type_name = 'story'
     @issue_type_name_to_id['story']
   when 3
+    issue_type_name = 'epic'
     @issue_type_name_to_id['epic']
   else
+    issue_type_name = 'task'
     @issue_type_name_to_id['task']
   end
   # if summary starts with EPIC, SPIKE, STORY or BUG
   # Ticket type is overruled if summary begins with the type (EPIC, SPIKE, STORY or BUG)
-  %w(epic spike story bug).each do |issue_type_name|
-    if summary =~ /^#{issue_type_name}/i
-      issue_type_id = @issue_type_name_to_id[issue_type_name]
+  %w(epic spike story bug).each do |name|
+    if summary =~ /^#{name}/i
+      issue_type_id = @issue_type_name_to_id[name]
+      issue_type_name = name
       break
     end
   end
-  status_name =
 
-  payload = {
-    'create': {},
-    'fields': {
-      'project': {
-        'id': @project['id']
-      },
-      'summary': ticket['summary'],
-      'issuetype': {
-        'id': issue_type_id
-      },
-      'assignee': {
-        'name': assignee_name
-      },
-      'reporter': {
-        'name': reporter_name
-      },
-      'priority': {
-        'name': priority_name
-      },
-      'status': {
-          'name': status_name
-      },
-      'labels': [
-        'assembla',
-        milestone_name
-      ],
-      'description': ticket['description'],
-      # Field 'created' and 'updated' cannot be set. It is not on the appropriate screen, or unknown
-      # 'created': ticket['created_on'],
-      # 'updated': ticket['updated_at'],
+  @jira_tickets << {
+      project_id: project_id,
+      summary: summary,
+      issue_type_id: issue_type_id,
+      issue_type_name: issue_type_name,
+      assignee_name: assignee_name,
+      reporter_name: reporter_name,
+      priority_name: priority_name,
+      status_name: status_name,
+      labels: labels.join('|'),
+      description: description,
+      ticket_id: ticket_id,
+      theme_name: theme_name,
+      milestone_name: milestone_name,
+      story_rank: story_rank,
+      story_points: story_points
+  }
 
-      # IMPORTANT: The following custom fields MUST be on the create issue screen for this project
-      #  Admin > Issues > Screens > Configure screen > 'ECT: Scrum Default Issue Screen'
-      # Assembla:1
+  # payload = {
+  #   'create': {},
+  #   'fields': {
+  #     'project': {
+  #       'id': project_id
+  #     },
+  #     'summary': summary,
+  #     'issuetype': {
+  #       'id': issue_type_id
+  #     },
+  #     'assignee': {
+  #       'name': assignee_name
+  #     },
+  #     'reporter': {
+  #       'name': reporter_name
+  #     },
+  #     'priority': {
+  #       'name': priority_name
+  #     },
+  #     'status': {
+  #         'name': status_name
+  #     },
+  #     'labels': labels,
+  #     'description': description,
+  #
+  #     # IMPORTANT: The following custom fields MUST be on the create issue screen for this project
+  #     #  Admin > Issues > Screens > Configure screen > 'ECT: Scrum Default Issue Screen'
+  #     # Assembla
+  #
+  #     "#{@customfield_name_to_id['Assembla-Id']}": ticket_id,
+  #     "#{@customfield_name_to_id['Assembla-Theme']}": theme_name,
+  #     "#{@customfield_name_to_id['Assembla-Status']}": status_name,
+  #     "#{@customfield_name_to_id['Assembla-Milestone']}": milestone_name,
+  #     "customfield_10104": story_rank,
+  #     "customfield_10105": story_points
+  #   }
+  # }.to_json
 
-      "#{@customfield_assembla['id']}": ticket['number'],
-      # 10103 Sprint
-      # "customfield_10103": milestone_name,
-      # 10104 Rank
-      "customfield_10104": ticket['importance'],
-      # 10105 Story Points
-      "customfield_10105": ticket['story_importance']
-    }
-  }.to_json
-
-  puts JSON.parse(payload).inspect
-
-  begin
-    response = RestClient::Request.execute(method: :post, url: URL_JIRA_ISSUES, payload: payload, headers: JIRA_HEADERS)
-    body = JSON.parse(response.body)
-    puts "POST #{URL_JIRA_ISSUES} => OK #{body.to_json}"
-    @jira_tickets << body
-    result = true
-  rescue RestClient::ExceptionWithResponse => e
-    errmsg = JSON.parse(e.response)
-    puts "POST #{URL_JIRA_ISSUES} => NOK (#{errmsg['errors'].inspect})"
-    exit
-  rescue => e
-    puts "POST #{URL_JIRA_ISSUES} => NOK (#{e.message})"
-    exit
-  end
+  # begin
+  #   response = RestClient::Request.execute(method: :post, url: URL_JIRA_ISSUES, payload: payload, headers: JIRA_HEADERS)
+  #   body = JSON.parse(response.body)
+  #   puts "POST #{URL_JIRA_ISSUES} => OK #{body.to_json}"
+  #   @jira_tickets << body
+  #   result = true
+  # rescue RestClient::ExceptionWithResponse => e
+  #   errmsg = JSON.parse(e.response)
+  #   puts "POST #{URL_JIRA_ISSUES} => NOK (#{errmsg['errors'].inspect})"
+  #   exit
+  # rescue => e
+  #   puts "POST #{URL_JIRA_ISSUES} => NOK (#{e.message})"
+  #   exit
+  # end
 end
 
 # Ensure that the project exists, otherwise ask the user to create it first.
@@ -220,12 +257,16 @@ dirname_assembla = get_output_dirname(space, 'assembla')
 tickets_assembla_csv = "#{dirname_assembla}/tickets.csv"
 users_assembla_csv = "#{dirname_assembla}/users.csv"
 milestones_assembla_csv = "#{dirname_assembla}/milestones.csv"
+comments_assembla_csv = "#{dirname_assembla}/ticket-comments.csv"
+tags_assembla_csv = "#{dirname_assembla}/ticket-tags.csv"
 tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets.csv"
 issue_types_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-issue-types.csv"
 
 @tickets_assembla = csv_to_array(tickets_assembla_csv)
 @users_assembla = csv_to_array(users_assembla_csv)
 @milestones_assembla = csv_to_array(milestones_assembla_csv)
+@comments_assembla = csv_to_array(comments_assembla_csv)
+@tags_assembla = csv_to_array(tags_assembla_csv)
 @issue_types_jira = csv_to_array(issue_types_jira_csv)
 
 @user_id_to_login = {}
@@ -235,9 +276,9 @@ end
 
 puts @user_id_to_login.inspect
 
-@milestones_id_to_name = {}
+@milestone_id_to_name = {}
 @milestones_assembla.each do |milestone|
-  @milestones_id_to_name[milestone['id']] = milestone['title']
+  @milestone_id_to_name[milestone['id']] = milestone['title']
 end
 
 puts @user_id_to_login.inspect
@@ -295,4 +336,4 @@ end
   create_ticket_jira(ticket)
 end
 
-# write_csv_file(jira_tickets_csv, @jira_tickets)
+write_csv_file(tickets_jira_csv, @jira_tickets)
