@@ -214,7 +214,7 @@ def create_ticket_jira(ticket)
     body = JSON.parse(response.body)
     jira_ticket_id = body['id']
     jira_ticket_key = body['key']
-    puts "POST #{URL_JIRA_ISSUES} => OK (id='#{jira_ticket_id}' key='#{jira_ticket_key}')"
+    puts "POST #{URL_JIRA_ISSUES} #{payload.inspect} => OK (id='#{jira_ticket_id}' key='#{jira_ticket_key}')"
 
     @jira_tickets << {
         jira_ticket_id: jira_ticket_id,
@@ -238,10 +238,10 @@ def create_ticket_jira(ticket)
 
   rescue RestClient::ExceptionWithResponse => e
     errmsg = JSON.parse(e.response)
-    puts "POST #{URL_JIRA_ISSUES} => NOK (#{errmsg['errors'].inspect})"
+    puts "POST #{URL_JIRA_ISSUES} #{payload.inspect} => NOK (#{errmsg['errors'].inspect})"
     exit
   rescue => e
-    puts "POST #{URL_JIRA_ISSUES} => NOK (#{e.message})"
+    puts "POST #{URL_JIRA_ISSUES} #{payload.inspect} => NOK (#{e.message})"
     exit
   end
 end
@@ -275,7 +275,7 @@ issue_types_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-issue-types.csv"
 
 @user_id_to_login = {}
 @users_assembla.each do |user|
-  @user_id_to_login[user['id']] = user['login']
+  @user_id_to_login[user['id']] = user['login'].sub(/@.*$/,'')
 end
 
 puts @user_id_to_login.inspect
