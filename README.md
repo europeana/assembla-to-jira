@@ -24,6 +24,12 @@ Create the following custom fields (text field read-only):
 * Assembla-reporter
 * Assembla-assignee
 
+Create the following user:
+
+* unknown.user
+
+and define in `.env` file.
+
 Important: be sure to include each custom field in the project's Scrum Default Issue Screen.
 
 ```

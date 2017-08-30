@@ -256,11 +256,11 @@ def create_ticket_jira(ticket)
         if key == 'reporter'
           if reason =~ /is not a user/i
             payload[:fields]["#{@customfield_name_to_id['Assembla-Reporter']}".to_sym] = payload[:fields][:reporter][:name]
-            payload[:fields][:reporter][:name] = ''
+            payload[:fields][:reporter][:name] = ENV['JIRA_API_UNKNOWN_USER']
             recover = true
           end
           if reason =~ /reporter is required/i
-            payload[:fields][:reporter][:name] = ENV['JIRA_API_USERNAME']
+            payload[:fields][:reporter][:name] = ENV['JIRA_API_UNKNOWN_USER']
             recover = true
           end
         end
