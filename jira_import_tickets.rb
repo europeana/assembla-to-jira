@@ -8,8 +8,12 @@ JIRA_PROJECT_NAME = 'Europeana Collections' + (@debug ? ' | TEST' : '')
 @jira_tickets = []
 @fields_jira = []
 
-CUSTOM_FIELD_NAMES = %w(Assembla-Id Assembla-Milestone Assembla-Theme Assembla-Status Story\ Points Rank)
+CUSTOM_FIELD_NAMES = %w(Assembla-Id Assembla-Milestone Assembla-Theme Assembla-Status Assembla-Reporter Assembla-Assignee Epic\ Name Rank Story\ Points)
 ISSUE_TYPE_NAMES = %w(unknown sub-task story epic task spike bug)
+
+CONVERT_NAMES = [
+  { name: 'kgish', convert: 'kiffin.gish' }
+]
 
 # Assembla ticket fields:
 # ----------------------
@@ -112,6 +116,12 @@ ISSUE_TYPE_NAMES = %w(unknown sub-task story epic task spike bug)
 # 10305 Capture for JIRA jQuery version
 # 10400 Assembla
 
+# Names (reporter and/or assignee) that need to be converted
+def convert_name(name)
+  found = CONVERT_NAMES.find{ |n| n[:name] == name}
+  return found ? found[:convert] : name
+end
+
 def jira_get_field_by_name(name)
   @fields_jira.find{ |field| field['name'] == name }
 end
@@ -128,15 +138,17 @@ def create_ticket_jira(ticket)
   story_points = ticket['story_importance']
 
   summary = ticket['summary']
-  reporter_name = @user_id_to_login[ticket['reporter_id']]
-  assignee_name = @user_id_to_login[ticket['assigned_to_id']]
+  reporter_name = convert_name(@user_id_to_login[ticket['reporter_id']])
+  assignee_name = convert_name(@user_id_to_login[ticket['assigned_to_id']])
   priority_name = @priority_id_to_name[ticket['priority']]
 
   status_name = ticket['status']
 
   labels = ['assembla']
   @tags_assembla.each do |tag|
-   labels << tag['name'] if tag['ticket_id'] == ticket_id
+    if tag['ticket_id'] == ticket_id
+      labels << tag['name'].tr(' ', '-')
+    end
   end
 
   custom_fields = JSON.parse(ticket['custom_fields'].gsub('=>',':'))
@@ -207,43 +219,83 @@ def create_ticket_jira(ticket)
       # TODO: "customfield_10105"=>"Field 'customfield_10105' cannot be set. It is not on the appropriate screen, or unknown."
       #"#{@customfield_name_to_id['Story Points']}": story_points
     }
-  }.to_json
+  }
 
+  if issue_type_name == 'epic'
+    payload[:fields]["#{@customfield_name_to_id['Epic Name']}".to_sym] = summary[6..-1]
+  end
+
+  jira_ticket_id = nil
+  jira_ticket_key = nil
+  message = nil
+  ok = false
+  retries = 0
   begin
-    response = RestClient::Request.execute(method: :post, url: URL_JIRA_ISSUES, payload: payload, headers: JIRA_HEADERS)
+    response = RestClient::Request.execute(method: :post, url: URL_JIRA_ISSUES, payload: payload.to_json, headers: JIRA_HEADERS)
     body = JSON.parse(response.body)
     jira_ticket_id = body['id']
     jira_ticket_key = body['key']
-    puts "POST #{URL_JIRA_ISSUES} #{payload.inspect} => OK (id='#{jira_ticket_id}' key='#{jira_ticket_key}')"
-
-    @jira_tickets << {
-        jira_ticket_id: jira_ticket_id,
-        jira_ticket_key: jira_ticket_key,
-        project_id: project_id,
-        summary: summary,
-        issue_type_id: issue_type_id,
-        issue_type_name: issue_type_name,
-        assignee_name: assignee_name,
-        reporter_name: reporter_name,
-        priority_name: priority_name,
-        status_name: status_name,
-        labels: labels.join('|'),
-        description: description,
-        assembla_ticket_id: ticket_id,
-        theme_name: theme_name,
-        milestone_name: milestone_name,
-        story_rank: story_rank,
-        story_points: story_points
-    }
-
+    message = "id='#{jira_ticket_id}' key='#{jira_ticket_key}'"
+    ok = true
   rescue RestClient::ExceptionWithResponse => e
-    errmsg = JSON.parse(e.response)
-    puts "POST #{URL_JIRA_ISSUES} #{payload.inspect} => NOK (#{errmsg['errors'].inspect})"
-    exit
+    error = JSON.parse(e.response)
+    message = error['errors'].map { |k,v| "#{k}: #{v}"}.join(' | ')
+    retries += 1
+    recover = false
+    if retries < 5
+      error['errors'].each do |error|
+        key = error[0]
+        reason = error[1]
+        if key == 'assignee'
+          if reason =~ /cannot be assigned issues/i
+            payload[:fields]["#{@customfield_name_to_id['Assembla-Assignee']}".to_sym] = payload[:fields][:assignee][:name]
+            payload[:fields][:assignee][:name] = ''
+            recover = true
+          end
+        end
+        if key == 'reporter'
+          if reason =~ /is not a user/i
+            payload[:fields]["#{@customfield_name_to_id['Assembla-Reporter']}".to_sym] = payload[:fields][:reporter][:name]
+            payload[:fields][:reporter][:name] = ''
+            recover = true
+          end
+          if reason =~ /reporter is required/i
+            payload[:fields][:reporter][:name] = ENV['JIRA_API_USERNAME']
+            recover = true
+          end
+        end
+      end
+    end
+    retry if retries < 5 && recover
   rescue => e
-    puts "POST #{URL_JIRA_ISSUES} #{payload.inspect} => NOK (#{e.message})"
-    exit
+    message = e.message
   end
+
+  dump_payload = ok ? '' : ' ' + payload.inspect.sub(/:description=>"[^"]+",/,':description=>"...",')
+  puts "POST #{URL_JIRA_ISSUES} #{ticket_id}#{dump_payload} => #{ok ? '' : 'N'}OK (#{message}) retries = #{retries}"
+
+  @jira_tickets << {
+      result: (ok ? 'OK' : 'NOK'),
+      retries: retries,
+      message: message.gsub(' | ', "\r\n\r\n"),
+      jira_ticket_id: jira_ticket_id,
+      jira_ticket_key: jira_ticket_key,
+      project_id: project_id,
+      summary: summary,
+      issue_type_id: issue_type_id,
+      issue_type_name: issue_type_name,
+      assignee_name: assignee_name,
+      reporter_name: reporter_name,
+      priority_name: priority_name,
+      status_name: status_name,
+      labels: labels.join('|'),
+      description: description,
+      assembla_ticket_id: ticket_id,
+      theme_name: theme_name,
+      milestone_name: milestone_name,
+      story_rank: story_rank,
+      story_points: story_points
+  }
 end
 
 # Ensure that the project exists, otherwise ask the user to create it first.
@@ -258,6 +310,7 @@ end
 
 space = get_space(SPACE_NAME)
 dirname_assembla = get_output_dirname(space, 'assembla')
+
 tickets_assembla_csv = "#{dirname_assembla}/tickets.csv"
 users_assembla_csv = "#{dirname_assembla}/users.csv"
 milestones_assembla_csv = "#{dirname_assembla}/milestones.csv"
@@ -273,46 +326,77 @@ issue_types_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-issue-types.csv"
 @tags_assembla = csv_to_array(tags_assembla_csv)
 @issue_types_jira = csv_to_array(issue_types_jira_csv)
 
+# --- USERS --- #
+
+puts
+puts 'Users:'
+
 @user_id_to_login = {}
 @users_assembla.each do |user|
   @user_id_to_login[user['id']] = user['login'].sub(/@.*$/,'')
 end
 
-puts @user_id_to_login.inspect
+@user_id_to_login.each do |k,v|
+  puts "#{k} #{v}"
+end
+
+# --- MILESTONES --- #
+
+puts
+puts 'Milestones:'
 
 @milestone_id_to_name = {}
 @milestones_assembla.each do |milestone|
   @milestone_id_to_name[milestone['id']] = milestone['title']
 end
 
-puts @user_id_to_login.inspect
+@milestone_id_to_name.each do |k,v|
+  puts "#{k} #{v}"
+end
+
+# --- ISSUE TYPES --- #
+
+puts
+puts 'Issue types:'
 
 @issue_type_name_to_id = {}
 @issue_types_jira.each do |type|
-  name = type['name'].downcase
-  id = type['id']
-  puts "id=#{id} name='#{name}'"
-  @issue_type_name_to_id[name] = id
+  @issue_type_name_to_id[type['name'].downcase] = type['id']
 end
+
+@issue_type_name_to_id.each do |k,v|
+  puts "#{v} #{k}"
+end
+
+# --- PRIORITIES --- #
+
+puts
+puts 'Priorities:'
 
 @priority_id_to_name = {}
 @priorities_jira = jira_get_priorities
 if @priorities_jira
   @priorities_jira.each do |priority|
-    name = priority['name']
-    id = priority['id']
-    puts "id=#{id} name='#{name}'"
-    @priority_id_to_name[id] = name
+    @priority_id_to_name[priority['id']] = priority['name']
   end
 else
   puts "Cannot get priorities!"
   exit
 end
 
+@priority_id_to_name.each do |k,v|
+  puts "#{k} #{v}"
+end
+
+# --- JIRA fields --- #
+
+puts
+puts 'Jira fields:'
+
 @fields_jira = jira_get_fields
 if @fields_jira
-  @fields_jira.each do |field|
-    puts "id=#{field['id']} name='#{field['name']}' #{field['custom']}"
+  @fields_jira.sort_by{|k| k['id']}.each do |field|
+    puts "#{field['id']} '#{field['name']}' #{field['custom']}"
   end
 else
   puts "Cannot get fields!"
@@ -320,7 +404,7 @@ else
 end
 
 puts
-puts "Custom fields:"
+puts "Jira custom fields:"
 
 @customfield_name_to_id = {}
 
@@ -336,6 +420,7 @@ CUSTOM_FIELD_NAMES.each do |name|
   end
 end
 
+puts
 @tickets_assembla.each do |ticket|
   create_ticket_jira(ticket)
 end

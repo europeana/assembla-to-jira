@@ -21,8 +21,14 @@ Create the following custom fields (text field read-only):
 * Assembla-theme
 * Assembla-status
 * Assembla-milestone
+* Assembla-reporter
+* Assembla-assignee
 
 Important: be sure to include each custom field in the project's Scrum Default Issue Screen.
+
+```
+$ cp .env.example .env
+```
 
 ## Run migration
 
@@ -136,6 +142,11 @@ $ruby assembla_report_users.rb
 ## Mappings
 
 * status - The value of this field is set automatically. It is never present on any editable form, and defaults to `TO DO` on ticket creation.
+
+## Trouble-shooting
+
+Error "User cannot be assigned issues." => activate, login as user and then deactivate.
+If issue is an epic then the epic name custom field is required.
 
 ## License
 
