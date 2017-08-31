@@ -6,8 +6,6 @@ load './lib/common.rb'
 @users_index = {}
 @num_unknowns = 0
 
-@debug = true
-
 FILES = [
   { name: 'documents', fields: %w[created_by] },
   { name: 'milestones', fields: %w[created_by] },
@@ -18,16 +16,11 @@ FILES = [
   { name: 'wiki-pages', fields: %w[user_id] }
 ].freeze
 
-def abort(message)
-  puts message
-  exit
-end
-
 def create_user_index(user, space)
   # Some sanity checks just in case
-  abort('create_user_index() => NOK (user is undefined)') unless user
-  abort('create_user_index() => NOK (user must be a hash)') unless user.is_a?(Hash)
-  abort('create_user_index() => NOK (user id is undefined)') unless user['id']
+  goodbye('create_user_index() => NOK (user is undefined)') unless user
+  goodbye('create_user_index() => NOK (user must be a hash)') unless user.is_a?(Hash)
+  goodbye('create_user_index() => NOK (user id is undefined)') unless user['id']
 
   id = user['id']
   login = user['login']
@@ -59,7 +52,7 @@ def create_user_index(user, space)
   user_index
 end
 
-SPACE_NAMES.each do |name|
+ASSEMBLA_SPACES.each do |name|
   space = get_space(name)
   output_dirname = get_output_dirname(space, 'assembla')
   csv_to_array("#{output_dirname}/users.csv").each do |row|
@@ -67,11 +60,7 @@ SPACE_NAMES.each do |name|
   end
 end
 
-SPACE_NAMES.each do |name|
-  if @debug
-    # For the time being only this space
-    next unless name == 'Europeana Collections'
-  end
+ASSEMBLA_SPACES.each do |name|
   space = get_space(name)
   output_dirname = get_output_dirname(space, 'assembla')
   puts "#{name}: found #{@users.length} users"

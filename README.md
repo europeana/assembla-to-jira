@@ -13,6 +13,8 @@ Create the following projects:
 * Europeana APIs
 * Europeana Infrastructure
 
+and define them as a comma-separated list in `.env` file as `ASSEMBLA_SPACES`
+
 Create the following issue type:
 * Spike
 
@@ -26,9 +28,9 @@ Create the following custom fields (text field read-only):
 
 Create the following user:
 
-* unknown.user
+* unknown.user@europeana.eu
 
-and define in `.env` file.
+and define it in `.env` file as `JIRA_API_UNKNOWN_USER`.
 
 Important: be sure to include each custom field in the project's Scrum Default Issue Screen.
 
@@ -39,10 +41,10 @@ $ cp .env.example .env
 ## Run migration
 
 ```
-$ruby assembla_export_space.rb
-$ruby assembla_export_users.rb
-$ruby assembla_export_tickets.rb
-$ruby assembla_report_users.rb
+$ ruby assembla_export_space.rb
+$ ruby assembla_export_users.rb
+$ ruby assembla_export_tickets.rb
+$ ruby assembla_report_users.rb
 ```
 
 ## Assembla ticket fields:

@@ -13,7 +13,11 @@ ISSUE_TYPE_NAMES = %w(unknown sub-task story epic task spike bug)
 
 CONVERT_NAMES = [
   { name: 'kgish', convert: 'kiffin.gish' }
-]
+].freeze
+
+UNKNOWN_USER = ENV['JIRA_API_UNKNOWN_USER']
+
+MAX_RETRY = 3
 
 # Assembla ticket fields:
 # ----------------------
@@ -126,7 +130,55 @@ def jira_get_field_by_name(name)
   @fields_jira.find{ |field| field['name'] == name }
 end
 
-def create_ticket_jira(ticket)
+def get_labels(ticket)
+  labels = ['assembla']
+  @tags_assembla.each do |tag|
+    if tag['ticket_id'] == ticket['number']
+      labels << tag['name'].tr(' ', '-')
+    end
+  end
+  labels
+end
+
+def get_milestone(ticket)
+  id = ticket['milestone_id']
+  if id && id.length > 0
+    name = @milestone_id_to_name[id] || id
+  else
+    name = 'unknown milestone'
+  end
+  { id: id, name: name }
+end
+
+def get_issue_type(ticket)
+  case ticket['hierarchy_type'].to_i
+  when 1
+    id = @issue_type_name_to_id['sub-task']
+    name = 'sub-task'
+  when 2
+    id = @issue_type_name_to_id['story']
+    name = 'story'
+  when 3
+    id = @issue_type_name_to_id['epic']
+    name = 'epic'
+  else
+    id = @issue_type_name_to_id['task']
+    name = 'task'
+  end
+
+  # Ticket type is overruled if summary begins with the type (EPIC, SPIKE, STORY or BUG)
+  %w(epic spike story bug).each do |s|
+    if ticket['summary'] =~ /^#{s}/i
+      id = @issue_type_name_to_id[s]
+      name = s
+      break
+    end
+  end
+  { id: id, name: name }
+end
+
+
+def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
 
   project_id = @project['id']
   ticket_id = ticket['number']
@@ -144,65 +196,24 @@ def create_ticket_jira(ticket)
 
   status_name = ticket['status']
 
-  labels = ['assembla']
-  @tags_assembla.each do |tag|
-    if tag['ticket_id'] == ticket_id
-      labels << tag['name'].tr(' ', '-')
-    end
-  end
+  labels = get_labels(ticket)
 
   custom_fields = JSON.parse(ticket['custom_fields'].gsub('=>',':'))
   theme_name = custom_fields['Theme']
-  milestone_id = ticket['milestone_id']
-  if milestone_id && milestone_id.length > 0
-    milestone_name = @milestone_id_to_name[milestone_id] || milestone_id
-  else
-    milestone_name = ''
-  end
-  milestone_name = milestone_id ? @milestone_id_to_name[milestone_id] : ''
-  issue_type_id = case ticket['hierarchy_type'].to_i
-  when 1
-    issue_type_name = 'sub-task'
-    @issue_type_name_to_id['sub-task']
-  when 2
-    issue_type_name = 'story'
-    @issue_type_name_to_id['story']
-  when 3
-    issue_type_name = 'epic'
-    @issue_type_name_to_id['epic']
-  else
-    issue_type_name = 'task'
-    @issue_type_name_to_id['task']
-  end
-  # if summary starts with EPIC, SPIKE, STORY or BUG
-  # Ticket type is overruled if summary begins with the type (EPIC, SPIKE, STORY or BUG)
-  %w(epic spike story bug).each do |name|
-    if summary =~ /^#{name}/i
-      issue_type_id = @issue_type_name_to_id[name]
-      issue_type_name = name
-      break
-    end
-  end
+
+  milestone = get_milestone(ticket)
+
+  issue_type = get_issue_type(ticket)
 
   payload = {
     'create': {},
     'fields': {
-      'project': {
-        'id': project_id
-      },
+      'project': { 'id': project_id },
       'summary': summary,
-      'issuetype': {
-        'id': issue_type_id
-      },
-      'assignee': {
-        'name': assignee_name
-      },
-      'reporter': {
-        'name': reporter_name
-      },
-      'priority': {
-        'name': priority_name
-      },
+      'issuetype': { 'id': issue_type[:id] },
+      'assignee': { 'name': assignee_name },
+      'reporter': { 'name': reporter_name },
+      'priority': { 'name': priority_name },
       'labels': labels,
       'description': description,
 
@@ -213,7 +224,7 @@ def create_ticket_jira(ticket)
       "#{@customfield_name_to_id['Assembla-Id']}": ticket_id,
       "#{@customfield_name_to_id['Assembla-Theme']}": theme_name,
       "#{@customfield_name_to_id['Assembla-Status']}": status_name,
-      "#{@customfield_name_to_id['Assembla-Milestone']}": milestone_name,
+      "#{@customfield_name_to_id['Assembla-Milestone']}": milestone[:name],
       "#{@customfield_name_to_id['Rank']}": story_rank,
 
       # TODO: "customfield_10105"=>"Field 'customfield_10105' cannot be set. It is not on the appropriate screen, or unknown."
@@ -221,8 +232,9 @@ def create_ticket_jira(ticket)
     }
   }
 
-  if issue_type_name == 'epic'
-    payload[:fields]["#{@customfield_name_to_id['Epic Name']}".to_sym] = summary[6..-1]
+  if issue_type[:name] == 'epic'
+    epic_name = (summary =~ /^epic: /i ? summary[6..-1] : summary)
+    payload[:fields]["#{@customfield_name_to_id['Epic Name']}".to_sym] = epic_name
   end
 
   jira_ticket_id = nil
@@ -242,37 +254,38 @@ def create_ticket_jira(ticket)
     message = error['errors'].map { |k,v| "#{k}: #{v}"}.join(' | ')
     retries += 1
     recover = false
-    if retries < 5
-      error['errors'].each do |error|
-        key = error[0]
-        reason = error[1]
-        if key == 'assignee'
-          if reason =~ /cannot be assigned issues/i
+    if retries < MAX_RETRY
+      error['errors'].each do |err|
+        key = err[0]
+        reason = err[1]
+        case key
+        when 'assignee'
+          case reason
+          when /cannot be assigned issues/i
             payload[:fields]["#{@customfield_name_to_id['Assembla-Assignee']}".to_sym] = payload[:fields][:assignee][:name]
             payload[:fields][:assignee][:name] = ''
             recover = true
           end
-        end
-        if key == 'reporter'
-          if reason =~ /is not a user/i
+        when 'reporter'
+          case reason
+          when /is not a user/i
             payload[:fields]["#{@customfield_name_to_id['Assembla-Reporter']}".to_sym] = payload[:fields][:reporter][:name]
-            payload[:fields][:reporter][:name] = ENV['JIRA_API_UNKNOWN_USER']
+            payload[:fields][:reporter][:name] = UNKNOWN_USER
             recover = true
-          end
-          if reason =~ /reporter is required/i
-            payload[:fields][:reporter][:name] = ENV['JIRA_API_UNKNOWN_USER']
+          when /reporter is required/i
+            payload[:fields][:reporter][:name] = UNKNOWN_USER
             recover = true
           end
         end
       end
     end
-    retry if retries < 5 && recover
+    retry if retries < MAX_RETRY && recover
   rescue => e
     message = e.message
   end
 
   dump_payload = ok ? '' : ' ' + payload.inspect.sub(/:description=>"[^"]+",/,':description=>"...",')
-  puts "POST #{URL_JIRA_ISSUES} #{ticket_id}#{dump_payload} => #{ok ? '' : 'N'}OK (#{message}) retries = #{retries}"
+  puts "[#{counter}|#{total}|#{grand_counter}|#{grand_total} #{issue_type[:name].upcase}] POST #{URL_JIRA_ISSUES} #{ticket_id}#{dump_payload} => #{ok ? '' : 'N'}OK (#{message}) retries = #{retries}"[:name]
 
   @jira_tickets << {
       result: (ok ? 'OK' : 'NOK'),
@@ -282,8 +295,8 @@ def create_ticket_jira(ticket)
       jira_ticket_key: jira_ticket_key,
       project_id: project_id,
       summary: summary,
-      issue_type_id: issue_type_id,
-      issue_type_name: issue_type_name,
+      issue_type_id: issue_type[:id],
+      issue_type_name: issue_type[:name],
       assignee_name: assignee_name,
       reporter_name: reporter_name,
       priority_name: priority_name,
@@ -292,7 +305,7 @@ def create_ticket_jira(ticket)
       description: description,
       assembla_ticket_id: ticket_id,
       theme_name: theme_name,
-      milestone_name: milestone_name,
+      milestone_name: milestone[:name],
       story_rank: story_rank,
       story_points: story_points
   }
@@ -304,8 +317,7 @@ end
 if @project
   puts "Found project '#{JIRA_PROJECT_NAME}' id='#{@project['id']}' key='#{@project['key']}'"
 else
-  puts "You must first create a Jira project called '#{JIRA_PROJECT_NAME}' in order to continue"
-  exit
+  goodbye("You must first create a Jira project called '#{JIRA_PROJECT_NAME}' in order to continue")
 end
 
 space = get_space(SPACE_NAME)
@@ -328,8 +340,7 @@ issue_types_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-issue-types.csv"
 
 # --- USERS --- #
 
-puts
-puts 'Users:'
+puts "\nUsers:"
 
 @user_id_to_login = {}
 @users_assembla.each do |user|
@@ -340,10 +351,22 @@ end
   puts "#{k} #{v}"
 end
 
+# Make sure that the unknown user exists and is active
+puts "\nUnknown user:"
+if UNKNOWN_USER && UNKNOWN_USER.length
+  user = jira_get_user(UNKNOWN_USER)
+  if user
+    goodbye("Please activate Jira unknown user '#{UNKNOWN_USER}'") unless user['active']
+  else
+    goodbye("Cannot find Jira unknown user '#{UNKNOWN_USER}', make sure that has been created and enabled")
+  end
+else
+  goodbye("Please define 'JIRA_API_UNKNOWN_USER' in the .env file")
+end
+
 # --- MILESTONES --- #
 
-puts
-puts 'Milestones:'
+puts "\nMilestones:"
 
 @milestone_id_to_name = {}
 @milestones_assembla.each do |milestone|
@@ -356,8 +379,7 @@ end
 
 # --- ISSUE TYPES --- #
 
-puts
-puts 'Issue types:'
+puts "\nIssue types:"
 
 @issue_type_name_to_id = {}
 @issue_types_jira.each do |type|
@@ -370,8 +392,7 @@ end
 
 # --- PRIORITIES --- #
 
-puts
-puts 'Priorities:'
+puts "\nPriorities:"
 
 @priority_id_to_name = {}
 @priorities_jira = jira_get_priorities
@@ -380,8 +401,7 @@ if @priorities_jira
     @priority_id_to_name[priority['id']] = priority['name']
   end
 else
-  puts "Cannot get priorities!"
-  exit
+  goodbye("Cannot get priorities!")
 end
 
 @priority_id_to_name.each do |k,v|
@@ -390,8 +410,7 @@ end
 
 # --- JIRA fields --- #
 
-puts
-puts 'Jira fields:'
+puts "\nJira fields:"
 
 @fields_jira = jira_get_fields
 if @fields_jira
@@ -399,12 +418,12 @@ if @fields_jira
     puts "#{field['id']} '#{field['name']}' #{field['custom']}"
   end
 else
-  puts "Cannot get fields!"
-  exit
+  goodbye('Cannot get fields!')
 end
 
-puts
-puts "Jira custom fields:"
+# --- JIRA custome fields --- #
+
+puts "\nJira custom fields:"
 
 @customfield_name_to_id = {}
 
@@ -413,16 +432,42 @@ CUSTOM_FIELD_NAMES.each do |name|
   if field
     id = field['id']
     @customfield_name_to_id[name] = id
-    puts "#{name}='#{id}'"
+    puts "'#{name}'='#{id}'"
   else
-    puts "Custom field '#{name}' is missing, please define in Jira"
-    exit
+    goodbye("Custom field '#{name}' is missing, please define in Jira")
   end
 end
 
-puts
-@tickets_assembla.each do |ticket|
-  create_ticket_jira(ticket)
+grand_counter = 0
+grand_total = @tickets_assembla.length
+puts "Total tickets: #{grand_total}"
+imported_tickets = []
+@tickets_assembla.each_with_index do |ticket, index|
+  ticket_id = ticket['number']
+  if imported_tickets.include?(ticket_id)
+    puts "SKIP create_ticket_jira(#{ticket_id}, #{index+1}, #{grand_counter}, #{grand_total})"
+  else
+    imported_tickets << ticket_id
+    grand_counter += 1
+    puts "create_ticket_jira(#{ticket_id}, #{index+1}, #{grand_counter}, #{grand_total})"
+  end
+# %w(epic story task sub-task).each do |issue_type|
+#   @tickets = @tickets_assembla.select{|ticket| get_issue_type(ticket)[:name] == issue_type}
+#   total = @tickets.length
+#   puts "Total #{issue_type}: #{total}"
+#   @tickets.each_with_index do |ticket, index|
+#     ticket_id = ticket['number']
+#     if imported_tickets.include?(ticket_id)
+#       puts "SKIP create_ticket_jira(#{ticket_id}, #{index+1}, #{total}, #{grand_counter}, #{grand_total})"
+#     else
+#       imported_tickets << ticket_id
+#       grand_counter += 1
+#       puts "create_ticket_jira(#{ticket_id}, #{index+1}, #{total}, #{grand_counter}, #{grand_total})"
+#       # create_ticket_jira(ticket, index+1, total, grand_counter, grand_total)
+#     end
+#   end
 end
+
+exit
 
 write_csv_file(tickets_jira_csv, @jira_tickets)

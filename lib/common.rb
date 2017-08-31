@@ -6,13 +6,9 @@ require 'fileutils'
 require 'dotenv/load'
 require 'rest-client'
 
-@debug = true
+@debug = ENV['DEBUG'] == 'true'
 
-SPACE_NAMES = [
-  'Europeana APIs',
-  'Europeana Infrastructure',
-  'Europeana Collections'
-].freeze
+ASSEMBLA_SPACES = ENV['ASSEMBLA_SPACES'].split(',').freeze
 
 ASSEMBLA_API_HOST = ENV['ASSEMBLA_API_HOST']
 ASSEMBLA_API_KEY = ENV['ASSEMBLA_API_KEY']
@@ -41,7 +37,6 @@ end
 
 def http_request(url, opts = {})
   response = ''
-  url = "#{url}?per_page=#{opts[:per_page]}&page=#{opts[:page]}" if opts[:per_page]
   counter = build_counter(opts)
   begin
     response = RestClient::Request.execute(method: :get, url: url, headers: ASSEMBLA_HEADERS)
@@ -51,8 +46,7 @@ def http_request(url, opts = {})
     if e.class == RestClient::NotFound && e.response.match?(/Tool not found/i)
       puts "#{counter}GET #{url} => OK (0)"
     else
-      puts "#{counter}GET #{url} => NOK (#{e.message})"
-      exit
+      goodbye("#{counter}GET #{url} => NOK (#{e.message})")
     end
   end
   response
@@ -74,8 +68,7 @@ def get_space(name)
   json = JSON.parse(response.body)
   space = json.find { |s| s['name'] == name }
   unless space
-    puts "Couldn't find space with name = '#{name}'"
-    exit
+    goodbye("Couldn't find space with name = '#{name}'")
   end
   space
 end
@@ -83,17 +76,21 @@ end
 def get_items(items, space)
   items.each do |item|
     url = "#{ASSEMBLA_API_HOST}/spaces/#{space['id']}/#{item[:name]}"
-    page = 0
+    url += "?#{item[:q]}" if item[:q]
+    per_page = item[:q] =~ /per_page/
+    page = 1
     in_progress = true
     item[:results] = []
     while in_progress
-      response = http_request(url, per_page: item[:per_page], page: page)
+      full_url = url
+      full_url += "&page=#{page}" if per_page
+      response = http_request(full_url)
       count = get_response_count(response)
       if count.positive?
         JSON.parse(response).each do |rec|
           item[:results] << rec
         end
-        item[:per_page] ? page += 1 : in_progress = false
+        per_page ? page += 1 : in_progress = false
       else
         in_progress = false
       end
@@ -117,7 +114,7 @@ def create_csv_file(space, item)
 end
 
 def export_items(list)
-  SPACE_NAMES.each do |space_name|
+  ASSEMBLA_SPACES.each do |space_name|
     space = get_space(space_name)
     items = get_items(list, space)
     create_csv_files(space, items)
@@ -232,5 +229,29 @@ def jira_get_fields
     puts "GET #{URL_JIRA_FIELDS} => NOK (#{e.message})"
   end
   result
+end
+
+def jira_get_user(username)
+  result = nil
+  url = "#{JIRA_API_HOST}/user?username=#{username}"
+  begin
+    response = RestClient::Request.execute(method: :get, url: url, headers: JIRA_HEADERS)
+    body = JSON.parse(response.body)
+    body.delete_if { |k,v| k =~ /self|avatarurls|timezone|locale|groups|applicationroles|expand/i}
+    puts "GET #{url} => OK (#{body.to_json})"
+    result = body
+  rescue => e
+    if e.class == RestClient::NotFound && JSON.parse(e.response)['errorMessages'][0] =~ /does not exist/
+      puts "GET #{url} => NOK (does not exist)"
+    else
+      goodbye("GET #{url} => NOK (#{e.message})")
+    end
+  end
+  result
+end
+
+def goodbye(message)
+  puts "\nGOODBYE: #{message}"
+  exit
 end
 

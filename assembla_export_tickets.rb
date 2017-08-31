@@ -13,8 +13,6 @@ ITEMS = [
 
 RELATIONSHIP_NAMES = %w{parent child related duplicate sibling story subtask dependent block}.freeze
 
-PER_PAGE = 100.freeze
-
 def get_ticket_attr(space_id, ticket_number, attr, opts)
   results = []
   response = http_request("#{ASSEMBLA_API_HOST}/spaces/#{space_id}/tickets/#{ticket_number}/#{attr}", opts)
@@ -29,33 +27,10 @@ def get_ticket_attr(space_id, ticket_number, attr, opts)
 end
 
 space = get_space(SPACE_NAME)
+dirname_assembla = get_output_dirname(space, 'assembla')
 
-url_space = "#{ASSEMBLA_API_HOST}/spaces/#{space['id']}"
-
-url_tickets = "#{url_space}/tickets?per_page=#{PER_PAGE}"
-page = 0
-in_progress = true
-tickets = []
-
-while in_progress
-  begin
-    full_url = "#{url_tickets}&page=#{page}"
-    response = RestClient::Request.execute(method: :get, url: full_url, headers: ASSEMBLA_HEADERS)
-    count = get_response_count(response)
-    puts "GET #{full_url} => OK (#{count})"
-    if count.positive?
-      JSON.parse(response.body).each do |ticket|
-        tickets << ticket
-      end
-      page += 1
-    else
-      in_progress = false
-    end
-  rescue => e
-    puts "GET #{url} => NOK (#{e.message})"
-    exit
-  end
-end
+tickets_assembla_csv = "#{dirname_assembla}/tickets.csv"
+tickets = csv_to_array(tickets_assembla_csv)
 
 @total_tickets = tickets.length
 

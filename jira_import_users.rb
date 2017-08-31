@@ -6,34 +6,12 @@ SPACE_NAME = 'Europeana Collections'
 
 @jira_users = []
 
-def get_user(username)
-  result = false
-  url = "#{JIRA_API_HOST}/user?username=#{username}"
-  begin
-    response = RestClient::Request.execute(method: :get, url: url, headers: JIRA_HEADERS)
-    body = JSON.parse(response.body)
-    body.delete_if { |k,v| k =~ /self|avatarurls|timezone|locale|groups|applicationroles|expand/i}
-    puts "GET #{url} => #{body.to_json}"
-    @jira_users << body
-    result = true
-  rescue => e
-    if e.class == RestClient::NotFound && JSON.parse(e.response)['errorMessages'][0] =~ /does not exist/
-      puts "GET #{url} => does not exist"
-    else
-      puts "GET #{url} => NOK (#{e.message})"
-      exit
-    end
-  end
-  result
-end
-
 def create_user(user)
   url = "#{JIRA_API_HOST}/user"
   username = user['login']
   email = user['email']
   if email.nil? || email.length == 0
-    email = username
-    email.sub!(/@.*$/,'')
+    email = "#{username}@example.org"
   end
   payload = {
     name: username,
@@ -60,8 +38,16 @@ users.each do |user|
   count = user['count']
   username = user['login']
   username.sub!(/@.*$/,'')
-  next if count == '0' || get_user(username)
-  create_user(user)
+  next if count == '0'
+  u1 = jira_get_user(username)
+  if u1
+    # User exists so add to list
+    @jira_users << u1
+  else
+    # User does not exist so create if possible and add to list
+    u2 = create_user(user)
+    @jira_users << u2 if u2
+  end
 end
 
 write_csv_file(jira_users_csv, @jira_users)
