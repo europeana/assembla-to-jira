@@ -37,7 +37,6 @@ associations_assembla_csv = "#{dirname_assembla}/ticket-associations.csv"
 
 # --- JIRA Tickets --- #
 
-tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets.csv"
 issue_types_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-issue-types.csv"
 
 @issue_types_jira = csv_to_array(issue_types_jira_csv)
@@ -273,6 +272,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
     payload[:fields]["#{@customfield_name_to_id['Epic Name']}".to_sym] = epic_name
   elsif issue_type[:name] == 'sub-task'
     parent_issue = get_parent_issue(ticket)
+    payload[:fields][:parent] = {}
     payload[:fields][:parent][:id] = parent_issue ? parent_issue[:jira_ticket_id] : nil
   end
 
@@ -315,6 +315,17 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
             payload[:fields][:reporter][:name] = UNKNOWN_USER
             recover = true
           end
+        when 'issuetype'
+          case reason
+          when /is a sub-task but parent issue key or id not specified/i
+            issue_type = {
+              id: @issue_type_name_to_id['task'],
+              name: 'task'
+            }
+            payload[:fields][:issuetype][:id] = issue_type[:id]
+            payload[:fields].delete(:parent)
+            recover = true
+          end
         end
       end
     end
@@ -329,7 +340,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
   @jira_issues << {
       result: (ok ? 'OK' : 'NOK'),
       retries: retries,
-      message: message.gsub(' | ', "\r\n\r\n"),
+      message: (ok ? '' : message.gsub(' | ', "\r\n\r\n")),
       jira_ticket_id: jira_ticket_id,
       jira_ticket_key: jira_ticket_key,
       project_id: project_id,
@@ -346,8 +357,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
       assembla_ticket_number: ticket_number,
       theme_name: theme_name,
       milestone_name: milestone[:name],
-      story_rank: story_rank,
-      story_points: story_points
+      story_rank: story_rank
   }
 end
 
@@ -463,7 +473,7 @@ end
 # --- Import all Assembla tickets into Jira --- #
 
 grand_total = @tickets_assembla.length
-puts "Total tickets: #{grand_total}"
+puts "\nTotal tickets: #{grand_total}"
 [true, false].each do |sanity_check|
   duplicate_tickets = []
   imported_tickets = []
@@ -487,7 +497,11 @@ puts "Total tickets: #{grand_total}"
         end
       end
     end
-    puts "Total #{issue_type}: #{total}" unless sanity_check
+    unless sanity_check
+      puts "Total #{issue_type}: #{total}" unless sanity_check
+      tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-#{issue_type}.csv"
+      write_csv_file(tickets_jira_csv, @jira_issues)
+    end
   end
   if sanity_check
     if duplicate_tickets.length.positive?
@@ -497,5 +511,3 @@ puts "Total tickets: #{grand_total}"
     end
   end
 end
-
-write_csv_file(tickets_jira_csv, @jira_issues)
