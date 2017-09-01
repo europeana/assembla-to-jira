@@ -184,12 +184,12 @@ See: http://api-docs.assembla.cc/content/ref/ticket_associations_fields.html
 
 ## Mappings
 
-* status - The value of this field is set automatically. It is never present on any editable form, and defaults to `TO DO` on ticket creation.
+* Status - The value of this field is set automatically. It is never present on any editable form, and defaults to `TO DO` on ticket creation.
 
 ## Trouble-shooting
 
-Error "User cannot be assigned issues." => activate, login as user and then deactivate.
-If issue is an epic then the epic name custom field is required.
+* Error "User cannot be assigned issues." => activate, login as user and then deactivate.
+* If issue is an epic then the epic name custom field is required.
 
 ## License
 
