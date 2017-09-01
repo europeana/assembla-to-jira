@@ -5,11 +5,8 @@ load './lib/common.rb'
 SPACE_NAME = 'Europeana Collections'
 JIRA_PROJECT_NAME = 'Europeana Collections' + (@debug ? ' | TEST' : '')
 
-@jira_tickets = []
-@fields_jira = []
-
 CUSTOM_FIELD_NAMES = %w(Assembla-Id Assembla-Milestone Assembla-Theme Assembla-Status Assembla-Reporter Assembla-Assignee Epic\ Name Rank Story\ Points)
-ISSUE_TYPE_NAMES = %w(unknown sub-task story epic task spike bug)
+# ISSUE_TYPE_NAMES = %w(unknown sub-task story epic task spike bug)
 
 CONVERT_NAMES = [
   { name: 'kgish', convert: 'kiffin.gish' }
@@ -18,6 +15,35 @@ CONVERT_NAMES = [
 UNKNOWN_USER = ENV['JIRA_API_UNKNOWN_USER']
 
 MAX_RETRY = 3
+
+# --- ASSEMBLA Tickets --- #
+
+space = get_space(SPACE_NAME)
+dirname_assembla = get_output_dirname(space, 'assembla')
+
+tickets_assembla_csv = "#{dirname_assembla}/tickets.csv"
+users_assembla_csv = "#{dirname_assembla}/users.csv"
+milestones_assembla_csv = "#{dirname_assembla}/milestones.csv"
+comments_assembla_csv = "#{dirname_assembla}/ticket-comments.csv"
+tags_assembla_csv = "#{dirname_assembla}/ticket-tags.csv"
+associations_assembla_csv = "#{dirname_assembla}/ticket-associations.csv"
+
+@tickets_assembla = csv_to_array(tickets_assembla_csv)
+@users_assembla = csv_to_array(users_assembla_csv)
+@milestones_assembla = csv_to_array(milestones_assembla_csv)
+@comments_assembla = csv_to_array(comments_assembla_csv)
+@tags_assembla = csv_to_array(tags_assembla_csv)
+@associations_assembla = csv_to_array(associations_assembla_csv)
+
+# --- JIRA Tickets --- #
+
+tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets.csv"
+issue_types_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-issue-types.csv"
+
+@issue_types_jira = csv_to_array(issue_types_jira_csv)
+
+@jira_issues = []
+@fields_jira = []
 
 # Assembla ticket fields:
 # ----------------------
@@ -48,7 +74,7 @@ MAX_RETRY = 3
 # * reporter_id
 # custom_fields
 # hierarchy_type (0 - No plan level, 1 - Subtask, 2 - Story, 3 - Epic)
-# # due_date
+# due_date
 
 # Jira issue fields:
 # -----------------
@@ -130,6 +156,21 @@ def jira_get_field_by_name(name)
   @fields_jira.find{ |field| field['name'] == name }
 end
 
+# 0 - Parent (ticket2 is parent of ticket1 and ticket1 is child of ticket2)
+# 5 - Story (ticket2 is story and ticket1 is subtask of the story)
+def get_parent_issue(ticket)
+  issue = nil
+  ticket1_id = ticket['id']
+  association = @associations_assembla.find { |association| association['ticket1_id'] == ticket1_id && association['relationship_name'].match(/story|parent/) }
+  if association
+    ticket2_id = association['ticket2_id']
+    issue = @jira_issues.find{|issue| issue[:assembla_ticket_id] == ticket2_id}
+  else
+    puts "Could not find parent_id for ticket_id=#{ticket1_id}"
+  end
+  issue
+end
+
 def get_labels(ticket)
   labels = ['assembla']
   @tags_assembla.each do |tag|
@@ -142,11 +183,7 @@ end
 
 def get_milestone(ticket)
   id = ticket['milestone_id']
-  if id && id.length > 0
-    name = @milestone_id_to_name[id] || id
-  else
-    name = 'unknown milestone'
-  end
+  name = id && id.length.positive? ? (@milestone_id_to_name[id] || id) : 'unknown milestone'
   { id: id, name: name }
 end
 
@@ -177,14 +214,13 @@ def get_issue_type(ticket)
   { id: id, name: name }
 end
 
-
 def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
-
   project_id = @project['id']
-  ticket_id = ticket['number']
+  ticket_id = ticket['id']
+  ticket_number = ticket['number']
 
   # Prepend the description text with a link to the original assembla ticket on the first line.
-  description = "[Assembla ticket ##{ticket_id}|#{ENV['ASSEMBLA_URL_TICKETS']}/#{ticket_id}]\r\n\r\n#{ticket['description']}"
+  description = "[Assembla ticket ##{ticket_number}|#{ENV['ASSEMBLA_URL_TICKETS']}/#{ticket_number}]\r\n\r\n#{ticket['description']}"
 
   story_rank = ticket['importance']
   story_points = ticket['story_importance']
@@ -221,7 +257,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
       #  Admin > Issues > Screens > Configure screen > 'ECT: Scrum Default Issue Screen'
       # Assembla
 
-      "#{@customfield_name_to_id['Assembla-Id']}": ticket_id,
+      "#{@customfield_name_to_id['Assembla-Id']}": ticket_number,
       "#{@customfield_name_to_id['Assembla-Theme']}": theme_name,
       "#{@customfield_name_to_id['Assembla-Status']}": status_name,
       "#{@customfield_name_to_id['Assembla-Milestone']}": milestone[:name],
@@ -235,6 +271,9 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
   if issue_type[:name] == 'epic'
     epic_name = (summary =~ /^epic: /i ? summary[6..-1] : summary)
     payload[:fields]["#{@customfield_name_to_id['Epic Name']}".to_sym] = epic_name
+  elsif issue_type[:name] == 'sub-task'
+    parent_issue = get_parent_issue(ticket)
+    payload[:fields][:parent][:id] = parent_issue ? parent_issue[:jira_ticket_id] : nil
   end
 
   jira_ticket_id = nil
@@ -285,9 +324,9 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
   end
 
   dump_payload = ok ? '' : ' ' + payload.inspect.sub(/:description=>"[^"]+",/,':description=>"...",')
-  puts "[#{counter}|#{total}|#{grand_counter}|#{grand_total} #{issue_type[:name].upcase}] POST #{URL_JIRA_ISSUES} #{ticket_id}#{dump_payload} => #{ok ? '' : 'N'}OK (#{message}) retries = #{retries}"[:name]
+  puts "[#{counter}|#{total}|#{grand_counter}|#{grand_total} #{issue_type[:name].upcase}] POST #{URL_JIRA_ISSUES} #{ticket_number}#{dump_payload} => #{ok ? '' : 'N'}OK (#{message}) retries = #{retries}"
 
-  @jira_tickets << {
+  @jira_issues << {
       result: (ok ? 'OK' : 'NOK'),
       retries: retries,
       message: message.gsub(' | ', "\r\n\r\n"),
@@ -304,6 +343,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
       labels: labels.join('|'),
       description: description,
       assembla_ticket_id: ticket_id,
+      assembla_ticket_number: ticket_number,
       theme_name: theme_name,
       milestone_name: milestone[:name],
       story_rank: story_rank,
@@ -319,24 +359,6 @@ if @project
 else
   goodbye("You must first create a Jira project called '#{JIRA_PROJECT_NAME}' in order to continue")
 end
-
-space = get_space(SPACE_NAME)
-dirname_assembla = get_output_dirname(space, 'assembla')
-
-tickets_assembla_csv = "#{dirname_assembla}/tickets.csv"
-users_assembla_csv = "#{dirname_assembla}/users.csv"
-milestones_assembla_csv = "#{dirname_assembla}/milestones.csv"
-comments_assembla_csv = "#{dirname_assembla}/ticket-comments.csv"
-tags_assembla_csv = "#{dirname_assembla}/ticket-tags.csv"
-tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets.csv"
-issue_types_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-issue-types.csv"
-
-@tickets_assembla = csv_to_array(tickets_assembla_csv)
-@users_assembla = csv_to_array(users_assembla_csv)
-@milestones_assembla = csv_to_array(milestones_assembla_csv)
-@comments_assembla = csv_to_array(comments_assembla_csv)
-@tags_assembla = csv_to_array(tags_assembla_csv)
-@issue_types_jira = csv_to_array(issue_types_jira_csv)
 
 # --- USERS --- #
 
@@ -421,7 +443,7 @@ else
   goodbye('Cannot get fields!')
 end
 
-# --- JIRA custome fields --- #
+# --- JIRA custom fields --- #
 
 puts "\nJira custom fields:"
 
@@ -438,6 +460,8 @@ CUSTOM_FIELD_NAMES.each do |name|
   end
 end
 
+# --- Import all Assembla tickets into Jira --- #
+
 grand_total = @tickets_assembla.length
 puts "Total tickets: #{grand_total}"
 [true, false].each do |sanity_check|
@@ -447,34 +471,32 @@ puts "Total tickets: #{grand_total}"
   %w(epic story task sub-task).each do |issue_type|
     @tickets = @tickets_assembla.select{|ticket| get_issue_type(ticket)[:name] == issue_type}
     total = @tickets.length
-    puts "Total #{issue_type}: #{total}" unless sanity_check
     @tickets.each_with_index do |ticket, index|
-      ticket_id = ticket['number']
-      if imported_tickets.include?(ticket_id)
+      ticket_number = ticket['number']
+      if imported_tickets.include?(ticket_number)
         if sanity_check
-          duplicate_tickets << ticket_id
+          duplicate_tickets << ticket_number
         else
-          puts "SKIP create_ticket_jira(#{ticket_id}, #{index+1}, #{total}, #{grand_counter}, #{grand_total})"
+          puts "SKIP create_ticket_jira(#{ticket_number}, #{index+1}, #{total}, #{grand_counter}, #{grand_total})"
         end
       else
-        imported_tickets << ticket_id
+        imported_tickets << ticket_number
         grand_counter += 1
         unless sanity_check
-          puts "create_ticket_jira(#{ticket_id}, #{index+1}, #{total}, #{grand_counter}, #{grand_total})"
-          # create_ticket_jira(ticket, index+1, total, grand_counter, grand_total)
+          puts "create_ticket_jira(#{issue_type}, #{ticket_number}, #{index+1}, #{total}, #{grand_counter}, #{grand_total})"
+          create_ticket_jira(ticket, index+1, total, grand_counter, grand_total)
         end
       end
     end
+    puts "Total #{issue_type}: #{total}" unless sanity_check
   end
   if sanity_check
     if duplicate_tickets.length.positive?
-    goodbye("Duplicated ticket_ids=[#{duplicate_tickets.join(',')}]")
+    goodbye("Duplicated ticket_number=[#{duplicate_tickets.join(',')}]")
     else
       puts 'Sanity check => OK'
     end
   end
 end
 
-exit
-
-write_csv_file(tickets_jira_csv, @jira_tickets)
+write_csv_file(tickets_jira_csv, @jira_issues)
