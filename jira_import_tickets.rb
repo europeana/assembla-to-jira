@@ -483,7 +483,6 @@ puts "Total tickets: #{grand_total}"
         imported_tickets << ticket_number
         grand_counter += 1
         unless sanity_check
-          puts "create_ticket_jira(#{issue_type}, #{ticket_number}, #{index+1}, #{total}, #{grand_counter}, #{grand_total})"
           create_ticket_jira(ticket, index+1, total, grand_counter, grand_total)
         end
       end
