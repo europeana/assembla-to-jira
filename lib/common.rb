@@ -46,7 +46,12 @@ def http_request(url, opts = {})
     if e.class == RestClient::NotFound && e.response.match?(/Tool not found/i)
       puts "#{counter}GET #{url} => OK (0)"
     else
-      goodbye("#{counter}GET #{url} => NOK (#{e.message})")
+      message = "#{counter}GET #{url} => NOK (#{e.message})"
+      if (opts[:continue_onerror])
+        puts message
+      else
+        goodbye(message)
+      end
     end
   end
   response

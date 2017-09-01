@@ -147,6 +147,20 @@ $ ruby assembla_report_users.rb
 * 10305 Capture for JIRA jQuery version
 * 10400 Assembla
 
+### Associations
+
+0 - Parent (ticket2 is parent of ticket1 and ticket1 is child of ticket2)
+1 - Child  (ticket2 is child of ticket1 and ticket2 is parent of ticket1)
+2 - Related (ticket2 is related to ticket1)
+3 - Duplicate (ticket2 is duplication of ticket1)
+4 - Sibling (ticket2 is sibling of ticket1)
+5 - Story (ticket2 is story and ticket1 is subtask of the story)
+6 - Subtask (ticket2 is subtask of a story and ticket1 is the story)
+7 - Dependent (ticket2 depends on ticket1)
+8 - Block (ticket2 blocks ticket1)
+
+See: http://api-docs.assembla.cc/content/ref/ticket_associations_fields.html
+
 ## Mappings
 
 * status - The value of this field is set automatically. It is never present on any editable form, and defaults to `TO DO` on ticket creation.
