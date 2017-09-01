@@ -44,6 +44,9 @@ issue_types_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-issue-types.csv"
 @jira_issues = []
 @fields_jira = []
 
+@is_not_a_user = []
+@cannot_be_assigned_issues = []
+
 # Assembla ticket fields:
 # ----------------------
 # id
@@ -267,6 +270,18 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
     }
   }
 
+  # Reporter is required
+  if reporter_name.nil? || reporter_name.length.zero? || @is_not_a_user.include?(reporter_name)
+    payload[:fields]["#{@customfield_name_to_id['Assembla-Reporter']}".to_sym] = payload[:fields][:reporter][:name]
+    payload[:fields][:reporter][:name] = UNKNOWN_USER
+    reporter_name = UNKNOWN_USER
+  end
+
+  if @cannot_be_assigned_issues.include?(assignee_name)
+    payload[:fields]["#{@customfield_name_to_id['Assembla-Assignee']}".to_sym] = payload[:fields][:assignee][:name]
+    payload[:fields][:assignee][:name] = ''
+  end
+
   if issue_type[:name] == 'epic'
     epic_name = (summary =~ /^epic: /i ? summary[6..-1] : summary)
     payload[:fields]["#{@customfield_name_to_id['Epic Name']}".to_sym] = epic_name
@@ -303,6 +318,8 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
           when /cannot be assigned issues/i
             payload[:fields]["#{@customfield_name_to_id['Assembla-Assignee']}".to_sym] = payload[:fields][:assignee][:name]
             payload[:fields][:assignee][:name] = ''
+            puts "Cannot be assigned issues: #{assignee_name}"
+            @cannot_be_assigned_issues << assignee_name
             recover = true
           end
         when 'reporter'
@@ -310,9 +327,8 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
           when /is not a user/i
             payload[:fields]["#{@customfield_name_to_id['Assembla-Reporter']}".to_sym] = payload[:fields][:reporter][:name]
             payload[:fields][:reporter][:name] = UNKNOWN_USER
-            recover = true
-          when /reporter is required/i
-            payload[:fields][:reporter][:name] = UNKNOWN_USER
+            puts "Is not a user: #{reporter_name}"
+            @is_not_a_user << reporter_name
             recover = true
           end
         when 'issuetype'
