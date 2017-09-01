@@ -168,6 +168,7 @@ $ ruby jira_import_tickets.rb
 
 ### Associations
 
+```
 0 - Parent (ticket2 is parent of ticket1 and ticket1 is child of ticket2)
 1 - Child  (ticket2 is child of ticket1 and ticket2 is parent of ticket1)
 2 - Related (ticket2 is related to ticket1)
@@ -177,6 +178,7 @@ $ ruby jira_import_tickets.rb
 6 - Subtask (ticket2 is subtask of a story and ticket1 is the story)
 7 - Dependent (ticket2 depends on ticket1)
 8 - Block (ticket2 blocks ticket1)
+```
 
 See: http://api-docs.assembla.cc/content/ref/ticket_associations_fields.html
 
