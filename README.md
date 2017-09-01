@@ -40,11 +40,30 @@ $ cp .env.example .env
 
 ## Run migration
 
+### Export data from Assembla
+
+You can run the export in a number of stages, output files being generated at each point in the process:
+
 ```
 $ ruby assembla_export_space.rb
 $ ruby assembla_export_users.rb
 $ ruby assembla_export_tickets.rb
 $ ruby assembla_report_users.rb
+```
+
+or in a single command:
+
+```
+$ ./assembla_export_all.sh
+```
+
+### Import data into Jira
+
+You can run the import in a number of stages, output files being generated at each point in the process:
+
+```
+$ ruby jira_import_users.rb
+$ ruby jira_import_tickets.rb
 ```
 
 ## Assembla ticket fields:

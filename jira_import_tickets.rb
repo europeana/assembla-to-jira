@@ -438,34 +438,41 @@ CUSTOM_FIELD_NAMES.each do |name|
   end
 end
 
-grand_counter = 0
 grand_total = @tickets_assembla.length
 puts "Total tickets: #{grand_total}"
-imported_tickets = []
-@tickets_assembla.each_with_index do |ticket, index|
-  ticket_id = ticket['number']
-  if imported_tickets.include?(ticket_id)
-    puts "SKIP create_ticket_jira(#{ticket_id}, #{index+1}, #{grand_counter}, #{grand_total})"
-  else
-    imported_tickets << ticket_id
-    grand_counter += 1
-    puts "create_ticket_jira(#{ticket_id}, #{index+1}, #{grand_counter}, #{grand_total})"
+[true, false].each do |sanity_check|
+  duplicate_tickets = []
+  imported_tickets = []
+  grand_counter = 0
+  %w(epic story task sub-task).each do |issue_type|
+    @tickets = @tickets_assembla.select{|ticket| get_issue_type(ticket)[:name] == issue_type}
+    total = @tickets.length
+    puts "Total #{issue_type}: #{total}" unless sanity_check
+    @tickets.each_with_index do |ticket, index|
+      ticket_id = ticket['number']
+      if imported_tickets.include?(ticket_id)
+        if sanity_check
+          duplicate_tickets << ticket_id
+        else
+          puts "SKIP create_ticket_jira(#{ticket_id}, #{index+1}, #{total}, #{grand_counter}, #{grand_total})"
+        end
+      else
+        imported_tickets << ticket_id
+        grand_counter += 1
+        unless sanity_check
+          puts "create_ticket_jira(#{ticket_id}, #{index+1}, #{total}, #{grand_counter}, #{grand_total})"
+          # create_ticket_jira(ticket, index+1, total, grand_counter, grand_total)
+        end
+      end
+    end
   end
-# %w(epic story task sub-task).each do |issue_type|
-#   @tickets = @tickets_assembla.select{|ticket| get_issue_type(ticket)[:name] == issue_type}
-#   total = @tickets.length
-#   puts "Total #{issue_type}: #{total}"
-#   @tickets.each_with_index do |ticket, index|
-#     ticket_id = ticket['number']
-#     if imported_tickets.include?(ticket_id)
-#       puts "SKIP create_ticket_jira(#{ticket_id}, #{index+1}, #{total}, #{grand_counter}, #{grand_total})"
-#     else
-#       imported_tickets << ticket_id
-#       grand_counter += 1
-#       puts "create_ticket_jira(#{ticket_id}, #{index+1}, #{total}, #{grand_counter}, #{grand_total})"
-#       # create_ticket_jira(ticket, index+1, total, grand_counter, grand_total)
-#     end
-#   end
+  if sanity_check
+    if duplicate_tickets.length.positive?
+    goodbye("Duplicated ticket_ids=[#{duplicate_tickets.join(',')}]")
+    else
+      puts 'Sanity check => OK'
+    end
+  end
 end
 
 exit
