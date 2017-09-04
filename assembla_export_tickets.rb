@@ -54,7 +54,7 @@ ITEMS.each do |item|
   name = item[:name]
   item[:results] = []
   tickets.each_with_index do |ticket, index|
-    ticket[name] = get_ticket_attr(space['id'], ticket['number'], name, counter: index+1, total: @total_tickets, continue_onerror: true)
+    ticket[name] = get_ticket_attr(space['id'], ticket['number'], name, counter: index + 1, total: @total_tickets, continue_onerror: true)
     ticket[name].each do |result|
       result = result.merge(ticket_id: ticket['number']) if item[:ticket_id]
       if item[:relationship]

@@ -51,17 +51,15 @@ $ ruby assembla_export_tickets.rb
 $ ruby assembla_report_users.rb
 ```
 
-or in a single command:
-
-```
-$ ./assembla_export_all.sh
-```
-
 ### Import data into Jira
 
 You can run the import in a number of stages, output files being generated at each point in the process:
 
 ```
+$ ruby jira_get_issue_types.rb
+$ ruby jira_get_priorities.rb
+$ ruby jira_get_resolutions.rb
+$ ruby jira_get_roles.rb
 $ ruby jira_import_users.rb
 $ ruby jira_import_tickets.rb
 ```

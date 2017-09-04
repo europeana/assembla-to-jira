@@ -2,17 +2,11 @@
 
 load './lib/common.rb'
 
+#TODO: For the time being this is hard-coded
 SPACE_NAME = 'Europeana Collections'
-JIRA_PROJECT_NAME = 'Europeana Collections' + (@debug ? ' | TEST' : '')
+JIRA_PROJECT_NAME = 'Europeana Collections' + (@debug ? ' TEST' : '')
 
 CUSTOM_FIELD_NAMES = %w(Assembla-Id Assembla-Milestone Assembla-Theme Assembla-Status Assembla-Reporter Assembla-Assignee Epic\ Name Rank Story\ Points)
-# ISSUE_TYPE_NAMES = %w(unknown sub-task story epic task spike bug)
-
-CONVERT_NAMES = [
-  { name: 'kgish', convert: 'kiffin.gish' }
-].freeze
-
-UNKNOWN_USER = ENV['JIRA_API_UNKNOWN_USER']
 
 MAX_RETRY = 3
 
@@ -148,12 +142,6 @@ issue_types_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-issue-types.csv"
 # 10305 Capture for JIRA jQuery version
 # 10400 Assembla
 
-# Names (reporter and/or assignee) that need to be converted
-def convert_name(name)
-  found = CONVERT_NAMES.find{ |n| n[:name] == name}
-  return found ? found[:convert] : name
-end
-
 def jira_get_field_by_name(name)
   @fields_jira.find{ |field| field['name'] == name }
 end
@@ -228,8 +216,8 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
   story_points = ticket['story_importance']
 
   summary = ticket['summary']
-  reporter_name = convert_name(@user_id_to_login[ticket['reporter_id']])
-  assignee_name = convert_name(@user_id_to_login[ticket['assigned_to_id']])
+  reporter_name = @user_id_to_login[ticket['reporter_id']]
+  assignee_name = @user_id_to_login[ticket['assigned_to_id']]
   priority_name = @priority_id_to_name[ticket['priority']]
 
   status_name = ticket['status']
@@ -273,8 +261,8 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
   # Reporter is required
   if reporter_name.nil? || reporter_name.length.zero? || @is_not_a_user.include?(reporter_name)
     payload[:fields]["#{@customfield_name_to_id['Assembla-Reporter']}".to_sym] = payload[:fields][:reporter][:name]
-    payload[:fields][:reporter][:name] = UNKNOWN_USER
-    reporter_name = UNKNOWN_USER
+    payload[:fields][:reporter][:name] = JIRA_API_UNKNOWN_USER
+    reporter_name = JIRA_API_UNKNOWN_USER
   end
 
   if @cannot_be_assigned_issues.include?(assignee_name)
@@ -326,7 +314,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
           case reason
           when /is not a user/i
             payload[:fields]["#{@customfield_name_to_id['Assembla-Reporter']}".to_sym] = payload[:fields][:reporter][:name]
-            payload[:fields][:reporter][:name] = UNKNOWN_USER
+            payload[:fields][:reporter][:name] = JIRA_API_UNKNOWN_USER
             puts "Is not a user: #{reporter_name}"
             @is_not_a_user << reporter_name
             recover = true
@@ -377,13 +365,17 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
   }
 end
 
-# Ensure that the project exists, otherwise ask the user to create it first.
-@project = get_project_by_name(JIRA_PROJECT_NAME)
-
+# Ensure that the project exists, otherwise try and create it and if that fails ask the user to create it first.
+@project = jira_get_project_by_name(JIRA_PROJECT_NAME)
 if @project
   puts "Found project '#{JIRA_PROJECT_NAME}' id='#{@project['id']}' key='#{@project['key']}'"
 else
-  goodbye("You must first create a Jira project called '#{JIRA_PROJECT_NAME}' in order to continue")
+  @project = jira_create_project(JIRA_PROJECT_NAME)
+  if @project
+    puts "Created project '#{JIRA_PROJECT_NAME}' id='#{@project['id']}' key='#{@project['key']}'"
+  else
+    goodbye("You must first create a Jira project called '#{JIRA_PROJECT_NAME}' in order to continue")
+  end
 end
 
 # --- USERS --- #
@@ -399,14 +391,20 @@ end
   puts "#{k} #{v}"
 end
 
-# Make sure that the unknown user exists and is active
+# Make sure that the unknown user exists and is active, otherwise try and create
 puts "\nUnknown user:"
-if UNKNOWN_USER && UNKNOWN_USER.length
-  user = jira_get_user(UNKNOWN_USER)
+if JIRA_API_UNKNOWN_USER && JIRA_API_UNKNOWN_USER.length
+  user = jira_get_user(JIRA_API_UNKNOWN_USER)
   if user
-    goodbye("Please activate Jira unknown user '#{UNKNOWN_USER}'") unless user['active']
+    goodbye("Please activate Jira unknown user '#{JIRA_API_UNKNOWN_USER}'") unless user['active']
+    puts "Found Jira unknown user '#{JIRA_API_UNKNOWN_USER}'"
   else
-    goodbye("Cannot find Jira unknown user '#{UNKNOWN_USER}', make sure that has been created and enabled")
+    user = {}
+    user['login'] = JIRA_API_UNKNOWN_USER
+    user['name'] = JIRA_API_UNKNOWN_USER
+    result = jira_create_user(user)
+    goodbye("Cannot find Jira unknown user '#{JIRA_API_UNKNOWN_USER}', make sure that has been created and enabled") unless result
+    puts "Created Jira unknown user '#{JIRA_API_UNKNOWN_USER}'"
   end
 else
   goodbye("Please define 'JIRA_API_UNKNOWN_USER' in the .env file")
@@ -475,6 +473,7 @@ puts "\nJira custom fields:"
 
 @customfield_name_to_id = {}
 
+missing_fields = []
 CUSTOM_FIELD_NAMES.each do |name|
   field = jira_get_field_by_name(name)
   if field
@@ -482,11 +481,18 @@ CUSTOM_FIELD_NAMES.each do |name|
     @customfield_name_to_id[name] = id
     puts "'#{name}'='#{id}'"
   else
-    goodbye("Custom field '#{name}' is missing, please define in Jira")
+    missing_fields << name
   end
 end
 
+unless missing_fields.length.zero?
+  len = missing_fields.length.zero?
+  goodbye("Custom field#{len==1?'':'s'} '#{missing_fields.join('\',\'')}' #{len==1?'is':'are'} missing, please define in Jira and make sure to attach screen")
+end
+
 # --- Import all Assembla tickets into Jira --- #
+
+# Note: the sub-tasks must be done last in order to be able to be associated with the parent tasks/stories.
 
 grand_total = @tickets_assembla.length
 puts "\nTotal tickets: #{grand_total}"
@@ -503,13 +509,13 @@ puts "\nTotal tickets: #{grand_total}"
         if sanity_check
           duplicate_tickets << ticket_number
         else
-          puts "SKIP create_ticket_jira(#{ticket_number}, #{index+1}, #{total}, #{grand_counter}, #{grand_total})"
+          puts "SKIP create_ticket_jira(#{ticket_number}, #{index + 1}, #{total}, #{grand_counter}, #{grand_total})"
         end
       else
         imported_tickets << ticket_number
         grand_counter += 1
         unless sanity_check
-          create_ticket_jira(ticket, index+1, total, grand_counter, grand_total)
+          create_ticket_jira(ticket, index + 1, total, grand_counter, grand_total)
         end
       end
     end
