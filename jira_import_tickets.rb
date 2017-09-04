@@ -516,13 +516,19 @@ end
 
 # Note: the sub-tasks must be done last in order to be able to be associated with the parent tasks/stories.
 
+# Total story: 1305
+# data/jira/jira-tickets-story.csv
+#
+# GOODBYE: POST localhost:8080/rest/api/2/issue payload='{:create=>{}, :fields=>{:project=>{:id=>"10000"}, :summary=>"Blacklight: bookmarks", :issuetype=>{:id=>"10002"}, :assignee=>{:name=>"richard.doe"}, :reporter=>{:name=>"richard.doe"}, :priority=>{:name=>"Medium"}, :labels=>["assembla"], :description=>"...", :customfield_10007=>"7", :customfield_10009=>"Environment & Architecture", :customfield_10010=>"Done", :customfield_10008=>"7270983", :customfield_10005=>"-4.0"}}' => NOK (key='issuetype', reason='The issue type selected is invalid.')
+
 grand_total = @tickets_assembla.length
 puts "\nTotal tickets: #{grand_total}"
 [true, false].each do |sanity_check|
   duplicate_tickets = []
   imported_tickets = []
   grand_counter = 0
-  %w(epic story task sub-task).each do |issue_type|
+  # %w(epic story task sub-task).each do |issue_type|
+  %w(task sub-task).each do |issue_type|
     @tickets = @tickets_assembla.select{|ticket| get_issue_type(ticket)[:name] == issue_type}
     total = @tickets.length
     @tickets.each_with_index do |ticket, index|

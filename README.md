@@ -43,6 +43,10 @@ The same applies to the following additional (default) fields:
 
 ![](images/jira-configure-screen.png)
 
+You will also need to configure the `issue type scheme` for the project like this:
+
+![](images/jira-issue-type-schemes.png)
+
 
 ```
 $ cp .env.example .env
