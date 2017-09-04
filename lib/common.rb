@@ -27,6 +27,7 @@ URL_JIRA_ISSUE_TYPES = "#{JIRA_API_HOST}/issuetype"
 URL_JIRA_PRIORITIES = "#{JIRA_API_HOST}/priority"
 URL_JIRA_RESOLUTIONS = "#{JIRA_API_HOST}/resolution"
 URL_JIRA_ROLES = "#{JIRA_API_HOST}/role"
+URL_JIRA_STATUSES = "#{JIRA_API_HOST}/status"
 URL_JIRA_FIELDS = "#{JIRA_API_HOST}/field"
 URL_JIRA_ISSUES = "#{JIRA_API_HOST}/issue"
 
@@ -186,6 +187,7 @@ def jira_create_project(name)
   begin
     response = RestClient::Request.execute(method: :post, url: URL_JIRA_PROJECTS, payload: payload, headers: JIRA_HEADERS)
     result = JSON.parse(response.body)
+    puts "POST #{URL_JIRA_PROJECTS} name='#{name}' => OK"
   rescue RestClient::ExceptionWithResponse => e
     error = JSON.parse(e.response)
     message = error['errors'].map { |k,v| "#{k}: #{v}"}.join(' | ')
@@ -280,6 +282,23 @@ def jira_get_roles
   result
 end
 
+def jira_get_statuses
+  result = []
+  begin
+    response = RestClient::Request.execute(method: :get, url: URL_JIRA_STATUSES, headers: JIRA_HEADERS)
+    result = JSON.parse(response.body)
+    if result
+      result.each do |r|
+        r.delete_if { |k, _| k =~ /self|iconurl|statuscategory/i }
+      end
+      puts "GET #{URL_JIRA_STATUSES} => (#{result.length})"
+    end
+  rescue => e
+    puts "GET #{URL_JIRA_STATUSES} => NOK (#{e.message})"
+  end
+  result
+end
+
 def jira_get_issue_types
   result = nil
   begin
@@ -293,6 +312,27 @@ def jira_get_issue_types
     end
   rescue => e
     puts "GET #{URL_JIRA_ISSUE_TYPES} => NOK (#{e.message})"
+  end
+  result
+end
+
+def jira_create_custom_field(name, description, type)
+  result = nil
+  payload = {
+    name: name,
+    description: description,
+    type: type
+  }.to_json
+  begin
+    response = RestClient::Request.execute(method: :post, url: URL_JIRA_FIELDS, payload: payload, headers: JIRA_HEADERS)
+    result = JSON.parse(response.body)
+    puts "POST #{URL_JIRA_FIELDS} name='#{name}' => OK (#{result['id']})"
+  rescue RestClient::ExceptionWithResponse => e
+    error = JSON.parse(e.response)
+    message = error['errors'].map { |k,v| "#{k}: #{v}"}.join(' | ')
+    puts "POST #{URL_JIRA_FIELDS} name='#{name}' => NOK (#{message})"
+  rescue => e
+    puts "POST #{URL_JIRA_FIELDS} name='#{name}' => NOK (#{e.message})"
   end
   result
 end

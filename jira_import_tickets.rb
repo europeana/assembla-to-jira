@@ -331,6 +331,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
             recover = true
           end
         end
+        goodbye("POST #{URL_JIRA_ISSUES} payload='#{payload.inspect.sub(/:description=>"[^"]+",/,':description=>"...",')}' => NOK (key='#{key}', reason='#{reason}')") unless recover
       end
     end
     retry if retries < MAX_RETRY && recover
@@ -486,8 +487,18 @@ CUSTOM_FIELD_NAMES.each do |name|
 end
 
 unless missing_fields.length.zero?
-  len = missing_fields.length.zero?
-  goodbye("Custom field#{len==1?'':'s'} '#{missing_fields.join('\',\'')}' #{len==1?'is':'are'} missing, please define in Jira and make sure to attach screen")
+  nok = []
+  missing_fields.each do |name|
+    description = "Custom field '#{name}'"
+    custom_field = jira_create_custom_field(name, description, 'com.atlassian.jira.plugin.system.customfieldtypes:readonlyfield')
+    unless custom_field
+      nok << name
+    end
+  end
+  len = nok.length
+  unless len.zero?
+    goodbye("Custom field#{len==1?'':'s'} '#{nok.join('\',\'')}' #{len==1?'is':'are'} missing, please define in Jira and make sure to attach screen")
+  end
 end
 
 # --- Import all Assembla tickets into Jira --- #

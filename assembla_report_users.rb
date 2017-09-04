@@ -93,7 +93,7 @@ ASSEMBLA_SPACES.each do |name|
     end
   end
 
-  pathname_report = "#{output_dirname}/report-user-activity.csv"
+  pathname_report = "#{output_dirname}/report-users.csv"
   CSV.open(pathname_report, 'wb') do |csv|
     @users_index.sort_by{ |u| -u[1]['count'] }.each_with_index do |user_index, index|
       fields = FILES.map{ |file| file[:fields].map { |field| "#{file[:name]}:#{field}"} }.flatten

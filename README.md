@@ -32,7 +32,11 @@ Create the following user:
 
 and define it in `.env` file as `JIRA_API_UNKNOWN_USER`.
 
-Important: be sure to include each custom field in the project's Scrum Default Issue Screen.
+Important: be sure to include each custom field in the project's Scrum Default Issue Screen:
+* Rank
+* Epic Name
+* Labels
+* Assignee
 
 ```
 $ cp .env.example .env
@@ -42,13 +46,18 @@ $ cp .env.example .env
 
 ### Export data from Assembla
 
-You can run the export in a number of stages, output files being generated at each point in the process:
+You can run the export in a number of stages, output files being generated at each point in the process.
+
+The output files are located in the directory `data/assembla/:space/:project` as follows:
 
 ```
-$ ruby assembla_export_space.rb
-$ ruby assembla_export_users.rb
-$ ruby assembla_export_tickets.rb
-$ ruby assembla_report_users.rb
+$ ruby assembla_export_space.rb =>
+    space_tools.csv, users.csv, user_roles.csv tags.csv milestones.csv, tickets-statuses.csv, \
+    tickets-custom-fields.csv, documents.csv, wiki_pages.csv, tickets.csv
+$ ruby assembla_export_tickets.rb =>
+  ticket-comments.csv, ticket-attachments.csv, ticket-tags.csv, ticket-associations.csv
+$ ruby assembla_report_users.rb =>
+    report-users.csv
 ```
 
 ### Import data into Jira
@@ -56,10 +65,13 @@ $ ruby assembla_report_users.rb
 You can run the import in a number of stages, output files being generated at each point in the process:
 
 ```
+$ ruby jira_create_projects.rb
 $ ruby jira_get_issue_types.rb
 $ ruby jira_get_priorities.rb
 $ ruby jira_get_resolutions.rb
 $ ruby jira_get_roles.rb
+$ ruby jira_get_statuses.rb
+$ ruby jira_get_projects.rb
 $ ruby jira_import_users.rb
 $ ruby jira_import_tickets.rb
 ```
