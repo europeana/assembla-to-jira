@@ -1,6 +1,6 @@
 # Assembla-to-Jira
 
-Tool for migrating data from Assembla to Jira.
+Tools for migrating data from Assembla to Jira.
 
 ## Introduction
 
@@ -13,10 +13,14 @@ Create the following projects:
 * Europeana APIs
 * Europeana Infrastructure
 
-and define them as a comma-separated list in `.env` file as `ASSEMBLA_SPACES`
+and define them as a comma-separated list in `.env` file as `ASSEMBLA_SPACES`.
 
-Create the following issue type:
+Create the following new issue type:
 * Spike
+
+The issue type `spike` will be defined for any tickets whose summary starts with `Spike: `. Additionally, any tickets whose summary starts with `Epic :` will be defined as issue type `epic` (already part of the default Jira ticket types on project creation).
+
+![](images/jira-issue-types.png)
 
 Create the following custom fields (text field read-only):
 * Assembla-id
@@ -26,25 +30,25 @@ Create the following custom fields (text field read-only):
 * Assembla-reporter
 * Assembla-assignee
 
-Create the following user:
+IMPORTANT: Include each custom field in the project's `Simple Issue Tracking Create Issue` and `Simple Issue Tracking Edit/View Issue` screens, otherwise the ticket import will fail with the error message `Field 'field-name' cannot be set. It is not on the appropriate screen, or unknown`.
 
-* unknown.user@europeana.eu
+![](images/jira-custom-fields.png)
 
-and define it in `.env` file as `JIRA_API_UNKNOWN_USER`.
+The same applies to the following additional (default) fields:
 
-Important: be sure to include each custom field in the project's Scrum Default Issue Screen:
-* Rank
 * Epic Name
-* Labels
+* Rank
 * Assignee
+* Labels
+
+![](images/jira-configure-screen.png)
+
 
 ```
 $ cp .env.example .env
 ```
 
-## Run migration
-
-### Export data from Assembla
+## Export data from Assembla
 
 You can run the export in a number of stages, output files being generated at each point in the process.
 
@@ -60,21 +64,47 @@ $ ruby assembla_report_users.rb =>
     report-users.csv
 ```
 
-### Import data into Jira
+## Import data into Jira
 
-You can run the import in a number of stages, output files being generated at each point in the process:
+You can run the import in a number of stages, output files being generated at each point in the process.
+
+### Create projects
 
 ```
 $ ruby jira_create_projects.rb
+```
+
+### Get general information
+
+```
 $ ruby jira_get_issue_types.rb
 $ ruby jira_get_priorities.rb
 $ ruby jira_get_resolutions.rb
 $ ruby jira_get_roles.rb
 $ ruby jira_get_statuses.rb
 $ ruby jira_get_projects.rb
+```
+
+### Import users
+
+Read in the Assembla user file `data/:space/:project/users.csv` and create the Jira users if they do not already exist.
+
+```
 $ ruby jira_import_users.rb
+```
+
+The following user:
+
+* unknown.user@europeana.eu
+
+as defined in the `.env` file as `JIRA_API_UNKNOWN_USER`.
+
+### Import tickets
+
+```
 $ ruby jira_import_tickets.rb
 ```
+
 
 ## Assembla ticket fields:
 * id

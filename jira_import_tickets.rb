@@ -6,9 +6,6 @@ load './lib/common.rb'
 SPACE_NAME = 'Europeana Collections'
 JIRA_PROJECT_NAME = 'Europeana Collections' + (@debug ? ' TEST' : '')
 
-# The following custom fields MUST be defined AND associated with the proper screens
-CUSTOM_FIELD_NAMES = %w(Assembla-Id Assembla-Milestone Assembla-Theme Assembla-Status Assembla-Reporter Assembla-Assignee Epic\ Name Rank Story\ Points)
-
 MAX_RETRY = 3
 
 # --- ASSEMBLA Tickets --- #

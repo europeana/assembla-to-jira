@@ -35,6 +35,9 @@ OUTPUT_DIR = 'data'
 OUTPUT_DIR_ASSEMBLA = "#{OUTPUT_DIR}/assembla"
 OUTPUT_DIR_JIRA = "#{OUTPUT_DIR}/jira"
 
+# The following custom fields MUST be defined AND associated with the proper screens
+CUSTOM_FIELD_NAMES = %w(Assembla-Id Assembla-Milestone Assembla-Theme Assembla-Status Assembla-Reporter Assembla-Assignee Epic\ Name Rank Story\ Points)
+
 def build_counter(opts)
   opts[:counter] ? "[#{opts[:counter]}/#{opts[:total]}] " : ''
 end
