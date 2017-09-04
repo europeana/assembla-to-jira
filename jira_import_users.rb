@@ -8,7 +8,7 @@ SPACE_NAME = 'Europeana Collections'
 
 space = get_space(SPACE_NAME)
 dirname = get_output_dirname(space, 'assembla')
-users_csv = "#{dirname}/report-user-activity.csv"
+users_csv = "#{dirname}/report-users.csv"
 jira_users_csv = "#{dirname}/jira-users.csv"
 
 users = csv_to_array(users_csv)
@@ -30,3 +30,9 @@ users.each do |user|
 end
 
 write_csv_file(jira_users_csv, @jira_users)
+
+inactive_users = @jira_users.select{ |user| user['active'] == false}
+
+unless inactive_users.length.zero?
+  puts "The following users need to be activated: #{inactive_users.map{|user| user['name']}.join(', ')}"
+end

@@ -6,6 +6,7 @@ load './lib/common.rb'
 SPACE_NAME = 'Europeana Collections'
 JIRA_PROJECT_NAME = 'Europeana Collections' + (@debug ? ' TEST' : '')
 
+# The following custom fields MUST be defined AND associated with the proper screens
 CUSTOM_FIELD_NAMES = %w(Assembla-Id Assembla-Milestone Assembla-Theme Assembla-Status Assembla-Reporter Assembla-Assignee Epic\ Name Rank Story\ Points)
 
 MAX_RETRY = 3
@@ -330,6 +331,8 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
             payload[:fields].delete(:parent)
             recover = true
           end
+          when /customfield_/
+            key += " (#{@customfield_id_to_name[key]})"
         end
         goodbye("POST #{URL_JIRA_ISSUES} payload='#{payload.inspect.sub(/:description=>"[^"]+",/,':description=>"...",')}' => NOK (key='#{key}', reason='#{reason}')") unless recover
       end
@@ -460,19 +463,30 @@ end
 puts "\nJira fields:"
 
 @fields_jira = jira_get_fields
-if @fields_jira
-  @fields_jira.sort_by{|k| k['id']}.each do |field|
-    puts "#{field['id']} '#{field['name']}' #{field['custom']}"
-  end
-else
-  goodbye('Cannot get fields!')
+goodbye('Cannot get fields!') unless @fields_jira
+
+@fields_jira.sort_by{|k| k['id']}.each do |field|
+  puts "#{field['id']} '#{field['name']}'" unless field['custom']
 end
 
 # --- JIRA custom fields --- #
 
 puts "\nJira custom fields:"
 
+@fields_jira.sort_by{|k| k['id']}.each do |field|
+  puts "#{field['id']} '#{field['name']}'" if field['custom'] && field['name'] !~ /Assembla/
+end
+
+# --- JIRA custom Assembla fields --- #
+
+puts "\nJira custom Assembla fields:"
+
+@fields_jira.sort_by{|k| k['id']}.each do |field|
+  puts "#{field['id']} '#{field['name']}'" if field['custom'] && field['name'] =~ /Assembla/
+end
+
 @customfield_name_to_id = {}
+@customfield_id_to_name = {}
 
 missing_fields = []
 CUSTOM_FIELD_NAMES.each do |name|
@@ -480,7 +494,7 @@ CUSTOM_FIELD_NAMES.each do |name|
   if field
     id = field['id']
     @customfield_name_to_id[name] = id
-    puts "'#{name}'='#{id}'"
+    @customfield_id_to_name[id] = name
   else
     missing_fields << name
   end
@@ -497,7 +511,7 @@ unless missing_fields.length.zero?
   end
   len = nok.length
   unless len.zero?
-    goodbye("Custom field#{len==1?'':'s'} '#{nok.join('\',\'')}' #{len==1?'is':'are'} missing, please define in Jira and make sure to attach screen")
+    goodbye("Custom field#{len==1?'':'s'} '#{nok.join('\',\'')}' #{len==1?'is':'are'} missing, please define in Jira and make sure to attach it to the appropriate screens")
   end
 end
 
