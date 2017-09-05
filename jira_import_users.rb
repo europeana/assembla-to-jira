@@ -9,7 +9,7 @@ SPACE_NAME = 'Europeana Collections'
 space = get_space(SPACE_NAME)
 dirname = get_output_dirname(space, 'assembla')
 users_csv = "#{dirname}/report-users.csv"
-jira_users_csv = "#{dirname}/jira-users.csv"
+jira_users_csv = "#{OUTPUT_DIR_JIRA}/jira-users.csv"
 
 users = csv_to_array(users_csv)
 

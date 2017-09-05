@@ -243,7 +243,7 @@ See: http://api-docs.assembla.cc/content/ref/ticket_associations_fields.html
 
 ## Markdown
 
-The [Assembla markdown](http://assemble.io/docs/Cheatsheet-Markdown.html) syntax is differeent from [JIRA Markdown](https://jira.atlassian.com/secure/WikiRendererHelpAction.jspa?section=all). Therefore, the certain markdown notations need to be translated as follows:
+The [Assembla markdown](http://assemble.io/docs/Cheatsheet-Markdown.html) syntax is differeent from [JIRA Markdown](https://jira.atlassian.com/secure/WikiRendererHelpAction.jspa?section=all). Therefore, the certain markdown notations need to be translated ast push follows:
 
 * \[\[url:URL|TEXT]] => \[TEXT|URL]
 

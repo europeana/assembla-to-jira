@@ -1,5 +1,19 @@
 # frozen_string_literal: true
 
+#
+# Generates a summary report for users listed in order of most activity by analyzing all of the assembla dump csv files.
+#
+# count
+# user: id, login, name, picture, email, organization, phone
+# documents: created_by
+# milestones: created_by
+# ticket-attachments: created_by
+# ticket-comments: user_id
+# tickets: assigned_to_id, reporter_id
+# user-roles: user_id, invited_by_id
+# wiki-pages: user_id
+#
+
 load './lib/common.rb'
 
 @users = []

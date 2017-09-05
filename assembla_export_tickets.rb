@@ -5,10 +5,10 @@ load './lib/common.rb'
 SPACE_NAME = 'Europeana Collections'
 
 ITEMS = [
-  { name: 'ticket_comments' },
-  { name: 'attachments' },
-  { name: 'tags', ticket_id: true },
-  { name: 'ticket_associations', relationship: true }
+  { name: 'ticket_comments' }, # => ticket_id,ticket_number,id,comment,user_id,created_on,updated_at,ticket_changes,user_name,user_avatar_url
+  { name: 'attachments' }, # => ticket_id,ticket_number,name,content_type,created_by,id,version,filename,filesize,updated_by,description,cached_tag_list,position,url,created_at,updated_at,attachable_type,has_thumbnail,space_id,attachable_id,attachable_guid
+  { name: 'tags' }, # => ticket_id,ticket_number,id,name,space_id,state,created_at,updated_at,color
+  { name: 'ticket_associations', relationship: true } # => id,ticket1_id,ticket2_id,relationship,created_at,relationship_name
 ].freeze
 
 # See: http://api-docs.assembla.cc/content/ref/ticket_associations_fields.html
@@ -56,7 +56,8 @@ ITEMS.each do |item|
   tickets.each_with_index do |ticket, index|
     ticket[name] = get_ticket_attr(space['id'], ticket['number'], name, counter: index + 1, total: @total_tickets, continue_onerror: true)
     ticket[name].each do |result|
-      result = result.merge(ticket_id: ticket['number']) if item[:ticket_id]
+      result.delete('ticket_id')
+      result = result.merge({ ticket_id: ticket['id'], ticket_number: ticket['number'] })
       if item[:relationship]
         rid = result['relationship']
         if rid
