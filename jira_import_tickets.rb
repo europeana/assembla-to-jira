@@ -16,14 +16,12 @@ dirname_assembla = get_output_dirname(space, 'assembla')
 tickets_assembla_csv = "#{dirname_assembla}/tickets.csv"
 users_assembla_csv = "#{dirname_assembla}/users.csv"
 milestones_assembla_csv = "#{dirname_assembla}/milestones.csv"
-comments_assembla_csv = "#{dirname_assembla}/ticket-comments.csv"
 tags_assembla_csv = "#{dirname_assembla}/ticket-tags.csv"
 associations_assembla_csv = "#{dirname_assembla}/ticket-associations.csv"
 
 @tickets_assembla = csv_to_array(tickets_assembla_csv)
 @users_assembla = csv_to_array(users_assembla_csv)
 @milestones_assembla = csv_to_array(milestones_assembla_csv)
-@comments_assembla = csv_to_array(comments_assembla_csv)
 @tags_assembla = csv_to_array(tags_assembla_csv)
 @associations_assembla = csv_to_array(associations_assembla_csv)
 
@@ -149,10 +147,10 @@ end
 def get_parent_issue(ticket)
   issue = nil
   ticket1_id = ticket['id']
-  association = @associations_assembla.find { |association| association['ticket1_id'] == ticket1_id && association['relationship_name'].match(/story|parent/) }
+  association = @associations_assembla.find { |assoc| assoc['ticket1_id'] == ticket1_id && assoc['relationship_name'].match(/story|parent/) }
   if association
     ticket2_id = association['ticket2_id']
-    issue = @jira_issues.find{|issue| issue[:assembla_ticket_id] == ticket2_id}
+    issue = @jira_issues.find{|iss| iss[:assembla_ticket_id] == ticket2_id}
   else
     puts "Could not find parent_id for ticket_id=#{ticket1_id}"
   end
@@ -178,28 +176,23 @@ end
 def get_issue_type(ticket)
   case ticket['hierarchy_type'].to_i
   when 1
-    id = @issue_type_name_to_id['sub-task']
-    name = 'sub-task'
+    result = { id: @issue_type_name_to_id['sub-task'], name: 'sub-task' }
   when 2
-    id = @issue_type_name_to_id['story']
-    name = 'story'
+    result = { id: @issue_type_name_to_id['story'], name: 'story' }
   when 3
-    id = @issue_type_name_to_id['epic']
-    name = 'epic'
+    result = { id: @issue_type_name_to_id['epic'], name: 'epic' }
   else
-    id = @issue_type_name_to_id['task']
-    name = 'task'
+    result = { id: @issue_type_name_to_id['task'], name: 'task' }
   end
 
   # Ticket type is overruled if summary begins with the type (EPIC, SPIKE, STORY or BUG)
   %w(epic spike story bug).each do |s|
     if ticket['summary'] =~ /^#{s}/i
-      id = @issue_type_name_to_id[s]
-      name = s
+      result = { id: @issue_type_name_to_id[s], name: s }
       break
     end
   end
-  { id: id, name: name }
+  result
 end
 
 def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
@@ -211,7 +204,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
   description = "[Assembla ticket ##{ticket_number}|#{ENV['ASSEMBLA_URL_TICKETS']}/#{ticket_number}]\r\n\r\n#{ticket['description']}"
 
   story_rank = ticket['importance']
-  story_points = ticket['story_importance']
+  # story_points = ticket['story_importance']
 
   summary = ticket['summary']
   reporter_name = @user_id_to_login[ticket['reporter_id']]
@@ -514,12 +507,8 @@ end
 
 # --- Import all Assembla tickets into Jira --- #
 
-# Note: the sub-tasks must be done last in order to be able to be associated with the parent tasks/stories.
-
-# Total story: 1305
-# data/jira/jira-tickets-story.csv
-#
-# GOODBYE: POST localhost:8080/rest/api/2/issue payload='{:create=>{}, :fields=>{:project=>{:id=>"10000"}, :summary=>"Blacklight: bookmarks", :issuetype=>{:id=>"10002"}, :assignee=>{:name=>"richard.doe"}, :reporter=>{:name=>"richard.doe"}, :priority=>{:name=>"Medium"}, :labels=>["assembla"], :description=>"...", :customfield_10007=>"7", :customfield_10009=>"Environment & Architecture", :customfield_10010=>"Done", :customfield_10008=>"7270983", :customfield_10005=>"-4.0"}}' => NOK (key='issuetype', reason='The issue type selected is invalid.')
+# Note: the sub-tasks MUST be done last in order to be able to be associated with the parent tasks/stories.
+@issue_types = %w(epic story task spike sub-task)
 
 grand_total = @tickets_assembla.length
 puts "\nTotal tickets: #{grand_total}"
@@ -527,8 +516,7 @@ puts "\nTotal tickets: #{grand_total}"
   duplicate_tickets = []
   imported_tickets = []
   grand_counter = 0
-  # %w(epic story task sub-task).each do |issue_type|
-  %w(task sub-task).each do |issue_type|
+  @issue_types.each do |issue_type|
     @tickets = @tickets_assembla.select{|ticket| get_issue_type(ticket)[:name] == issue_type}
     total = @tickets.length
     @tickets.each_with_index do |ticket, index|
@@ -548,9 +536,9 @@ puts "\nTotal tickets: #{grand_total}"
       end
     end
     unless sanity_check
-      puts "Total #{issue_type}: #{total}" unless sanity_check
+      puts "Total #{issue_type}: #{total}"
       tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-#{issue_type}.csv"
-      write_csv_file(tickets_jira_csv, @jira_issues)
+      write_csv_file(tickets_jira_csv, @jira_issues.select{ |issue| issue[:issue_type_name] == issue_type})
     end
   end
   if sanity_check
@@ -559,5 +547,9 @@ puts "\nTotal tickets: #{grand_total}"
     else
       puts 'Sanity check => OK'
     end
+  else
+    puts "Total all: #{grand_total}"
+    tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-all.csv"
+    write_csv_file(tickets_jira_csv, @jira_issues)
   end
 end

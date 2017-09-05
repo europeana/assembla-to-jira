@@ -29,8 +29,11 @@ and define them as a comma-separated list in `.env` file as `ASSEMBLA_SPACES`.
 
 Create the following new issue type:
 * Spike
+* Bug
 
-The issue type `spike` will be defined for any tickets whose summary starts with `Spike: `. Additionally, any tickets whose summary starts with `Epic :` will be defined as issue type `epic` (already part of the default Jira ticket types on project creation).
+The issue type `spike` or `bug` will be defined for any tickets whose summary starts with `Spike: ` or `Bug: `.
+
+ Additionally, any tickets whose summary starts with `Epic :` will be defined as issue type `epic` (already part of the default Jira ticket types on project creation).
 
 ![](images/jira-issue-types.png)
 
@@ -205,8 +208,8 @@ $ ruby jira_import_tickets.rb
 * 10005 Epic Color
 * 10006 Epic Link
 * 10007 Parent Link
-* 10100 [CHART] Date of First Response
-* 10101 [CHART] Time in Status
+* 10100 \[CHART] Date of First Response
+* 10101 \[CHART] Time in Status
 * 10102 Approvals
 * 10103 Sprint
 * 10104 Rank
@@ -238,6 +241,12 @@ $ ruby jira_import_tickets.rb
 
 See: http://api-docs.assembla.cc/content/ref/ticket_associations_fields.html
 
+## Markdown
+
+The [Assembla markdown](http://assemble.io/docs/Cheatsheet-Markdown.html) syntax is differeent from [JIRA Markdown](https://jira.atlassian.com/secure/WikiRendererHelpAction.jspa?section=all). Therefore, the certain markdown notations need to be translated as follows:
+
+* \[\[url:URL|TEXT]] => \[TEXT|URL]
+
 ## Mappings
 
 * Status - The value of this field is set automatically. It is never present on any editable form, and defaults to `TO DO` on ticket creation.
@@ -249,10 +258,15 @@ See: http://api-docs.assembla.cc/content/ref/ticket_associations_fields.html
 
 ## References
 
-* [Assembla](https://www.assembla.com)
-* [Assembla API Reference](http://api-docs.assembla.cc/content/api_reference.html)
-* [JIRA Software](https://www.atlassian.com/software/jira)
-* [JIRA Cloud REST API Reference](https://docs.atlassian.com/jira/REST/cloud/)
+* Assembla
+    * [Website](https://www.assembla.com)
+    * [API Reference](http://api-docs.assembla.cc/content/api_reference.html)
+    * [Markdown](http://assemble.io/docs/Cheatsheet-Markdown.html)
+
+* JIRA
+    * [Website](https://www.atlassian.com/software/jira)
+    * [API Reference](https://docs.atlassian.com/jira/REST/cloud/)
+    * [Markdown](https://jira.atlassian.com/secure/WikiRendererHelpAction.jspa?section=all)
 
 ## License
 
