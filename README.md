@@ -1,8 +1,20 @@
 # Assembla-to-Jira
 
-Tools for migrating data from Assembla to Jira.
+A collection of advanced tooling for a complete data migration from Assembla to Jira.
 
 ## Introduction
+
+Have you ever wanted to use JIRA instead of Assembla but already have so much project data in place in Assembla that you find the switch too risky?
+
+JIRA does offer a number of standard add-ons to make migration easier, but unfortunately it does not offer any tools for Assembla.
+
+However, you are now in luck. By using these tools, it should be possible to export all of the relevant Assemebla space data and then import most if not all of it into a Jira project.
+
+Usage is made of the [Assembla API](http://api-docs.assembla.cc/content/api_reference.html) and the [JIRA API](https://docs.atlassian.com/jira/REST/cloud/) in order to hook up both environments and make the data transformations.
+
+Most of the actions can be done automatically after proper congifuration of parameters in the `.env` file.
+
+However, there are a few manual actions required since the Jira API does not support all possible actions, but these are minimal. It is important not to skip these manual operations as the successful migration depends on them.
 
 ## Preparations
 
@@ -235,8 +247,19 @@ See: http://api-docs.assembla.cc/content/ref/ticket_associations_fields.html
 * Error "User cannot be assigned issues." => activate, login as user and then deactivate.
 * If issue is an epic then the epic name custom field is required.
 
+## References
+
+* [Assembla](https://www.assembla.com)
+* [Assembla API Reference](http://api-docs.assembla.cc/content/api_reference.html)
+* [JIRA Software](https://www.atlassian.com/software/jira)
+* [JIRA Cloud REST API Reference](https://docs.atlassian.com/jira/REST/cloud/)
+
 ## License
 
 Licensed under the EUPL V.1.1.
 
 For full details, see [LICENSE.md](LICENSE.md).
+
+## Author
+
+Kiffin Gish
