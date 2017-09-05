@@ -1,6 +1,6 @@
 # Assembla-to-Jira
 
-A collection of advanced tooling for a complete data migration from Assembla to Jira.
+A collection of advanced tooling for a complete data migration from [Assembla](https://www.assembla.com) to [JIRA](https://www.atlassian.com/software/jira).
 
 ## Introduction
 
