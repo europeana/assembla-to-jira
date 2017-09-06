@@ -70,6 +70,7 @@ end
 @nok = []
 
 # Important: Make sure that the comments are ordered chronologically from first (oldest) to last (newest)
+@comments_assembla.sort! { |x,y| x['created_on'] <=> y['created_on']}
 
 @comments_assembla.each_with_index do |comment, index|
   assembla_ticket_id = comment['ticket_id'].to_i
