@@ -12,9 +12,15 @@ However, you are now in luck. By using these tools, it should be possible to exp
 
 Usage is made of the [Assembla API](http://api-docs.assembla.cc/content/api_reference.html) and the [JIRA API](https://docs.atlassian.com/jira/REST/cloud/) in order to hook up both environments and make the data transformations.
 
-Most of the actions can be done automatically after proper congifuration of parameters in the `.env` file.
+Most of the actions can be done automatically after proper configuration of parameters in the `.env` file.
 
-However, there are a few manual actions required since the Jira API does not support all possible actions, but these are minimal. It is important not to skip these manual operations as the successful migration depends on them.
+However, there are a few manual actions required since the Jira API does not support all possible actions, but these are minimal. It is important NOT to skip these manual operations as the successful migration depends on them.
+
+The complete migration from start to finish consists of a series of scripts which are to be executed in order.
+
+Like a pipeline, each script processes data and generates a dump file to store the intermediate results which in turn is used as input for the following script.
+
+The reason for doing this that if something goes wrong you do not lose everything and can restart from the previous step.
 
 ## Preparations
 
@@ -81,6 +87,8 @@ $ ruby assembla_export_tickets.rb =>
   ticket-comments.csv, ticket-attachments.csv, ticket-tags.csv, ticket-associations.csv
 $ ruby assembla_report_users.rb =>
     report-users.csv
+$ ruby assembla_report_tickets.rb =>
+    report-tickets.csv
 ```
 
 ## Import data into Jira
