@@ -22,6 +22,26 @@ tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-all.csv"
 
 @tickets = []
 
+def jira_create_comment(issue, comment)
+  result = nil
+  url = "#{URL_JIRA_ISSUES}/#{issue[:id]}/comment"
+  payload = {
+      body: comment
+  }.to_json
+  begin
+    response = RestClient::Request.execute(method: :post, url: url, payload: payload, headers: JIRA_HEADERS)
+    result = JSON.parse(response.body)
+    puts "POST #{url} => OK"
+  rescue RestClient::ExceptionWithResponse => e
+    error = JSON.parse(e.response)
+    message = error['errors'].map { |k,v| "#{k}: #{v}"}.join(' | ')
+    puts "POST #{url}  => NOK (#{message})"
+  rescue => e
+    puts "POST #{url} => NOK (#{e.message})"
+  end
+  result
+end
+
 @tickets_jira.each do |ticket|
   next unless ticket['result'] == 'OK'
 
@@ -37,7 +57,7 @@ tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-all.csv"
   }
 end
 
-# Convert assembla_ticket_id to jira_issue
+# Convert assembla_ticket_id to jira_ticket
 @assembla_id_to_jira = {}
 @tickets.each_with_index do |ticket, index|
   jira = ticket[:jira]
@@ -53,9 +73,9 @@ end
   assembla_ticket_id = comment['ticket_id'].to_i
   jira_issue = @assembla_id_to_jira[assembla_ticket_id]
   if jira_issue.nil?
-    # puts "#{index + 1}: #{assembla_ticket_id} NOK"
     @nok << assembla_ticket_id unless @nok.include?(assembla_ticket_id)
   else
+    result = jira_create_comment(jira_issue, comment['comment'])
     @ok << assembla_ticket_id unless @ok.include?(assembla_ticket_id)
   end
 end
