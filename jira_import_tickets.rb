@@ -209,8 +209,13 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
 
   # Prepend the description text with a link to the original assembla ticket on the first line.
   description = "[Assembla ticket ##{ticket_number}|#{ENV['ASSEMBLA_URL_TICKETS']}/#{ticket_number}]\r\n"
-  description += "Author [~#{reporter_name}]\r\n\r\n"
-  description += ticket['description']
+  if reporter_name.nil? || reporter_name.length.zero? || @is_not_a_user.include?(reporter_name)
+    author_name = 'unknown'
+  else
+    author_name = "[~#{reporter_name}]"
+  end
+  description += "Author #{author_name}\r\n\r\n"
+  description += "#{ticket['description']}"
 
   labels = get_labels(ticket)
 
