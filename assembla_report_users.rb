@@ -13,6 +13,9 @@
 # user-roles: user_id, invited_by_id
 # wiki-pages: user_id
 #
+# count | id | login | name | picture | email | organization | phone | documents:created_by | milestones:created_by |
+# ticket-attachments:created_by | ticket-comments:user_id | tickets:assigned_to_id | tickets:reporter_id |
+# user-roles:user_id | user-roles:invited_by_id | wiki-pages:user_id
 
 load './lib/common.rb'
 

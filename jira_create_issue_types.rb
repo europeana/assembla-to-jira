@@ -2,7 +2,7 @@
 
 load './lib/common.rb'
 
-#TODO: For the time being this is hard-coded
+# TODO: For the time being this is hard-coded
 SPACE_NAME = 'Europeana Collections'
 JIRA_PROJECT_NAME = 'Europeana Collections' + (@debug ? ' TEST' : '')
 
