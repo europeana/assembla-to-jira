@@ -208,7 +208,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
   # story_points = ticket['story_importance']
 
   # Prepend the description text with a link to the original assembla ticket on the first line.
-  description = "[Assembla ticket ##{ticket_number}|#{ENV['ASSEMBLA_URL_TICKETS']}/#{ticket_number}]\r\n"
+  description = "Assembla ticket [##{ticket_number}|#{ENV['ASSEMBLA_URL_TICKETS']}/#{ticket_number}] | "
   if reporter_name.nil? || reporter_name.length.zero? || @is_not_a_user.include?(reporter_name)
     author_name = 'unknown'
   else
