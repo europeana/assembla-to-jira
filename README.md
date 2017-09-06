@@ -247,6 +247,13 @@ The [Assembla markdown](http://assemble.io/docs/Cheatsheet-Markdown.html) syntax
 
 * \[\[url:URL|TEXT]] => \[TEXT|URL]
 
+```
+[summary, description, comments].each do |s|
+  s.gsub(/\[\[url:(.*)\|(.*)\]\]/,'[\2|\1]')
+end
+
+```
+
 ## Mappings
 
 * Status - The value of this field is set automatically. It is never present on any editable form, and defaults to `TO DO` on ticket creation.
