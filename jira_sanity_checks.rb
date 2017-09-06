@@ -30,6 +30,40 @@ attachments_nok_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-attachments-nok.csv"
 @tags_assembla = csv_to_array(tags_assembla_csv)
 @attachments_assembla = csv_to_array(attachments_assembla_csv)
 
+# Assembla tickets
+
+@ticket_id_seen = {}
+@ticket_nr_seen = {}
+
+@ticket_id_dups = []
+@ticket_nr_dups = []
+
+# Sanity check just in case
+@tickets_assembla.each_with_index do |ticket, index|
+  id = ticket['id']
+  nr = ticket['number']
+  if id.nil? || nr.nil? || !(id.match(/^\d+$/) && nr.match(/^\d+$/))
+    goodbye("Invalid line #{index + 1}: ticket=#{ticket.inspect}")
+  end
+  if @ticket_id_seen[id]
+    @ticket_id_dups << id if @ticket_id_seen[id] == 1
+    @ticket_id_seen[id] += 1
+  else
+    @ticket_id_seen[id] = 1
+  end
+  if @ticket_nr_seen[nr]
+    @ticket_nr_dups << nr if @ticket_nr_seen[nr] == 1
+    @ticket_nr_seen[nr] += 1
+  else
+    @ticket_nr_seen[nr] = 1
+  end
+end
+
+goodbye("Duplicate ticket ids: #{@ticket_id_dups.join(',')}") if @ticket_id_dups.length.positive?
+goodbye("Duplicate ticket nrs: #{@ticket_nr_dups.join(',')}") if @ticket_nr_dups.length.positive?
+
+puts 'Assembla tickets => OK'
+
 # JIRA csv files: jira_ticket_id, jira_ticket_key, assembla_ticket_id, assembla_ticket_number, issue_type_id and issue_type_name
 
 tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-all.csv"
