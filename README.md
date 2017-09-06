@@ -132,43 +132,46 @@ as defined in the `.env` file as `JIRA_API_UNKNOWN_USER`.
 $ ruby jira_import_tickets.rb
 ```
 
+## Field translations
+
+Most of the ticket fields are converted from Assembla to Jira via a one-to-one mapping and are indicated as **bold** below.
 
 ## Assembla ticket fields:
 * id
-* number
-* summary (x)
-* description (x)
-* priority (1 - Highest, 2 - High, 3 - Medium, 4 - Low, 5 - Lowest)
+* **number**
+* **summary**
+* **description**
+* **priority** (1 - Highest, 2 - High, 3 - Medium, 4 - Low, 5 - Lowest)
 * completed_date
 * component_id
-* created_on
+* **created_on**
 * permission_type
-* importance (Sorting criteria for Assembla Planner) => 10104 Rank
+* **importance** (Sorting criteria for Assembla Planner) => 10104 Rank
 * is_story (true or false, if true hierarchy_type = 2)
 * milestone_id => 10103 Sprint
 * notification_list
-* space_id
+* **space_id**
 * state (0 - closed, 1 - open)
 * status (new, blocked, testable, in acceptance testing, in progress, ready for deploy)
-* story_importance (1 - small, 4 - medium, 7 - large) => 10105 Story Points
+* **story_importance** (1 - small, 4 - medium, 7 - large) => 10105 Story Points
 * updated_at
 * working_hours
 * estimate
 * total_estimate
 * total_invested_hours
 * total_working_hours
-* assigned_to_id
-* reporter_id
+* **assigned_to_id**
+* **reporter_id**
 * custom_fields
-* hierarchy_type (0 - No plan level, 1 - Subtask, 2 - Story, 3 - Epic)
+* **hierarchy_type** (0 - No plan level, 1 - Subtask, 2 - Story, 3 - Epic)
 * due_date
 
 ## Jira issue fields:
 
 ### Default
-* issuetype
+* **issuetype**
 * timespent
-* project
+* **project**
 * fixVersions
 * aggregatetimespent
 * resolution
@@ -177,28 +180,28 @@ $ ruby jira_import_tickets.rb
 * lastViewed
 * watches
 * thumbnail
-* created
-* priority
-* labels
+* **created**
+* **priority**
+* **labels**
 * timeestimate
 * aggregatetimeoriginalestimate
 * versions
 * issuelinks
-* assignee
-* updated
+* **assignee**
+* **updated**
 * status
 * components
 * issuekey
 * timeoriginalestimate
-* description
+* **description**
 * timetracking
 * security
 * attachment
 * aggregatetimeestimate
-* summary
-* creator
+* **summary**
+* **creator**
 * subtasks
-* reporter
+* **reporter**
 * aggregateprogress
 * environment
 * duedate
@@ -219,9 +222,9 @@ $ ruby jira_import_tickets.rb
 * 10100 \[CHART] Date of First Response
 * 10101 \[CHART] Time in Status
 * 10102 Approvals
-* 10103 Sprint
-* 10104 Rank
-* 10105 Story Points
+* **10103 Sprint**
+* **10104 Rank**
+* **10105 Story Points**
 * 10108 Test sessions
 * 10109 Raised during
 * 10200 Testing status
@@ -231,7 +234,7 @@ $ ruby jira_import_tickets.rb
 * 10303 Capture for JIRA URL
 * 10304 Capture for JIRA screen resolution
 * 10305 Capture for JIRA jQuery version
-* 10400 Assembla
+* **10400 Assembla**
 
 ### Associations
 
