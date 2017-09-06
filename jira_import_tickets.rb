@@ -199,19 +199,18 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
   project_id = @project['id']
   ticket_id = ticket['id']
   ticket_number = ticket['number']
-
-  # Prepend the description text with a link to the original assembla ticket on the first line.
-  description = "[Assembla ticket ##{ticket_number}|#{ENV['ASSEMBLA_URL_TICKETS']}/#{ticket_number}]\r\n\r\n#{ticket['description']}"
-
-  story_rank = ticket['importance']
-  # story_points = ticket['story_importance']
-
   summary = ticket['summary']
   reporter_name = @user_id_to_login[ticket['reporter_id']]
   assignee_name = @user_id_to_login[ticket['assigned_to_id']]
   priority_name = @priority_id_to_name[ticket['priority']]
-
   status_name = ticket['status']
+  story_rank = ticket['importance']
+  # story_points = ticket['story_importance']
+
+  # Prepend the description text with a link to the original assembla ticket on the first line.
+  description = "[Assembla ticket ##{ticket_number}|#{ENV['ASSEMBLA_URL_TICKETS']}/#{ticket_number}]\r\n"
+  description += "Author [~#{reporter_name}]\r\n\r\n"
+  description += ticket['description']
 
   labels = get_labels(ticket)
 

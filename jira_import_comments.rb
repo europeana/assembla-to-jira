@@ -22,11 +22,12 @@ tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-all.csv"
 
 @tickets = []
 
+# POST /rest/api/2/issue/{issueIdOrKey}/comment
 def jira_create_comment(issue, comment)
   result = nil
   url = "#{URL_JIRA_ISSUES}/#{issue[:id]}/comment"
   payload = {
-      body: comment
+      body: "Author [~#{comment['user_name']}]\r\n\r\n#{comment['comment']}"
   }.to_json
   begin
     response = RestClient::Request.execute(method: :post, url: url, payload: payload, headers: JIRA_HEADERS)
@@ -44,7 +45,6 @@ end
 
 @tickets_jira.each do |ticket|
   next unless ticket['result'] == 'OK'
-
   @tickets << {
     jira: {
       id: ticket['jira_ticket_id'].to_i,
@@ -75,7 +75,8 @@ end
   if jira_issue.nil?
     @nok << assembla_ticket_id unless @nok.include?(assembla_ticket_id)
   else
-    result = jira_create_comment(jira_issue, comment['comment'])
+    # TODO: check for success
+    result = jira_create_comment(jira_issue, comment)
     @ok << assembla_ticket_id unless @ok.include?(assembla_ticket_id)
   end
 end
