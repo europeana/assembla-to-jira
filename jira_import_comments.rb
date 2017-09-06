@@ -47,12 +47,12 @@ end
   next unless ticket['result'] == 'OK'
   @tickets << {
     jira: {
-      id: ticket['jira_ticket_id'].to_i,
+      id: ticket['jira_ticket_id'],
       key: ticket['jira_ticket_key']
     },
     assembla: {
-      id: ticket['assembla_ticket_id'].to_i,
-      number: ticket['assembla_ticket_number'].to_i
+      id: ticket['assembla_ticket_id'],
+      number: ticket['assembla_ticket_number']
     }
   }
 end
@@ -73,13 +73,13 @@ end
 @comments_assembla.sort! { |x,y| x['created_on'] <=> y['created_on']}
 
 @comments_assembla.each_with_index do |comment, index|
-  assembla_ticket_id = comment['ticket_id'].to_i
+  assembla_ticket_id = comment['ticket_id']
   jira_issue = @assembla_id_to_jira[assembla_ticket_id]
   if jira_issue.nil?
     @nok << assembla_ticket_id unless @nok.include?(assembla_ticket_id)
   else
     # TODO: check for success
-    result = jira_create_comment(jira_issue, comment)
+    # result = jira_create_comment(jira_issue, comment)
     @ok << assembla_ticket_id unless @ok.include?(assembla_ticket_id)
   end
 end

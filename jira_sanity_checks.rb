@@ -14,21 +14,13 @@ dirname_assembla = get_output_dirname(space, 'assembla')
 tickets_assembla_csv = "#{dirname_assembla}/tickets.csv"
 
 comments_assembla_csv = "#{dirname_assembla}/ticket-comments.csv"
-comments_ok_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-comments-ok.csv"
-comments_nok_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-comments-nok.csv"
-
-tags_assembla_csv = "#{dirname_assembla}/ticket-tags.csv"
-tags_ok_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tags-ok.csv"
-tags_nok_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tags-nok.csv"
-
-attachments_assembla_csv = "#{dirname_assembla}/ticket-attachments.csv"
-attachments_ok_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-attachments-ok.csv"
-attachments_nok_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-attachments-nok.csv"
+# tags_assembla_csv = "#{dirname_assembla}/ticket-tags.csv"
+# attachments_assembla_csv = "#{dirname_assembla}/ticket-attachments.csv"
 
 @tickets_assembla = csv_to_array(tickets_assembla_csv)
 @comments_assembla = csv_to_array(comments_assembla_csv)
-@tags_assembla = csv_to_array(tags_assembla_csv)
-@attachments_assembla = csv_to_array(attachments_assembla_csv)
+# @tags_assembla = csv_to_array(tags_assembla_csv)
+# @attachments_assembla = csv_to_array(attachments_assembla_csv)
 
 # Assembla tickets
 
@@ -62,7 +54,7 @@ end
 goodbye("Duplicate ticket ids: #{@ticket_id_dups.join(',')}") if @ticket_id_dups.length.positive?
 goodbye("Duplicate ticket nrs: #{@ticket_nr_dups.join(',')}") if @ticket_nr_dups.length.positive?
 
-puts 'Assembla tickets => OK'
+puts 'Assembla tickets unique => OK'
 
 # JIRA csv files: jira_ticket_id, jira_ticket_key, assembla_ticket_id, assembla_ticket_number, issue_type_id and issue_type_name
 
@@ -74,24 +66,29 @@ tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-all.csv"
   number = ticket_jira['assembla_ticket_number']
   if @tickets_assembla.find { |ticket_assembla| ticket_assembla['id'] == id}
     unless @tickets_assembla.find { |ticket_assembla| ticket_assembla['number'] == number}
-      puts "Line #{index + 1}: Jira tickets: cannot find Assembla ticket with number='#{number}'"
+      goodbye("#{tickets_jira_csv}:#{index + 1} cannot find Assembla ticket with number='#{number}', ticket_jira='#{ticket_to_s(ticket_jira)}'")
     end
   else
-    puts "Line #{index + 1}: Jira tickets: cannot find Assembla ticket with id='#{id}'"
+    goodbye("#{tickets_jira_csv}:#{index + 1} cannot find Assembla ticket with id='#{id}', ticket_jira='#{ticket_to_s(ticket_jira)}'")
   end
 end
+
+puts 'Jira tickets match Assembla tickets => OK'
 
 @tickets_assembla.each_with_index do |ticket_assembla, index|
   id = ticket_assembla['id']
   number = ticket_assembla['number']
   if @tickets_jira.find { |ticket_jira| ticket_jira['assembla_ticket_id'] == id}
     unless @tickets_jira.find { |ticket_jira| ticket_jira['assembla_ticket_number'] == number}
-      puts "Line #{index + 1}: Assembla tickets: cannot find Jira ticket with assembla_ticket_number='#{number}'"
+      puts("#{tickets_assembla_csv}:#{index + 1} cannot find Jira ticket with assembla_ticket_number='#{number}'
+, ticket_assembla='#{ticket_to_s(ticket_assembla)}'")
     end
   else
-    puts "Line #{index + 1}: Assembla tickets: cannot find Jira ticket with assembla_ticket_id='#{id}'"
+    puts("#{tickets_assembla_csv}:#{index + 1} cannot find Jira ticket with assembla_ticket_id='#{id}', ticket_assembla='#{ticket_to_s(ticket_assembla)}'")
   end
 end
+
+puts 'Assembla tickets match Jira tickets => OK'
 
 exit
 
@@ -184,45 +181,3 @@ puts "Comments #{@comments_nok.length} invalid tickets:\n#{@comments_nok.join("\
 # if @comments_nok.length.positive?
 #   write_csv_file(comments_nok_jira_csv, @comments_nok)
 # end
-
-exit
-
-@tags_nok = []
-
-@tags_assembla.each_with_index do |comment, index|
-  assembla_ticket_id = comment['ticket_id']
-  jira_issue = @assembla_id_to_jira[assembla_ticket_id]
-  if jira_issue.nil?
-    @tags_nok << comment
-    puts "Tags line #{index + 1}: assembla_ticket_id=#{assembla_ticket_id} NOK"
-  end
-end
-
-puts "Valid tags: #{@tags_assembla.length - @tags_nok.length}"
-puts "Invalid tags: #{@tags_nok.length}"
-
-if @tags_nok.length.positive?
-  write_csv_file(tags_nok_jira_csv, @tags_nok)
-end
-
-@attachments_nok = []
-
-@attachments_assembla.each do |comment|
-  assembla_ticket = comment['ticket_id']
-  unless assembla_ticket.nil? || assembla_ticket.match(/^\d+$/)
-    goodbye("Could not find valid assembla_ticket='#{assembla_ticket}' for comment=#{comment.inspect}")
-  end
-  jira_ticket = @assembla_id_to_jira[assembla_ticket]
-  if jira_ticket.nil? || !jira_ticket.match(/^\d+$/)
-    @attachments_nok << comment
-  else
-    # puts "#{assembla_ticket} => #{jira_ticket}"
-  end
-end
-
-puts "Valid attachments: #{@attachments_assembla.length - @attachments_nok.length}"
-puts "Invalid attachments: #{@attachments_nok.length}"
-
-if @attachments_nok.length.positive?
-  write_csv_file(attachments_nok_jira_csv, @attachments_nok)
-end

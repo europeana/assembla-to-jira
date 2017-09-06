@@ -48,6 +48,10 @@ def date_time(dt)
   "#{day} #{month} #{year} #{hour}:#{minute}"
 end
 
+def ticket_to_s(ticket)
+  ticket.delete_if { |k| k =~ /summary|description/ }.inspect
+end
+
 def build_counter(opts)
   opts[:counter] ? "[#{opts[:counter]}/#{opts[:total]}] " : ''
 end
