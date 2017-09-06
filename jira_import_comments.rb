@@ -27,7 +27,7 @@ def jira_create_comment(issue, comment)
   result = nil
   url = "#{URL_JIRA_ISSUES}/#{issue[:id]}/comment"
   payload = {
-      body: "Author [~#{comment['user_name']}]\r\n\r\n#{comment['comment']}"
+      body: "Author [~#{comment['user_name']}] | Created on #{date_time(comment['created_on'])}\n\n#{comment['comment']}"
   }.to_json
   begin
     response = RestClient::Request.execute(method: :post, url: url, payload: payload, headers: JIRA_HEADERS)

@@ -38,6 +38,16 @@ OUTPUT_DIR_JIRA = "#{OUTPUT_DIR}/jira"
 # The following custom fields MUST be defined AND associated with the proper screens
 CUSTOM_FIELD_NAMES = %w(Assembla-Id Assembla-Milestone Assembla-Theme Assembla-Status Assembla-Reporter Assembla-Assignee Epic\ Name Rank Story\ Points)
 
+def date_time(dt)
+  date = DateTime.parse(dt)
+  day = "%02d" % date.day
+  month = %w(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)[date.month-1]
+  year = date.year
+  hour = "%02d" % date.hour
+  minute = "%02d" % date.minute
+  "#{day} #{month} #{year} #{hour}:#{minute}"
+end
+
 def build_counter(opts)
   opts[:counter] ? "[#{opts[:counter]}/#{opts[:total]}] " : ''
 end
