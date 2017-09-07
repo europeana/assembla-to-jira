@@ -252,17 +252,59 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 
 See: http://api-docs.assembla.cc/content/ref/ticket_associations_fields.html
 
+### States
+
+An Assembla ticket can have two states: 0 - closed, 1 - open.
+
 ## Markdown
 
-The [Assembla markdown](http://assemble.io/docs/Cheatsheet-Markdown.html) syntax is differeent from [JIRA Markdown](https://jira.atlassian.com/secure/WikiRendererHelpAction.jspa?section=all). Therefore, the certain markdown notations need to be translated ast push follows:
+The [Assembla markdown](http://assemble.io/docs/Cheatsheet-Markdown.html) syntax is differeent from [JIRA Markdown](https://jira.atlassian.com/secure/WikiRendererHelpAction.jspa?section=all). Therefore, the certain markdown notations need to be translated ast push follows.
 
-* \[\[url:URL|TEXT]] => \[TEXT|URL]
+### Equivalent (no changes required)
 
 ```
-[summary, description, comments].each do |s|
-  s.gsub(/\[\[url:(.*)\|(.*)\]\]/,'[\2|\1]')
-end
+h1. TITLE
+h2. TITLE
+*bold*
+_italic_
+Bullet list
+Numbered list
+Numbered - Bullet list
+```
 
+### Ignore (will be ignored and passed through unchanged)
+
+```
+[[image:IMAGE]]
+Code snippet
+Wiki links
+[[ticket:NUMBER]]
+[[user:NAME]]
+[[user:NAME|TEXT]]
+```
+
+### Reformat (will be reformatted into Jira markdown)
+
+```
+@inline code@ => {inline code}
+[[url:URL|TEXT]] => [TEXT|URL]
+[[url:URL]] => [URL|URL]
+```
+
+For the content available in the ticket summaries, descriptions and comments we have:
+
+```
+[summary, description, comments].each do |content|
+  content = reformat_markdown(content)
+end
+```
+
+where reformat_markdown will do the following global substitutions:
+
+```
+gsub(/\[\[url:(.*)\|(.*)\]\]/, '[\2|\1]')
+gsub(/\[\[url:(.*)\]\]/, '[\1|\1]')
+gsub(/@([^@]*)@/, '{\1}')
 ```
 
 ## Mappings

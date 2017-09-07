@@ -199,7 +199,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
   project_id = @project['id']
   ticket_id = ticket['id']
   ticket_number = ticket['number']
-  summary = ticket['summary']
+  summary = reformat_markdown(ticket['summary'])
   created_on = ticket['created_on']
   reporter_name = @user_id_to_login[ticket['reporter_id']]
   assignee_name = @user_id_to_login[ticket['assigned_to_id']]
@@ -217,7 +217,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
                 end
   description += "Author #{author_name} | "
   description += "Created on #{date_time(created_on)}\n\n"
-  description += "#{ticket['description']}"
+  description += "#{reformat_markdown(ticket['description'])}"
 
   labels = get_labels(ticket)
 

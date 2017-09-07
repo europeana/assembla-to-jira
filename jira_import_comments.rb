@@ -34,10 +34,11 @@ tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-all.csv"
 def jira_create_comment(issue, comment)
   result = nil
   url = "#{URL_JIRA_ISSUES}/#{issue[:id]}/comment"
+  body = "Author [~#{comment['user_name']}] | Created on #{date_time(comment['created_on'])}\n\n#{reformat_markdown(comment['comment'])}"
   # user_id = comment['user_id']
   # user_login = @user_id_to_login[user_id]
   payload = {
-    body: "Author [~#{comment['user_name']}] | Created on #{date_time(comment['created_on'])}\n\n#{comment['comment']}"
+    body: body
   }.to_json
   begin
     response = RestClient::Request.execute(method: :post, url: url, payload: payload, headers: JIRA_HEADERS)

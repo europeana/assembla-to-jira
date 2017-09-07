@@ -424,3 +424,41 @@ def goodbye(message)
   puts "\nGOODBYE: #{message}"
   exit
 end
+
+# Take original Assembla markdown and reformat it to the relevant Jira markdown.
+#
+# h1. TITLE => same
+# h2. TITLE => same
+# *bold* => same
+# _italic_ => same
+# @inline code@ => {inline code}
+#
+# Bullet list => same
+# Numbered list => same
+# Numbered - Bullet list => same?
+#
+# [[image:IMAGE]] => ignore
+#
+# [[url:URL|TEXT]] => [TEXT|URL]
+# [[url:URL]] => [URL|URL]
+#
+# Code snippet => ignore
+#
+# Wiki links => ignore
+#
+# [[ticket:NUMBER]] => ignore
+#
+# [[user:NAME]] => ignore
+# [[user:NAME|TEXT]] => ignore
+
+def reformat_markdown(content)
+  lines = content.split("\n")
+  markdown = []
+  lines.each do |line|
+    markdown << line.
+        gsub(/\[\[url:(.*)\|(.*)\]\]/, '[\2|\1]').
+        gsub(/\[\[url:(.*)\]\]/, '[\1|\1]').
+        gsub(/@([^@]*)@/, '{\1}')
+  end
+  markdown.join("\n")
+end
