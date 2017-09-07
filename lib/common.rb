@@ -452,6 +452,7 @@ end
 # [[user:NAME|TEXT]] => ignore
 
 def reformat_markdown(content)
+  return content if content.nil? or content.length.zero?
   lines = content.split("\n")
   markdown = []
   lines.each do |line|
