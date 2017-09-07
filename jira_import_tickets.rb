@@ -326,6 +326,9 @@ end
 
 # --- ISSUE TYPES --- #
 
+# IMPORTANT: the sub-tasks MUST be done last in order to be able to be associated with the parent tasks/stories.
+@issue_types = %w(epic story task spike bug sub-task)
+
 puts "\nIssue types:"
 
 @issue_type_name_to_id = {}
@@ -335,6 +338,16 @@ end
 
 @issue_type_name_to_id.each do |k,v|
   puts "#{v} #{k}"
+end
+
+# Make sure that all issue types are indeed available.
+@missing_issue_types = []
+@issue_types.each do |issue_type|
+  @missing_issue_types << issue_type unless @issue_type_name_to_id[issue_type]
+end
+
+if @missing_issue_types.length.positive?
+  goodbye("Missing issue types: #{@missing_issue_types.join(',')}")
 end
 
 # --- PRIORITIES --- #
@@ -414,10 +427,8 @@ end
 
 # --- Import all Assembla tickets into Jira --- #
 
-# Note: the sub-tasks MUST be done last in order to be able to be associated with the parent tasks/stories.
-@issue_types = %w(epic story task spike bug sub-task)
-
 sanity_check_totals = {}
+tickets_seen = {}
 
 grand_total = @tickets_assembla.length
 puts "\nTotal tickets: #{grand_total}"
@@ -426,10 +437,11 @@ puts "\nTotal tickets: #{grand_total}"
   imported_tickets = []
   grand_counter = 0
   @issue_types.each do |issue_type|
-    @tickets = @tickets_assembla.select{|ticket| get_issue_type(ticket)[:name] == issue_type}
+    @tickets = @tickets_assembla.select { |ticket| get_issue_type(ticket)[:name] == issue_type }
     total = @tickets.length
     @tickets.each_with_index do |ticket, index|
       ticket_number = ticket['number']
+      tickets_seen[ticket_number] = true if sanity_check
       if imported_tickets.include?(ticket_number)
         if sanity_check
           duplicate_tickets << ticket_number
@@ -467,9 +479,12 @@ puts "\nTotal tickets: #{grand_total}"
     end
     if duplicate_tickets.length.positive?
       goodbye("Duplicated ticket_number=[#{duplicate_tickets.join(',')}]")
-    else
-      puts "Sanity check => OK\n"
     end
+    tickets_missed = @tickets_assembla.select { |ticket| tickets_seen[ticket['number']].nil? }
+    if tickets_missed.length.positive?
+      goodbye("Missed tickets: #{tickets_missed.length}")
+    end
+    puts "Sanity check => OK\n\n"
   else
     puts "Total all: #{grand_total}"
     tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-all.csv"
