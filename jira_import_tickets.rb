@@ -37,107 +37,6 @@ issue_types_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-issue-types.csv"
 @is_not_a_user = []
 @cannot_be_assigned_issues = []
 
-# Assembla ticket fields:
-# ----------------------
-# id
-# * number
-# * summary
-# * description
-# * priority (1 - Highest, 2 - High, 3 - Medium, 4 - Low, 5 - Lowest)
-# completed_date
-# component_id
-# * created_on
-# permission_type
-# * importance (Sorting criteria for Assembla Planner) => 10104 Rank
-# is_story (true or false, if true hierarchy_type = 2)
-# milestone_id => 10103 Sprint
-# notification_list
-# * space_id
-# state (0 - closed, 1 - open)
-# status (new, blocked, testable, in acceptance testing, in progress, ready for deploy)
-# * story_importance (1 - small, 4 - medium, 7 - large) => 10105 Story Points
-# updated_at
-# working_hours
-# estimate
-# total_estimate
-# total_invested_hours
-# total_working_hours
-# * assigned_to_id
-# * reporter_id
-# custom_fields
-# hierarchy_type (0 - No plan level, 1 - Subtask, 2 - Story, 3 - Epic)
-# due_date
-
-# Jira issue fields:
-# -----------------
-# * issuetype
-# timespent
-# * project
-# fixVersions
-# aggregatetimespent
-# resolution
-# resolutiondate
-# workratio
-# lastViewed
-# watches
-# thumbnail
-# * created
-# * priority
-# * labels
-# timeestimate
-# aggregatetimeoriginalestimate
-# versions
-# issuelinks
-# * assignee
-# * updated
-# status
-# components
-# issuekey
-# timeoriginalestimate
-# * description
-# timetracking
-# security
-# attachment
-# aggregatetimeestimate
-# * summary
-# * creator
-# subtasks
-# * reporter
-# aggregateprogress
-# environment
-# duedate
-# progress
-# comment
-# votes
-# worklog
-
-# Jira custom fields:
-# ------------------
-# 10000 Development
-# 10001 Team
-# 10002 Organizations
-# 10003 Epic Name
-# 10004 Epic Status
-# 10005 Epic Color
-# 10006 Epic Link
-# 10007 Parent Link
-# 10100 [CHART] Date of First Response
-# 10101 [CHART] Time in Status
-# 10102 Approvals
-# * 10103 Sprint
-# * 10104 Rank
-# * 10105 Story Points
-# 10108 Test sessions
-# 10109 Raised during
-# 10200 Testing status
-# 10300 Capture for JIRA user agent
-# 10301 Capture for JIRA browser
-# 10302 Capture for JIRA operating system
-# 10303 Capture for JIRA URL
-# 10304 Capture for JIRA screen resolution
-# 10305 Capture for JIRA jQuery version
-# 10400 Assembla
-
 def jira_get_field_by_name(name)
   @fields_jira.find{ |field| field['name'] == name }
 end
@@ -174,16 +73,16 @@ def get_milestone(ticket)
 end
 
 def get_issue_type(ticket)
-  case ticket['hierarchy_type'].to_i
-  when 1
-    result = { id: @issue_type_name_to_id['sub-task'], name: 'sub-task' }
-  when 2
-    result = { id: @issue_type_name_to_id['story'], name: 'story' }
-  when 3
-    result = { id: @issue_type_name_to_id['epic'], name: 'epic' }
-  else
-    result = { id: @issue_type_name_to_id['task'], name: 'task' }
-  end
+  result = case ticket['hierarchy_type'].to_i
+           when 1
+             { id: @issue_type_name_to_id['sub-task'], name: 'sub-task' }
+           when 2
+             { id: @issue_type_name_to_id['story'], name: 'story' }
+           when 3
+             { id: @issue_type_name_to_id['epic'], name: 'epic' }
+           else
+             { id: @issue_type_name_to_id['task'], name: 'task' }
+           end
 
   # Ticket type is overruled if summary begins with the type (EPIC, SPIKE, STORY or BUG)
   %w(epic spike story bug).each do |s|
@@ -516,7 +415,9 @@ end
 # --- Import all Assembla tickets into Jira --- #
 
 # Note: the sub-tasks MUST be done last in order to be able to be associated with the parent tasks/stories.
-@issue_types = %w(epic story task spike sub-task)
+@issue_types = %w(epic story task spike bug sub-task)
+
+sanity_check_totals = {}
 
 grand_total = @tickets_assembla.length
 puts "\nTotal tickets: #{grand_total}"
@@ -543,17 +444,31 @@ puts "\nTotal tickets: #{grand_total}"
         end
       end
     end
-    unless sanity_check
+    if sanity_check
+      sanity_check_totals[issue_type] = total
+    else
       puts "Total #{issue_type}: #{total}"
       tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-#{issue_type}.csv"
       write_csv_file(tickets_jira_csv, @jira_issues.select{ |issue| issue[:issue_type_name] == issue_type})
     end
   end
   if sanity_check
-    if duplicate_tickets.length.positive?
-    goodbye("Duplicated ticket_number=[#{duplicate_tickets.join(',')}]")
+    puts "\nSanity check:"
+    sanity_total = 0
+    sanity_check_totals.keys.each do |k|
+      total = sanity_check_totals[k]
+      puts "Total #{k}: #{total}"
+      sanity_total += total
+    end
+    if sanity_total == grand_total
+      puts "Total all: #{grand_total}"
     else
-      puts 'Sanity check => OK'
+      goodbye("Missing tickets: #{grand_total - sanity_total}")
+    end
+    if duplicate_tickets.length.positive?
+      goodbye("Duplicated ticket_number=[#{duplicate_tickets.join(',')}]")
+    else
+      puts "Sanity check => OK\n"
     end
   else
     puts "Total all: #{grand_total}"
