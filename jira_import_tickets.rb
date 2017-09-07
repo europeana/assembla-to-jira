@@ -210,11 +210,11 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
 
   # Prepend the description text with a link to the original assembla ticket on the first line.
   description = "Assembla ticket [##{ticket_number}|#{ENV['ASSEMBLA_URL_TICKETS']}/#{ticket_number}] | "
-  if reporter_name.nil? || reporter_name.length.zero? || @is_not_a_user.include?(reporter_name)
-    author_name = 'unknown'
-  else
-    author_name = "[~#{reporter_name}]"
-  end
+  author_name = if reporter_name.nil? || reporter_name.length.zero? || @is_not_a_user.include?(reporter_name)
+                  'unknown'
+                else
+                  "[~#{reporter_name}]"
+                end
   description += "Author #{author_name} | "
   description += "Created on #{date_time(created_on)}\n\n"
   description += "#{ticket['description']}"
@@ -283,6 +283,8 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
   retries = 0
   begin
     response = RestClient::Request.execute(method: :post, url: URL_JIRA_ISSUES, payload: payload.to_json, headers: JIRA_HEADERS)
+    # TODO: Investigate why the following does not work, e.g. reporter can create own issues.
+    # response = RestClient::Request.execute(method: :post, url: URL_JIRA_ISSUES, payload: payload.to_json, headers: headers_user_login(reporter_name))
     body = JSON.parse(response.body)
     jira_ticket_id = body['id']
     jira_ticket_key = body['key']

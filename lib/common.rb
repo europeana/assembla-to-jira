@@ -38,6 +38,11 @@ OUTPUT_DIR_JIRA = "#{OUTPUT_DIR}/jira"
 # The following custom fields MUST be defined AND associated with the proper screens
 CUSTOM_FIELD_NAMES = %w(Assembla-Id Assembla-Milestone Assembla-Theme Assembla-Status Assembla-Reporter Assembla-Assignee Epic\ Name Rank Story\ Points)
 
+# Assuming that the user name is the same as the user password
+def headers_user_login(user_login)
+  { 'Authorization': "Basic #{Base64.encode64(user_login + ':' + user_login)}", 'Content-Type': 'application/json' }
+end
+
 def date_time(dt)
   date = DateTime.parse(dt)
   day = "%02d" % date.day
