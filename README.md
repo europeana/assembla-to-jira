@@ -4,21 +4,21 @@ A collection of advanced tooling for a complete data migration from [Assembla](h
 
 ## Introduction
 
-Have you ever wanted to use JIRA instead of Assembla but already have so much project data in place in Assembla that you find the switch too risky?
+Have you ever wanted to use JIRA instead of Assembla, but you find the switch too risky because you already have so much important project data in place in Assembla?
 
 JIRA does offer a number of standard add-ons to make migration easier, but unfortunately it does not offer any tools for Assembla.
 
-However, you are now in luck. By using these tools, it should be possible to export all of the relevant Assemebla space data and then import most if not all of it into a Jira project.
+However, you are now in luck. By using these Assembla-to-Jira migration tools, it should be possible to export all of the relevant Assemebla space data and then import most (if not all) of that data into a Jira project.
 
 Usage is made of the [Assembla API](http://api-docs.assembla.cc/content/api_reference.html) and the [JIRA API](https://docs.atlassian.com/jira/REST/cloud/) in order to hook up both environments and make the data transformations.
 
-Most of the actions can be done automatically after proper configuration of parameters in the `.env` file.
+Most of the actions can be done automatically via a pipeline of scripts, after proper configuration of parameters in the `.env` file.
 
-However, there are a few manual actions required since the Jira API does not support all possible actions, but these are minimal. It is important NOT to skip these manual operations as the successful migration depends on them.
+However, there are a few manual actions required since the Jira API does not support all possible actions, but these are minimal. It is important NOT to skip these manual changes as the successful migration depends on them.
 
 The complete migration from start to finish consists of a series of scripts which are to be executed in order.
 
-Like a pipeline, each script processes data and generates a dump file to store the intermediate results which in turn is used as input for the following script.
+Like a pipeline, each script processes data and generates a dump file to store the intermediate results which in turn are used as input for the following script.
 
 The reason for doing this that if something goes wrong you do not lose everything and can restart from the previous step.
 
@@ -26,12 +26,9 @@ The reason for doing this that if something goes wrong you do not lose everythin
 
 You will need to goto to the Jira website and login as admin.
 
-Create the following projects:
-* Europeana Collection
-* Europeana APIs
-* Europeana Infrastructure
+Optionally create the new project. This not necessary, as during the imoprt the existence of the project will be checked and created on the fly if needed.
 
-and define them as a comma-separated list in `.env` file as `ASSEMBLA_SPACES`.
+Define the project `.env` file as `ASSEMBLA_SPACES=project_name`.
 
 Create the following new issue type:
 * Spike
