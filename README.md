@@ -197,6 +197,15 @@ The downloaded attachments are placed in the `data/jira/attachments` directory, 
 
 Where the `counter` runs from 0 to the total number of attachments and ensures that the attachments are imported in the correct order, and the filename has all spaces converted to underscores.
 
+### Import attachments
+
+Now you are ready to import all of the attachments. Execute the following command:
+
+```
+$ ruby jira_import_attachments.rb
+```
+
+
 ## Field translations
 
 Most of the ticket fields are converted from Assembla to Jira via a one-to-one mapping and are indicated as **bold** below.
@@ -213,7 +222,7 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 * permission_type
 * **importance** (Sorting criteria for Assembla Planner) => 10104 Rank
 * is_story (true or false, if true hierarchy_type = 2)
-* milestone_id => 10103 Sprint
+* **milestone_id** => 10103 Sprint
 * notification_list
 * **space_id**
 * state (0 - closed, 1 - open)
@@ -261,17 +270,17 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 * **description**
 * timetracking
 * security
-* attachment
+* **attachment**
 * aggregatetimeestimate
 * **summary**
 * **creator**
-* subtasks
+* **subtasks**
 * **reporter**
 * aggregateprogress
 * environment
 * duedate
 * progress
-* comment
+* **comments**
 * votes
 * worklog
 
@@ -279,11 +288,11 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 * 10000 Development
 * 10001 Team
 * 10002 Organizations
-* 10003 Epic Name
+* **10003** Epic Name
 * 10004 Epic Status
 * 10005 Epic Color
 * 10006 Epic Link
-* 10007 Parent Link
+* **10007** Parent Link
 * 10100 \[CHART] Date of First Response
 * 10101 \[CHART] Time in Status
 * 10102 Approvals
