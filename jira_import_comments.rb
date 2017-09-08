@@ -9,34 +9,60 @@ JIRA_PROJECT_NAME = 'Europeana Collections' + (@debug ? ' TEST' : '')
 space = get_space(SPACE_NAME)
 dirname_assembla = get_output_dirname(space, 'assembla')
 
-# users_csv = "#{dirname}/report-users.csv"
-# users = csv_to_array(users_csv)
-#
-# @user_id_to_login = {}
-# users.each do |user|
-#   @user_id_to_login[user['id']] = user['login']
-# end
+# Assembla users
+users_csv = "#{dirname_assembla}/report-users.csv"
+users = csv_to_array(users_csv)
+@user_id_to_login = {}
+users.each do |user|
+  @user_id_to_login[user['id']] = user['login']
+end
 
-# Assembla comments, tags and attachment csv files: ticket_number and ticket_id
-
+# Assembla comments
 comments_assembla_csv = "#{dirname_assembla}/ticket-comments.csv"
-
 @comments_assembla = csv_to_array(comments_assembla_csv)
+total_comments = @comments_assembla.length
 
-# JIRA csv files: jira_ticket_id, jira_ticket_key, assembla_ticket_id, assembla_ticket_number
+# Ignore empty comments
+@comments_assembla_empty = @comments_assembla.select { |comment| comment['comment'].nil? || comment['comment'].strip.empty? }
+@comments_assembla.select! { |comment| ! (comment['comment'].nil? || comment['comment'].strip.empty?) }
 
+puts "Total comments: #{total_comments}"
+puts "Empty comments: #{@comments_assembla_empty.length}"
+puts "Remaining comments: #{@comments_assembla.length}"
+
+# Jira tickets
 tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-all.csv"
 @tickets_jira = csv_to_array(tickets_jira_csv)
 
-@tickets = []
+# Convert assembla_ticket_id to jira_ticket
+@assembla_id_to_jira = {}
+@tickets_jira.each do |ticket|
+  jira_id = ticket['jira_ticket_id']
+  assembla_id = ticket['assembla_ticket_id']
+  @assembla_id_to_jira[assembla_id] = jira_id
+end
+
+# --- Filter by date if TICKET_CREATED_ON is defined --- #
+tickets_created_on = get_tickets_created_on
+
+if tickets_created_on
+  puts "Filter newer than: #{tickets_created_on}"
+  comments_initial = @comments_assembla.length
+  # Only want comments which belong to remaining tickets
+  @comments_assembla.select! { |item| @assembla_id_to_jira[item['ticket_id']] }
+  puts "Comments: #{comments_initial} => #{@comments_assembla.length} ∆#{comments_initial - @comments_assembla.length}"
+end
+puts "Tickets: #{@tickets_jira.length}"
+
+@comments_total = @comments_assembla.length
 
 # POST /rest/api/2/issue/{issueIdOrKey}/comment
-def jira_create_comment(issue, comment)
+def jira_create_comment(issue_id, user_id, comment, counter)
   result = nil
-  url = "#{URL_JIRA_ISSUES}/#{issue[:id]}/comment"
-  body = "Author [~#{comment['user_name']}] | Created on #{date_time(comment['created_on'])}\n\n#{reformat_markdown(comment['comment'])}"
-  # user_id = comment['user_id']
-  # user_login = @user_id_to_login[user_id]
+  url = "#{URL_JIRA_ISSUES}/#{issue_id}/comment"
+  user_login = @user_id_to_login[user_id]
+  author_link = user_login ? "[~#{user_login}]" : 'unknown (#{user_id})'
+  body = "Author #{author_link} | Created on #{date_time(comment['created_on'])}\n\n#{comment['comment']}"
   payload = {
     body: body
   }.to_json
@@ -45,57 +71,42 @@ def jira_create_comment(issue, comment)
     # TODO: Investigate why the following does not work, e.g. reporter can create own comments.
     # response = RestClient::Request.execute(method: :post, url: url, payload: payload, headers: headers_user_login(user_login))
     result = JSON.parse(response.body)
-    puts "POST #{url} => OK"
+    percentage = ((counter * 100) / @comments_total).round.to_s.rjust(3)
+    puts "#{percentage}% [#{counter}|#{@comments_total} POST #{url} => OK"
   rescue RestClient::ExceptionWithResponse => e
-    error = JSON.parse(e.response)
-    message = error['errors'].map { |k, v| "#{k}: #{v}" }.join(' | ')
-    puts "POST #{url}  => NOK (#{message})"
+    # TODO: use following helper method for all RestClient calls in other files.
+    rest_client_exception(e, url)
   rescue => e
-    puts "POST #{url} => NOK (#{e.message})"
+    puts "#{percentage}% [#{counter}|#{@comments_total} POST #{url} => NOK (#{e.message})"
   end
   result
 end
 
-@tickets_jira.each do |ticket|
-  next unless ticket['result'] == 'OK'
-  @tickets << {
-    jira: {
-      id: ticket['jira_ticket_id'],
-      key: ticket['jira_ticket_key']
-    },
-    assembla: {
-      id: ticket['assembla_ticket_id'],
-      number: ticket['assembla_ticket_number']
-    }
+# IMPORTANT: Make sure that the comments are ordered chronologically from first (oldest) to last (newest)
+@comments_assembla.sort! { |x, y| x['created_on'] <=> y['created_on'] }
+
+@jira_comments = []
+
+@comments_assembla.each_with_index do |comment, index|
+  id = comment['id']
+  ticket_id = comment['ticket_id']
+  user_id = comment['user_id']
+  issue_id = @assembla_id_to_jira[ticket_id]
+  user_login = @user_id_to_login[user_id],
+  comment['comment'] = reformat_markdown(comment['comment'])
+  result = jira_create_comment(issue_id, user_id, comment, index + 1)
+  next unless result
+  comment_id = result['id']
+  @jira_comments << {
+    jira_comment_id: comment_id,
+    jira_ticket_id: issue_id,
+    assembla_comment_id: id,
+    assembla_ticket_id: ticket_id,
+    user_login: user_login,
+    body: comment['comment']
   }
 end
 
-# Convert assembla_ticket_id to jira_ticket
-@assembla_id_to_jira = {}
-@tickets.each_with_index do |ticket|
-  jira = ticket[:jira]
-  assembla = ticket[:assembla]
-  @assembla_id_to_jira[assembla[:id]] = jira
-end
-
-@ok = []
-@nok = []
-
-# Important: Make sure that the comments are ordered chronologically from first (oldest) to last (newest)
-@comments_assembla.sort! { |x, y| x['created_on'] <=> y['created_on'] }
-
-@comments_assembla.each_with_index do |comment|
-  assembla_ticket_id = comment['ticket_id']
-  jira_issue = @assembla_id_to_jira[assembla_ticket_id]
-  if jira_issue.nil?
-    @nok << assembla_ticket_id unless @nok.include?(assembla_ticket_id)
-  else
-    # TODO: check for success
-    result = jira_create_comment(jira_issue, comment)
-    jira_id = result['id']
-    @ok << assembla_ticket_id unless @ok.include?(assembla_ticket_id)
-  end
-end
-
-puts "#{@ok.length} valid tickets"
-puts "#{@nok.length} invalid tickets"
+puts "Total all: #{@comments_total}"
+comments_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-comments.csv"
+write_csv_file(comments_jira_csv, @jira_comments)

@@ -327,7 +327,7 @@ if JIRA_API_UNKNOWN_USER && JIRA_API_UNKNOWN_USER.length
   user = jira_get_user(JIRA_API_UNKNOWN_USER)
   if user
     goodbye("Please activate Jira unknown user '#{JIRA_API_UNKNOWN_USER}'") unless user['active']
-    puts "Found Jira unknown user '#{JIRA_API_UNKNOWN_USER}'"
+    puts "Found Jira unknown user '#{JIRA_API_UNKNOWN_USER}' => OK"
   else
     user = {}
     user['login'] = JIRA_API_UNKNOWN_USER
