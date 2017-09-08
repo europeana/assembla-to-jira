@@ -179,6 +179,24 @@ Results are saved in the output file `data/jira/jira-comments.csv` with the foll
 jira_comment_id|jira_ticket_id|assembla_comment_id|assembla_ticket_id|user_login|body
 ```
 
+### Download attachments
+
+Before the attachments can be imported, they must first be downloaded to a local directory after which they can be imported into Jira.
+
+This is accomplished by executing the following command:
+
+```
+$ ruby jira_download_attachments.rb
+```
+
+The downloaded attachments are placed in the `data/jira/attachments` directory, each filename having the following format:
+
+```
+{counter}-{jira_issue_id}-{assembla_ticket_id}-{attachment_filename}"
+```
+
+Where the `counter` runs from 0 to the total number of attachments and ensures that the attachments are imported in the correct order, and the filename has all spaces converted to underscores.
+
 ## Field translations
 
 Most of the ticket fields are converted from Assembla to Jira via a one-to-one mapping and are indicated as **bold** below.

@@ -75,7 +75,7 @@ def jira_create_comment(issue_id, user_id, comment, counter)
     puts "#{percentage}% [#{counter}|#{@comments_total} POST #{url} => OK"
   rescue RestClient::ExceptionWithResponse => e
     # TODO: use following helper method for all RestClient calls in other files.
-    rest_client_exception(e, url)
+    rest_client_exception(e, 'POST', url)
   rescue => e
     puts "#{percentage}% [#{counter}|#{@comments_total} POST #{url} => NOK (#{e.message})"
   end

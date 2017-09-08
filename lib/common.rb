@@ -481,13 +481,23 @@ def reformat_markdown(content)
   markdown.join("\n")
 end
 
-def rest_client_exception(e, url, payload = {})
+def rest_client_exception(e, method, url, payload = {})
   message = 'Unknown message'
-  err = JSON.parse(e.response)
+  begin
+    err = JSON.parse(e.response)
+  rescue
+    err = {}
+    message = e.response
+  end
   if err['errors'] && !err['errors'].empty?
     message = err['errors'].map { |k, v| "#{k}: #{v}" }.join(' | ')
   elsif err['errorMessages'] && !err['errorMessages'].empty?
     message = err['errorMessages'].join(' | ')
+  elsif err['error']
+    message = err['error']
+    if err['error_description']
+      message += ": #{err['error_description']}"
+    end
   end
-  puts "POST #{url} => NOK (#{message})"
+  puts "#{method} #{url} => NOK (#{message})"
 end
