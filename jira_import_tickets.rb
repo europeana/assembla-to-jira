@@ -268,7 +268,8 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
   end
 
   dump_payload = ok ? '' : ' ' + payload.inspect.sub(/:description=>"[^"]+",/,':description=>"...",')
-  puts "[#{counter}|#{total}|#{grand_counter}|#{grand_total} #{issue_type[:name].upcase}] POST #{URL_JIRA_ISSUES} #{ticket_number}#{dump_payload} => #{ok ? '' : 'N'}OK (#{message}) retries = #{retries}"
+  percentage = ((grand_counter * 100) / grand_total).round.to_s.rjust(3)
+  puts "#{percentage}% [#{counter}|#{total}|#{grand_counter}|#{grand_total} #{issue_type[:name].upcase}] POST #{URL_JIRA_ISSUES} #{ticket_number}#{dump_payload} => #{ok ? '' : 'N'}OK (#{message}) retries = #{retries}"
 
   @jira_issues << {
       result: (ok ? 'OK' : 'NOK'),
