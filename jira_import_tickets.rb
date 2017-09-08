@@ -25,6 +25,34 @@ associations_assembla_csv = "#{dirname_assembla}/ticket-associations.csv"
 @tags_assembla = csv_to_array(tags_assembla_csv)
 @associations_assembla = csv_to_array(associations_assembla_csv)
 
+# --- Filter by date if TICKET_CREATED_ON is defined --- #
+tickets_created_on = get_tickets_created_on
+
+if tickets_created_on
+  puts "Filter newer than: #{tickets_created_on}"
+
+  tickets_initial = @tickets_assembla.length
+  milestones_initial = @milestones_assembla.length
+  tags_initial = @tags_assembla.length
+  associations_initial = @associations_assembla.length
+
+  @tickets_assembla.select! { |item| item_newer_than?(item, tickets_created_on) }
+  @milestones_assembla.select! { |item| item_newer_than?(item, tickets_created_on) }
+  @tags_assembla.select! { |item| item_newer_than?(item, tickets_created_on) }
+  @associations_assembla.select! { |item| item_newer_than?(item, tickets_created_on) }
+
+  puts "Tickets: #{tickets_initial} => #{@tickets_assembla.length} ∆#{tickets_initial - @tickets_assembla.length}"
+  puts "Milestones: #{milestones_initial} => #{@milestones_assembla.length} ∆#{milestones_initial - @milestones_assembla.length}"
+  puts "Tags: #{tags_initial} => #{@tags_assembla.length} ∆#{tags_initial - @tags_assembla.length}"
+  puts "Associations: #{associations_initial} => #{@associations_assembla.length} ∆#{associations_initial - @associations_assembla.length}"
+else
+  puts "Tickets: #{@tickets_assembla.length}"
+  puts "Milestones: #{@milestones_assembla.length}"
+  puts "Tags: #{@tags_assembla.length}"
+  puts "Associations: #{@associations_assembla.length}"
+end
+puts "Users: #{@users_assembla.length}"
+
 # --- JIRA Tickets --- #
 
 issue_types_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-issue-types.csv"

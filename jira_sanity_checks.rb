@@ -64,8 +64,8 @@ tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-all.csv"
 @tickets_jira.each_with_index do |ticket_jira, index|
   id = ticket_jira['assembla_ticket_id']
   number = ticket_jira['assembla_ticket_number']
-  if @tickets_assembla.find { |ticket_assembla| ticket_assembla['id'] == id}
-    unless @tickets_assembla.find { |ticket_assembla| ticket_assembla['number'] == number}
+  if @tickets_assembla.detect { |ticket_assembla| ticket_assembla['id'] == id }
+    unless @tickets_assembla.detect { |ticket_assembla| ticket_assembla['number'] == number }
       goodbye("#{tickets_jira_csv}:#{index + 1} cannot find Assembla ticket with number='#{number}', ticket_jira='#{ticket_to_s(ticket_jira)}'")
     end
   else
@@ -78,19 +78,18 @@ puts 'Jira tickets match Assembla tickets => OK'
 @tickets_assembla.each_with_index do |ticket_assembla, index|
   id = ticket_assembla['id']
   number = ticket_assembla['number']
-  if @tickets_jira.find { |ticket_jira| ticket_jira['assembla_ticket_id'] == id}
-    unless @tickets_jira.find { |ticket_jira| ticket_jira['assembla_ticket_number'] == number}
+  if @tickets_jira.detect { |ticket_jira| ticket_jira['assembla_ticket_id'] == id }
+    unless @tickets_jira.detect { |ticket_jira| ticket_jira['assembla_ticket_number'] == number }
       puts("#{tickets_assembla_csv}:#{index + 1} cannot find Jira ticket with assembla_ticket_number='#{number}'
 , ticket_assembla='#{ticket_to_s(ticket_assembla)}'")
     end
   else
-    puts("#{tickets_assembla_csv}:#{index + 1} cannot find Jira ticket with assembla_ticket_id='#{id}', ticket_assembla='#{ticket_to_s(ticket_assembla)}'")
+    puts("#{tickets_assembla_csv}:#{index + 1} cannot find Jira ticket with assembla_ticket_id='#{id}'," +
+         "ticket_assembla='#{ticket_to_s(ticket_assembla)}'")
   end
 end
 
 puts 'Assembla tickets match Jira tickets => OK'
-
-exit
 
 @tickets = []
 
@@ -121,8 +120,8 @@ assembla_ticket_number_seen = {}
   assembla_ticket_id_seen[assembla_ticket_id] = true
   assembla_ticket_number_seen[assembla_ticket_number] = true
 
-  puts "jira_ticket_id,jira_ticket_key,assembla_ticket_id,assembla_ticket_number" if index.zero?
-  puts "#{jira_ticket_id},#{jira_ticket_key},#{assembla_ticket_id},#{assembla_ticket_number}"
+  # puts "jira_ticket_id,jira_ticket_key,assembla_ticket_id,assembla_ticket_number" if index.zero?
+  # puts "#{jira_ticket_id},#{jira_ticket_key},#{assembla_ticket_id},#{assembla_ticket_number}"
 
   @tickets << {
     jira: {
@@ -143,11 +142,9 @@ end
 # Convert assembla_ticket_id to jira_issue
 @assembla_id_to_jira = {}
 @assembla_number_to_jira = {}
-@tickets.each_with_index do |ticket, index|
+@tickets.each_with_index do |ticket|
   jira = ticket[:jira]
   assembla = ticket[:assembla]
-  issue_type = ticket[:issue_type]
-  # puts "#{index}: #{jira[:id]} (#{jira[:key]}), #{assembla[:id]} (#{assembla[:number]}), #{issue_type[:id]} (#{issue_type[:name]})"
   @assembla_id_to_jira[assembla[:id]] = jira
   @assembla_number_to_jira[assembla[:number]] = jira
 end
@@ -166,18 +163,5 @@ end
   end
 end
 
-# @comments_assembla.each_with_index do |comment, index|
-#   assembla_ticket_number = comment['ticket_number'].to_i
-#   jira_issue = @assembla_number_to_jira[assembla_ticket_number]
-#   if jira_issue.nil?
-#     puts "Comments line #{index + 1}: assembla_ticket_number=#{assembla_ticket_number} NOK"
-#     @comments_nok << comment
-#   end
-# end
-
 puts "Comments #{@comments_ok.length} valid tickets"
-puts "Comments #{@comments_nok.length} invalid tickets:\n#{@comments_nok.join("\n")}"
-
-# if @comments_nok.length.positive?
-#   write_csv_file(comments_nok_jira_csv, @comments_nok)
-# end
+puts "Comments #{@comments_nok.length} invalid tickets\n#{@comments_nok.join("\n")}"

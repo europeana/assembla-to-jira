@@ -38,6 +38,23 @@ OUTPUT_DIR_JIRA = "#{OUTPUT_DIR}/jira"
 # The following custom fields MUST be defined AND associated with the proper screens
 CUSTOM_FIELD_NAMES = %w(Assembla-Id Assembla-Milestone Assembla-Theme Assembla-Status Assembla-Reporter Assembla-Assignee Epic\ Name Rank Story\ Points)
 
+def get_tickets_created_on
+  env = ENV['TICKETS_CREATED_ON']
+  return nil unless env
+  begin
+    tickets_created_on = Date.strptime(env, "%Y-%m-%d")
+  rescue
+    goodbye("File '.env' contains an invalid date for ENV['TICKETS_CREATED_ON']='#{env}'")
+  end
+  tickets_created_on
+end
+
+def item_newer_than?(item, date)
+  item_date = item['created_on'] || item['created_at']
+  goodbye("Item created date cannot be found") unless item_date
+  DateTime.parse(item_date) > date
+end
+
 # Assuming that the user name is the same as the user password
 def headers_user_login(user_login)
   { 'Authorization': "Basic #{Base64.encode64(user_login + ':' + user_login)}", 'Content-Type': 'application/json' }

@@ -65,6 +65,31 @@ You will also need to configure the `issue type scheme` for the project like thi
 
 ![](images/jira-issue-type-schemes.png)
 
+### Environment
+
+An example configuration file `.env.example` is provided for you to define a number evironment parameters which affect the behavior.
+
+```
+ASSEMBLA_API_HOST=https://api.assembla.com/v1
+ASSEMBLA_API_KEY=api-key
+ASSEMBLA_API_SECRET=api-secret
+ASSEMBLA_URL_TICKETS=https://app.assembla.com/spaces/europeana-npc/tickets
+ASSEMBLA_SPACES=Project One,Project Two, Project Three
+JIRA_API_HOST=https://europeana.atlassian.net/rest/api/2
+JIRA_API_ADMIN_USERNAME=john.doe
+JIRA_API_ADMIN_PASSWORD=secret
+JIRA_API_UNKNOWN_USER=unknown.user
+TICKETS_CREATED_ON=YYYY-MM-DD
+DEBUG=false
+```
+
+By using the filter `TICKETS_CREATED_ON` you can limited the tickets to those that were created on or after the date indicated. So for example:
+
+```
+TICKETS_CREATED_ON=2017-06-01
+```
+
+would only include those tickets created on or after the first of June in the year 2017.
 
 ```
 $ cp .env.example .env

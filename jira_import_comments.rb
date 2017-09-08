@@ -91,6 +91,8 @@ end
     @nok << assembla_ticket_id unless @nok.include?(assembla_ticket_id)
   else
     # TODO: check for success
+    result = jira_create_comment(jira_issue, comment)
+    jira_id = result['id']
     @ok << assembla_ticket_id unless @ok.include?(assembla_ticket_id)
   end
 end
