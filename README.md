@@ -159,8 +159,9 @@ $ ruby jira_import_tickets.rb
 Results are saved in the output file `data/jira/jira-tickets-all.csv` with the following columns:
 
 ```
-jira_ticket_id|jira_ticket_key|project_id|summary|issue_type_id|issue_type_name|assignee_name|reporter_name|
-priority_name|status_name|labels|description|assembla_ticket_id|assembla_ticket_number|theme_name|milestone_name|story_rank
+jira_ticket_id|jira_ticket_key|project_id|summary|issue_type_id|issue_type_name|assignee_name| \
+reporter_name|priority_name|status_name|labels|description|assembla_ticket_id|assembla_ticket_number| \
+theme_name|milestone_name|story_rank
 ```
 
 For the individual issue types `data/jira/jira-tickets-{issue-type}.csv` where `issue-type` is: bug, epic, spike, story, task or sub-task.
