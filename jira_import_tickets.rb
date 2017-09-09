@@ -28,30 +28,20 @@ associations_assembla_csv = "#{dirname_assembla}/ticket-associations.csv"
 # --- Filter by date if TICKET_CREATED_ON is defined --- #
 tickets_created_on = get_tickets_created_on
 
+puts "Milestones: #{@milestones_assembla.length}"
+puts "Tags: #{@tags_assembla.length}"
+puts "Associations: #{@associations_assembla.length}"
+puts "Users: #{@users_assembla.length}"
+
 if tickets_created_on
   puts "Filter newer than: #{tickets_created_on}"
-
   tickets_initial = @tickets_assembla.length
-  milestones_initial = @milestones_assembla.length
-  tags_initial = @tags_assembla.length
-  associations_initial = @associations_assembla.length
-
   @tickets_assembla.select! { |item| item_newer_than?(item, tickets_created_on) }
-  @milestones_assembla.select! { |item| item_newer_than?(item, tickets_created_on) }
-  @tags_assembla.select! { |item| item_newer_than?(item, tickets_created_on) }
-  @associations_assembla.select! { |item| item_newer_than?(item, tickets_created_on) }
-
   puts "Tickets: #{tickets_initial} => #{@tickets_assembla.length} ∆#{tickets_initial - @tickets_assembla.length}"
-  puts "Milestones: #{milestones_initial} => #{@milestones_assembla.length} ∆#{milestones_initial - @milestones_assembla.length}"
-  puts "Tags: #{tags_initial} => #{@tags_assembla.length} ∆#{tags_initial - @tags_assembla.length}"
-  puts "Associations: #{associations_initial} => #{@associations_assembla.length} ∆#{associations_initial - @associations_assembla.length}"
 else
   puts "Tickets: #{@tickets_assembla.length}"
-  puts "Milestones: #{@milestones_assembla.length}"
-  puts "Tags: #{@tags_assembla.length}"
-  puts "Associations: #{@associations_assembla.length}"
 end
-puts "Users: #{@users_assembla.length}"
+puts
 
 # --- JIRA Tickets --- #
 
@@ -87,7 +77,7 @@ end
 def get_labels(ticket)
   labels = ['assembla']
   @tags_assembla.each do |tag|
-    if tag['ticket_id'] == ticket['number']
+    if tag['ticket_number'] == ticket['number']
       labels << tag['name'].tr(' ', '-')
     end
   end
