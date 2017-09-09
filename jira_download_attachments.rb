@@ -36,6 +36,8 @@ tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-all.csv"
   @assembla_id_to_jira[assembla_id] = jira_id
 end
 
+@jira_attachments = []
+
 # --- Filter by date if TICKET_CREATED_ON is defined --- #
 tickets_created_on = get_tickets_created_on
 
@@ -61,9 +63,9 @@ FileUtils.mkdir_p(attachments_dirname) unless File.directory?(attachments_dirnam
 @attachments_assembla.each_with_index do |attachment, index|
   url = attachment['url']
   created_at = attachment['created_at']
-  assembla_id = attachment['ticket_id']
-  jira_id = @assembla_id_to_jira[assembla_id]
-  filename = attachment['filename'].tr(' ', '_')
+  assembla_ticket_id = attachment['ticket_id']
+  jira_ticket_id = @assembla_id_to_jira[assembla_ticket_id]
+  filename = attachment['filename']
   content_type = attachment['content_type']
   counter = index + 1
   # # "http://api.assembla.com/v1/spaces/europeana-npc/documents/:id/download" should be:
@@ -73,13 +75,24 @@ FileUtils.mkdir_p(attachments_dirname) unless File.directory?(attachments_dirnam
   url += "/#{m[1]}"
   # url.sub!(/^http:\/\//,"http://#{ENV['ASSEMBLA_API_KEY']}:#{ENV['ASSEMBLA_API_SECRET']}@")
   percentage = ((counter * 100) / @attachments_total).round.to_s.rjust(3)
-  puts "#{percentage}% [#{counter}|#{@attachments_total}] #{created_at} #{jira_id} #{assembla_id} '#{filename}' (#{content_type})"
+  puts "#{percentage}% [#{counter}|#{@attachments_total}] #{created_at} #{jira_ticket_id} #{assembla_ticket_id} '#{filename}' (#{content_type})"
   # headers = { 'Authorization': @authorization, 'Content-Type': content_type}
   begin
     content = RestClient::Request.execute(method: :get, url: url)
-    filename = "#{attachments_dirname}/#{counter.to_s.rjust(4, '0')}-#{jira_id}-#{assembla_id}-#{filename}"
-    IO.binwrite(filename, content)
+    pathname = "#{attachments_dirname}/#{filename}"
+    IO.binwrite(pathname, content)
+    @jira_attachments << {
+       created_at: created_at,
+       assembla_ticket_id: assembla_ticket_id,
+       jira_ticket_id: jira_ticket_id,
+       filename: filename,
+       content_type: content_type
+    }
   rescue RestClient::ExceptionWithResponse => e
     rest_client_exception(e, 'GET', url)
   end
 end
+
+puts "Total all: #{@attachments_total}"
+attachments_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-attachments.csv"
+write_csv_file(attachments_jira_csv, @jira_attachments)

@@ -190,13 +190,13 @@ This is accomplished by executing the following command:
 $ ruby jira_download_attachments.rb
 ```
 
-The downloaded attachments are placed in the `data/jira/attachments` directory, each filename having the following format:
+The downloaded attachments are placed in the `data/jira/attachments` directory, and the information is logged to the file `data/jira/jira-attachments` which contains the following columns:
 
 ```
-{counter}-{jira_issue_id}-{assembla_ticket_id}-{attachment_filename}"
+created_at|assembla_ticket_id|jira_ticket_id|filename|content_type
 ```
 
-Where the `counter` runs from 0 to the total number of attachments and ensures that the attachments are imported in the correct order, and the filename has all spaces converted to underscores.
+which is used to import the attachments into Jira.
 
 ### Import attachments
 
