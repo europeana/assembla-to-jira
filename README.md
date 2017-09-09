@@ -102,15 +102,13 @@ You can run the export in a number of stages, output files being generated at ea
 The output files are located in the directory `data/assembla/:space/:project` as follows:
 
 ```
-$ ruby assembla_export_space.rb =>
-    space_tools.csv, users.csv, user_roles.csv tags.csv milestones.csv, tickets-statuses.csv, \
-    tickets-custom-fields.csv, documents.csv, wiki_pages.csv, tickets.csv
-$ ruby assembla_export_tickets.rb =>
-  ticket-comments.csv, ticket-attachments.csv, ticket-tags.csv, ticket-associations.csv
-$ ruby assembla_report_users.rb =>
-    report-users.csv
-$ ruby assembla_report_tickets.rb =>
-    report-tickets.csv
+$ ruby assembla_export_space.rb # => space_tools.csv, users.csv, user_roles.csv tags.csv \
+    milestones.csv, tickets-statuses.csv, tickets-custom-fields.csv, documents.csv, \
+    wiki_pages.csv, tickets.csv
+$ ruby assembla_export_tickets.rb # => ticket-comments.csv, ticket-attachments.csv, \
+    ticket-tags.csv, ticket-associations.csv
+$ ruby assembla_report_users.rb # => report-users.csv
+$ ruby assembla_report_tickets.rb # => report-tickets.csv
 ```
 
 ## Import data into Jira
@@ -120,7 +118,7 @@ You can run the import in a number of stages, output files being generated at ea
 ### Create projects
 
 ```
-$ ruby jira_create_projects.rb
+$ ruby jira_create_projects.rb # => data/jira/jira-projects.csv
 ```
 
 ### Get general information
@@ -136,10 +134,20 @@ $ ruby jira_get_projects.rb
 
 ### Import users
 
+```
+POST /rest/api/2/user
+{
+    'name': user['login'],
+    'password': user['login'],
+    'emailAddress': user['email'],
+    'displayName': user['name']
+}
+```
+
 Read in the Assembla user file `data/:space/:project/users.csv` and create the Jira users if they do not already exist.
 
 ```
-$ ruby jira_import_users.rb
+$ ruby jira_import_users.rb # => data/jira/jira-users.csv
 ```
 
 The following user:
@@ -150,10 +158,39 @@ as defined in the `.env` file as `JIRA_API_UNKNOWN_USER`.
 
 ### Import tickets
 
+```
+POST /rest/api/2/issue
+{
+    'create': {},
+    'fields': {
+      'project': { 'id': project_id },
+      'summary': summary,
+      'issuetype': { 'id': issue_type[:id] },
+      'assignee': { 'name': assignee_name },
+      'reporter': { 'name': reporter_name },
+      'priority': { 'name': priority_name },
+      'labels': labels,
+      'description': description,
+      ...
+      'customfield_assembla_id': ticket_number,
+      'customfield_assembla_theme': theme_name,
+      'customfield_assembla_status': status_name,
+      'customfield_assembla_milestone': milestone[:name],
+      'customfield_rank': story_rank,
+
+      'customfield_assembla_reporter': UNKNOWN_USER, # if reporter is missing
+      'customfield_assembla_assignee': '',           # if assignee cannot be assigned issues
+      'customfield_epic_name: EPIC_NAME,             # if issue type is epic
+      'parent': { 'id': parent_id },                 # if issue type is sub-task
+      ...
+    }
+}
+```
+
 Now you are ready to import all of the tickets. Execute the following command:
 
 ```
-$ ruby jira_import_tickets.rb
+$ ruby jira_import_tickets.rb # => data/jira/jira-tickets.csv
 ```
 
 Results are saved in the output file `data/jira/jira-tickets-all.csv` with the following columns:
@@ -179,7 +216,7 @@ For the individual issue types `data/jira/jira-tickets-{issue-type}.csv` where `
 Now you are ready to import all of the comments. Execute the following command:
 
 ```
-$ ruby jira_import_comments.rb
+$ ruby jira_import_comments.rb # => data/jira/jira-comments.csv
 ```
 
 Results are saved in the output file `data/jira/jira-comments.csv` with the following columns:
@@ -195,16 +232,16 @@ Before the attachments can be imported, they must first be downloaded to a local
 This is accomplished by executing the following command:
 
 ```
-$ ruby jira_download_attachments.rb
+$ ruby jira_download_attachments.rb # => data/jira/jira-attachments-download.csv
 ```
 
-The downloaded attachments are placed in the `data/jira/attachments` directory with the same filename, and the meta information is logged to the file `data/jira/jira-attachments` containing the following columns:
+The downloaded attachments are placed in the `data/jira/attachments` directory with the same filename, and the meta information is logged to the file `data/jira/jira-attachments-download.csv` containing the following columns:
 
 ```
 created_at|assembla_ticket_id|jira_ticket_id|filename|content_type
 ```
 
-which is used to import the attachments into Jira in the following section.
+which is used to import the attachments into Jira in the following section. A check is made if the file already exists in order to avoid name collisions.
 
 ### Import attachments
 
@@ -213,7 +250,7 @@ which is used to import the attachments into Jira in the following section.
 Now you are ready to import all of the attachments. Execute the following command:
 
 ```
-$ ruby jira_import_attachments.rb
+$ ruby jira_import_attachments.rb # => data/jira/jira-attachments-import.csv
 ```
 
 ## Field translations
@@ -399,6 +436,7 @@ gsub(/@([^@]*)@/, '{\1}')
 
 * Error "User cannot be assigned issues." => activate, login as user and then deactivate.
 * If issue is an epic then the epic name custom field is required.
+* XSRF check failed => This is a known [bug](https://confluence.atlassian.com/jirakb/rest-api-calls-with-a-browser-user-agent-header-may-fail-csrf-checks-802591455.html) the workaround of which is to clear the user-agent header.
 
 ## References
 

@@ -62,12 +62,25 @@ FileUtils.mkdir_p(attachments_dirname) unless File.directory?(attachments_dirnam
 
 @attachments_assembla.each_with_index do |attachment, index|
   url = attachment['url']
+  id = attachment['id']
   created_at = attachment['created_at']
   assembla_ticket_id = attachment['ticket_id']
   jira_ticket_id = @assembla_id_to_jira[assembla_ticket_id]
-  filename = attachment['filename']
   content_type = attachment['content_type']
   counter = index + 1
+  filename = attachment['filename']
+  filepath = "#{attachments_dirname}/#{filename}"
+  nr = 0
+  while File.exists?(filepath)
+    nr += 1
+    goodbye("Failed for filepath='#{filepath}', nr=#{nr}") if nr > 999
+    extname = File.extname(filepath)
+    basename = File.basename(filepath, extname)
+    dirname = File.dirname(filepath)
+    basename.sub!(/\.\d{3}$/, '')
+    filename = "#{basename}.#{nr.to_s.rjust(3, '0')}#{extname}"
+    filepath = "#{dirname}/#{filename}"
+  end
   # # "http://api.assembla.com/v1/spaces/europeana-npc/documents/:id/download" should be:
   # # "http://api.assembla.com/spaces/europeana-npc/documents/:id/download/:id
   url.sub!(%r{v1/}, '')
@@ -79,10 +92,10 @@ FileUtils.mkdir_p(attachments_dirname) unless File.directory?(attachments_dirnam
   # headers = { 'Authorization': @authorization, 'Content-Type': content_type}
   begin
     content = RestClient::Request.execute(method: :get, url: url)
-    pathname = "#{attachments_dirname}/#{filename}"
-    IO.binwrite(pathname, content)
+    IO.binwrite(filepath, content)
     @jira_attachments << {
        created_at: created_at,
+       assembla_attachment_id: id,
        assembla_ticket_id: assembla_ticket_id,
        jira_ticket_id: jira_ticket_id,
        filename: filename,
@@ -94,5 +107,5 @@ FileUtils.mkdir_p(attachments_dirname) unless File.directory?(attachments_dirnam
 end
 
 puts "Total all: #{@attachments_total}"
-attachments_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-attachments.csv"
+attachments_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-attachments-download.csv"
 write_csv_file(attachments_jira_csv, @jira_attachments)

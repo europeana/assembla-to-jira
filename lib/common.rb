@@ -20,7 +20,7 @@ JIRA_API_HOST = ENV['JIRA_API_HOST'].freeze
 JIRA_API_ADMIN_USER = ENV['JIRA_API_ADMIN_USER'].freeze
 JIRA_API_UNKNOWN_USER = ENV['JIRA_API_UNKNOWN_USER'].freeze
 
-JIRA_HEADERS = { 'Authorization': "Basic #{Base64.encode64(JIRA_API_ADMIN_USER + ':' + ENV['JIRA_API_ADMIN_PASSWORD'])}", 'Content-Type': 'application/json' }
+JIRA_HEADERS = { 'Authorization': "Basic #{Base64.encode64(JIRA_API_ADMIN_USER + ':' + ENV['JIRA_API_ADMIN_PASSWORD'])}", 'Content-Type': 'application/json', 'Accept': 'application/json' }
 
 URL_JIRA_PROJECTS = "#{JIRA_API_HOST}/project"
 URL_JIRA_ISSUE_TYPES = "#{JIRA_API_HOST}/issuetype"
@@ -498,6 +498,10 @@ def rest_client_exception(e, method, url, payload = {})
     if err['error_description']
       message += ": #{err['error_description']}"
     end
+  elsif err['status-code']
+    message = "Status code: #{err['status-code']}"
+  else
+    message = err.inspect[0...250]
   end
   puts "#{method} #{url} => NOK (#{message})"
 end
