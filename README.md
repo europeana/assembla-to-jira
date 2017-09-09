@@ -168,6 +168,14 @@ For the individual issue types `data/jira/jira-tickets-{issue-type}.csv` where `
 
 ### Import comments
 
+`POST /rest/api/2/issue/{issueIdOrKey}/comment`
+
+```
+{
+  body: "comments go here..."
+}
+```
+
 Now you are ready to import all of the comments. Execute the following command:
 
 ```
@@ -190,22 +198,23 @@ This is accomplished by executing the following command:
 $ ruby jira_download_attachments.rb
 ```
 
-The downloaded attachments are placed in the `data/jira/attachments` directory, and the information is logged to the file `data/jira/jira-attachments` which contains the following columns:
+The downloaded attachments are placed in the `data/jira/attachments` directory with the same filename, and the meta information is logged to the file `data/jira/jira-attachments` containing the following columns:
 
 ```
 created_at|assembla_ticket_id|jira_ticket_id|filename|content_type
 ```
 
-which is used to import the attachments into Jira.
+which is used to import the attachments into Jira in the following section.
 
 ### Import attachments
+
+`curl -D- -u admin:admin -X POST -H "X-Atlassian-Token: no-check" -F "file=@myfile.txt" api/2/issue/{issueIdOrKey}/attachments`
 
 Now you are ready to import all of the attachments. Execute the following command:
 
 ```
 $ ruby jira_import_attachments.rb
 ```
-
 
 ## Field translations
 
