@@ -254,6 +254,14 @@ Now you are ready to import all of the attachments. Execute the following comman
 $ ruby 16-jira_import_attachments.rb # => data/jira/jira-attachments-import.csv
 ```
 
+### Update ticket status
+
+Now you are ready to update the Jira tickets in line with the original Assembla state. Execute the following command:
+
+```
+$ ruby 17-jira_update_status.rb # => data/jira/jira-update-status.csv
+```
+
 ## Field translations
 
 Most of the ticket fields are converted from Assembla to Jira via a one-to-one mapping and are indicated as **bold** below.
