@@ -13,13 +13,40 @@ dirname_assembla = get_output_dirname(space, 'assembla')
 tickets_assembla_csv = "#{dirname_assembla}/tickets.csv"
 
 comments_assembla_csv = "#{dirname_assembla}/ticket-comments.csv"
-# tags_assembla_csv = "#{dirname_assembla}/ticket-tags.csv"
-# attachments_assembla_csv = "#{dirname_assembla}/ticket-attachments.csv"
+tags_assembla_csv = "#{dirname_assembla}/ticket-tags.csv"
+attachments_assembla_csv = "#{dirname_assembla}/ticket-attachments.csv"
 
 @tickets_assembla = csv_to_array(tickets_assembla_csv)
 @comments_assembla = csv_to_array(comments_assembla_csv)
-# @tags_assembla = csv_to_array(tags_assembla_csv)
-# @attachments_assembla = csv_to_array(attachments_assembla_csv)
+@tags_assembla = csv_to_array(tags_assembla_csv)
+@attachments_assembla = csv_to_array(attachments_assembla_csv)
+
+# Jira tickets
+tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-all.csv"
+@tickets_jira = csv_to_array(tickets_jira_csv)
+
+# Convert assembla_ticket_id to jira_ticket
+@assembla_id_to_jira = {}
+@tickets_jira.each do |ticket|
+  jira_id = ticket['jira_ticket_id']
+  assembla_id = ticket['assembla_ticket_id']
+  @assembla_id_to_jira[assembla_id] = jira_id
+end
+
+# --- Filter by date if TICKET_CREATED_ON is defined --- #
+tickets_created_on = get_tickets_created_on
+
+if tickets_created_on
+  @tickets_assembla.select! { |item| item_newer_than?(item, tickets_created_on) }
+  @comments_assembla.select! { |item| @assembla_id_to_jira[item['ticket_id']] }
+  @tags_assembla.select! { |item| @assembla_id_to_jira[item['ticket_id']] }
+  @attachments_assembla.select! { |item| @assembla_id_to_jira[item['ticket_id']] }
+end
+
+puts "Total tickets: #{@tickets_assembla.length}"
+puts "Total comments: #{@comments_assembla.length}"
+puts "Total tags: #{@tags_assembla.length}"
+puts "Total attachments: #{@attachments_assembla.length}"
 
 # Assembla tickets
 
@@ -164,3 +191,6 @@ end
 
 puts "Comments #{@comments_ok.length} valid tickets"
 puts "Comments #{@comments_nok.length} invalid tickets\n#{@comments_nok.join("\n")}"
+
+puts
+puts "TODO: Attachments and tags"
