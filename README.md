@@ -16,13 +16,13 @@ Most of the actions can be done automatically via a pipeline of scripts, after p
 
 However, there are a few manual actions required since the Jira API does not support all possible actions, but these are minimal. It is important NOT to skip these manual changes as the successful migration depends on them.
 
+## Pipeline Steps
+
 The complete migration from start to finish consists of a series of scripts which are to be executed in order.
 
 Like a pipeline, each script processes data and generates a dump file to store the intermediate results which in turn are used as input for the following script.
 
 The reason for doing this that if something goes wrong you do not lose everything and can restart from the previous step.
-
-## Pipeline Steps
 
 ### Assembla export
 
@@ -39,15 +39,13 @@ The reason for doing this that if something goes wrong you do not lose everythin
 8. Get issue resolutions
 9. Get user roles
 10. Get issue statuses
-11. Get issue transitions
-12. Get projects
-13. Import users
-14. Import tickets
-15. Import ticket comments
-16. Download ticket attachments
-17. Import ticket attachments
-18. Update ticket status
-
+11. Get projects
+12. Import users
+13. Import tickets
+14. Import ticket comments
+15. Download ticket attachments
+16. Import ticket attachments
+17. Update ticket status
 
 ## Preparations
 
@@ -85,6 +83,7 @@ The same applies to the following additional (default) fields:
 * Rank
 * Assignee
 * Labels
+* Resolution
 
 ![](images/jira-configure-screen.png)
 
@@ -157,8 +156,7 @@ $ ruby 07-jira_get_priorities.rb
 $ ruby 08-jira_get_resolutions.rb
 $ ruby 09-jira_get_roles.rb
 $ ruby 10-jira_get_statuses.rb
-$ ruby 11-jira_get_transitions.rb
-$ ruby 12-jira_get_projects.rb
+$ ruby 11-jira_get_projects.rb
 ```
 
 ### Import users
@@ -176,7 +174,7 @@ POST /rest/api/2/user
 Read in the Assembla user file `data/:space/:project/users.csv` and create the Jira users if they do not already exist.
 
 ```
-$ ruby 13-jira_import_users.rb # => data/jira/jira-users.csv
+$ ruby 12-jira_import_users.rb # => data/jira/jira-users.csv
 ```
 
 The following user:
@@ -219,7 +217,7 @@ POST /rest/api/2/issue
 Now you are ready to import all of the tickets. Execute the following command:
 
 ```
-$ ruby 14-jira_import_tickets.rb # => data/jira/jira-tickets.csv
+$ ruby 13-jira_import_tickets.rb # => data/jira/jira-tickets.csv
 ```
 
 Results are saved in the output file `data/jira/jira-tickets-all.csv` with the following columns:
@@ -245,7 +243,7 @@ For the individual issue types `data/jira/jira-tickets-{issue-type}.csv` where `
 Now you are ready to import all of the comments. Execute the following command:
 
 ```
-$ ruby 15-jira_import_comments.rb # => data/jira/jira-comments.csv
+$ ruby 14-jira_import_comments.rb # => data/jira/jira-comments.csv
 ```
 
 Results are saved in the output file `data/jira/jira-comments.csv` with the following columns:
@@ -261,7 +259,7 @@ Before the attachments can be imported, they must first be downloaded to a local
 This is accomplished by executing the following command:
 
 ```
-$ ruby 16-jira_download_attachments.rb # => data/jira/jira-attachments-download.csv
+$ ruby 15-jira_download_attachments.rb # => data/jira/jira-attachments-download.csv
 ```
 
 The downloaded attachments are placed in the `data/jira/attachments` directory with the same filename, and the meta information is logged to the file `data/jira/jira-attachments-download.csv` containing the following columns:
@@ -279,7 +277,7 @@ which is used to import the attachments into Jira in the following section. A ch
 Now you are ready to import all of the attachments. Execute the following command:
 
 ```
-$ ruby 17-jira_import_attachments.rb # => data/jira/jira-attachments-import.csv
+$ ruby 16-jira_import_attachments.rb # => data/jira/jira-attachments-import.csv
 ```
 
 ### Update ticket status
@@ -287,20 +285,15 @@ $ ruby 17-jira_import_attachments.rb # => data/jira/jira-attachments-import.csv
 Now you are ready to update the Jira tickets in line with the original Assembla state. Execute the following command:
 
 ```
-$ ruby 18-jira_update_status.rb # => data/jira/jira-update-status.csv
+$ ruby 17-jira_update_status.rb # => data/jira/jira-update-status.csv
 ```
 
-### Transitions
 
-There are a number of pre-defined transitions which are used by Jira when changing the issue status:
-
-...
-
-## Field translations
+## Ticket field convertions
 
 Most of the ticket fields are converted from Assembla to Jira via a one-to-one mapping and are indicated as **bold** below.
 
-## Assembla ticket fields:
+### Assembla ticket fields:
 * id
 * **number**
 * **summary**
@@ -332,9 +325,9 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 * **hierarchy_type** (0 - No plan level, 1 - Subtask, 2 - Story, 3 - Epic)
 * due_date
 
-## Jira issue fields:
+### Jira issue fields:
 
-### Default
+#### Default
 * **issuetype**
 * timespent
 * **project**
@@ -376,7 +369,7 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 * votes
 * worklog
 
-### Custom
+#### Custom
 * 10000 Development
 * 10001 Team
 * 10002 Organizations
@@ -420,13 +413,21 @@ See: http://api-docs.assembla.cc/content/ref/ticket_associations_fields.html
 
 ### Statuses and states
 
-The Assembla statuses are: `new`, `in progress`, `blocked`, `testable`, `ready for acceptance`, `in acceptance testing`, `ready for deploy`, `done` and `invalid`.
+The Assembla ticket statuses are: `new`, `in progress`, `blocked`, `testable`, `ready for acceptance`, `in acceptance testing`, `ready for deploy`, `done` and `invalid`.
 
 An Assembla ticket can have two states: `0 - closed` (done or invalid) and `1 - open` (all others).
 
 The Jira statuses are: `todo` and `done`. On creation, all Jira tickets are set initially to `todo` by default.
 
-During the migration, Assembla tickets that are marked as `closed` will result in Jira tickets marked as `done`.
+The possible transitions for this initial `todo` state are `start progress` => `in progress` and `done` => `done`.
+
+During the migration, Assembla tickets that are marked as `closed` will result in Jira issues marked as `done` with resolution set to `fixed` for Assembla ticket status `done` and `won't fix` for Assembla ticket status `invalid`.
+
+For Assembla tickets marked as `in progress` the imported Jira issue will be set to `in progress`.
+
+IMPORTANT: all the other statuses will be ignored unless the administrator modifies the workflow for the given Jira project to include them explicitly.
+
+The names of these newly defined transtitions MUST be the same as the Assembla status names in order for the status migration to work properly.
 
 ### Components
 

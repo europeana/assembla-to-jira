@@ -90,7 +90,7 @@ def http_request(url, opts = {})
       puts "#{counter}GET #{url} => OK (0)"
     else
       message = "#{counter}GET #{url} => NOK (#{e.message})"
-      if (opts[:continue_onerror])
+      if opts[:continue_onerror]
         puts message
       else
         goodbye(message)
@@ -106,7 +106,7 @@ def get_response_count(response)
     json = JSON.parse(response)
     return 0 unless json.is_a?(Array)
      return json.length
-  rescue => e
+  rescue
     return 0
   end
 end
@@ -503,5 +503,5 @@ def rest_client_exception(e, method, url, payload = {})
   else
     message = err.inspect[0...250]
   end
-  puts "#{method} #{url} => NOK (#{message})"
+  puts "#{method} #{url}#{payload.empty? ? '' : ' ' + payload.inspect} => NOK (#{message})"
 end
