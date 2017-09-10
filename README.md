@@ -460,5 +460,7 @@ For full details, see [LICENSE.md](LICENSE.md).
 ## Author
 
 Kiffin Gish
+
 kiffin.gish@planet.nl
+
 http://gishtech.com
