@@ -2,7 +2,7 @@
 
 load './lib/common.rb'
 
-SPACE_NAME = 'Europeana Collections'
+SPACE_NAME = ENV['JIRA_API_PROJECT_NAME']
 
 @jira_users = []
 

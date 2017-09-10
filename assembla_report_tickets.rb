@@ -8,8 +8,7 @@
 
 load './lib/common.rb'
 
-# TODO: For the time being this is hard-coded
-SPACE_NAME = 'Europeana Collections'
+SPACE_NAME = ENV['JIRA_API_PROJECT_NAME']
 
 space = get_space(SPACE_NAME)
 dirname_assembla = get_output_dirname(space, 'assembla')

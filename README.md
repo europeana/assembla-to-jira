@@ -73,9 +73,10 @@ An example configuration file `.env.example` is provided for you to define a num
 ASSEMBLA_API_HOST=https://api.assembla.com/v1
 ASSEMBLA_API_KEY=api-key
 ASSEMBLA_API_SECRET=api-secret
-ASSEMBLA_URL_TICKETS=https://app.assembla.com/spaces/europeana-npc/tickets
-ASSEMBLA_SPACES=Project One,Project Two, Project Three
+ASSEMBLA_URL_TICKETS=https://app.assembla.com/spaces/space_1/tickets
+ASSEMBLA_SPACES=space_1,space_2,space_3
 JIRA_API_HOST=https://europeana.atlassian.net/rest/api/2
+JIRA_API_PROJECT_NAME=project_name
 JIRA_API_ADMIN_USERNAME=john.doe
 JIRA_API_ADMIN_PASSWORD=secret
 JIRA_API_UNKNOWN_USER=unknown.user

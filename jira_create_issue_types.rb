@@ -2,9 +2,8 @@
 
 load './lib/common.rb'
 
-# TODO: For the time being this is hard-coded
-SPACE_NAME = 'Europeana Collections'
-JIRA_PROJECT_NAME = 'Europeana Collections' + (@debug ? ' TEST' : '')
+SPACE_NAME = ENV['JIRA_API_PROJECT_NAME']
+JIRA_PROJECT_NAME = SPACE_NAME + (@debug ? ' TEST' : '')
 
 # --- ASSEMBLA Tickets --- #
 

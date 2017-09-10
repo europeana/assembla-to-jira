@@ -2,7 +2,7 @@
 
 load './lib/common.rb'
 
-SPACE_NAME = 'Europeana Collections'
+SPACE_NAME = ENV['JIRA_API_PROJECT_NAME']
 
 ITEMS = [
   { name: 'ticket_comments' }, # => ticket_id,ticket_number,id,comment,user_id,created_on,updated_at,ticket_changes,user_name,user_avatar_url
