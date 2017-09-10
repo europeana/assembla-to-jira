@@ -273,8 +273,10 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 * **milestone_id** => 10103 Sprint
 * notification_list
 * **space_id**
-* state (0 - closed, 1 - open)
-* status (new, blocked, testable, in acceptance testing, in progress, ready for deploy)
+* **state**
+    * 0 - closed, 1 - open
+* **status** (new, in progress, blocked, testable, ready for acceptance,
+          in acceptance testing, ready for deploy, done, invalid)
 * **story_importance** (1 - small, 4 - medium, 7 - large) => 10105 Story Points
 * updated_at
 * working_hours
@@ -296,14 +298,14 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 * **project**
 * fixVersions
 * aggregatetimespent
-* resolution
+* resolution (done, won't do. duplicate)
 * resolutiondate
 * workratio
 * lastViewed
 * watches
 * thumbnail
 * **created**
-* **priority**
+* **priority** (1 - Highest, 2 - High, 3 - Medium, 4 - Low, 5 - Lowest)
 * **labels**
 * timeestimate
 * aggregatetimeoriginalestimate
@@ -311,7 +313,7 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 * issuelinks
 * **assignee**
 * **updated**
-* status
+* **status** (todo, done)
 * components
 * issuekey
 * timeoriginalestimate
@@ -374,9 +376,19 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 
 See: http://api-docs.assembla.cc/content/ref/ticket_associations_fields.html
 
-### States
+### Statuses and states
 
-An Assembla ticket can have two states: 0 - closed, 1 - open.
+The Assembla statuses are: `new`, `in progress`, `blocked`, `testable`, `ready for acceptance`, `in acceptance testing`, `ready for deploy`, `done` and `invalid`.
+
+An Assembla ticket can have two states: `0 - closed` (done or invalid) and `1 - open` (all others).
+
+The Jira statuses are: `todo` and `done`. On creation, all Jira tickets are set initially to `todo` by default.
+
+During the migration, Assembla tickets that are marked as `closed` will result in Jira tickets marked as `done`.
+
+### Components
+
+For the time being components have not yet been implemented.
 
 ## Markdown
 
@@ -429,15 +441,11 @@ gsub(/\[\[url:(.*)\]\]/, '[\1|\1]')
 gsub(/@([^@]*)@/, '{\1}')
 ```
 
-## Mappings
-
-* Status - The value of this field is set automatically. It is never present on any editable form, and defaults to `TO DO` on ticket creation.
-
 ## Trouble-shooting
 
 * Error "User cannot be assigned issues." => activate, login as user and then deactivate.
 * If issue is an epic then the epic name custom field is required.
-* XSRF check failed => This is a known [bug](https://confluence.atlassian.com/jirakb/rest-api-calls-with-a-browser-user-agent-header-may-fail-csrf-checks-802591455.html) the workaround of which is to clear the user-agent header.
+* XSRF check failed => This is a known [bug](https://confluence.atlassian.com/jirakb/rest-api-calls-with-a-browser-user-agent-header-may-fail-csrf-checks-802591455.html).
 
 ## References
 
