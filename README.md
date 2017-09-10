@@ -22,6 +22,33 @@ Like a pipeline, each script processes data and generates a dump file to store t
 
 The reason for doing this that if something goes wrong you do not lose everything and can restart from the previous step.
 
+## Pipeline Steps
+
+### Assembla export
+
+1. Space
+2. Tickets
+3. Report users
+4. Report tickets
+
+### Jira import
+
+5. Create projects
+6. Get issue types
+7. Get issue priorities
+8. Get issue resolutions
+9. Get user roles
+10. Get issue statuses
+11. Get issue transitions
+12. Get projects
+13. Import users
+14. Import tickets
+15. Import ticket comments
+16. Download ticket attachments
+17. Import ticket attachments
+18. Update ticket status
+
+
 ## Preparations
 
 You will need to goto to the Jira website and login as admin.
@@ -103,13 +130,13 @@ You can run the export in a number of stages, output files being generated at ea
 The output files are located in the directory `data/assembla/:space/:project` as follows:
 
 ```
-$ 01-ruby assembla_export_space.rb # => space_tools.csv, users.csv, user_roles.csv tags.csv \
+$ ruby 01-assembla_export_space.rb # => space_tools.csv, users.csv, user_roles.csv tags.csv \
     milestones.csv, tickets-statuses.csv, tickets-custom-fields.csv, documents.csv, \
     wiki_pages.csv, tickets.csv
-$ 02-ruby assembla_export_tickets.rb # => ticket-comments.csv, ticket-attachments.csv, \
+$ ruby 02-assembla_export_tickets.rb # => ticket-comments.csv, ticket-attachments.csv, \
     ticket-tags.csv, ticket-associations.csv
-$ 03-ruby assembla_report_users.rb # => report-users.csv
-$ 04-ruby assembla_report_tickets.rb # => report-tickets.csv
+$ ruby 03-assembla_report_users.rb # => report-users.csv
+$ ruby 04-assembla_report_tickets.rb # => report-tickets.csv
 ```
 
 ## Import data into Jira
@@ -130,7 +157,8 @@ $ ruby 07-jira_get_priorities.rb
 $ ruby 08-jira_get_resolutions.rb
 $ ruby 09-jira_get_roles.rb
 $ ruby 10-jira_get_statuses.rb
-$ ruby 11-jira_get_projects.rb
+$ ruby 11-jira_get_transitions.rb
+$ ruby 12-jira_get_projects.rb
 ```
 
 ### Import users
@@ -148,7 +176,7 @@ POST /rest/api/2/user
 Read in the Assembla user file `data/:space/:project/users.csv` and create the Jira users if they do not already exist.
 
 ```
-$ ruby 12-jira_import_users.rb # => data/jira/jira-users.csv
+$ ruby 13-jira_import_users.rb # => data/jira/jira-users.csv
 ```
 
 The following user:
@@ -191,7 +219,7 @@ POST /rest/api/2/issue
 Now you are ready to import all of the tickets. Execute the following command:
 
 ```
-$ ruby 13-jira_import_tickets.rb # => data/jira/jira-tickets.csv
+$ ruby 14-jira_import_tickets.rb # => data/jira/jira-tickets.csv
 ```
 
 Results are saved in the output file `data/jira/jira-tickets-all.csv` with the following columns:
@@ -217,7 +245,7 @@ For the individual issue types `data/jira/jira-tickets-{issue-type}.csv` where `
 Now you are ready to import all of the comments. Execute the following command:
 
 ```
-$ ruby 14-jira_import_comments.rb # => data/jira/jira-comments.csv
+$ ruby 15-jira_import_comments.rb # => data/jira/jira-comments.csv
 ```
 
 Results are saved in the output file `data/jira/jira-comments.csv` with the following columns:
@@ -233,7 +261,7 @@ Before the attachments can be imported, they must first be downloaded to a local
 This is accomplished by executing the following command:
 
 ```
-$ ruby 15-jira_download_attachments.rb # => data/jira/jira-attachments-download.csv
+$ ruby 16-jira_download_attachments.rb # => data/jira/jira-attachments-download.csv
 ```
 
 The downloaded attachments are placed in the `data/jira/attachments` directory with the same filename, and the meta information is logged to the file `data/jira/jira-attachments-download.csv` containing the following columns:
@@ -251,7 +279,7 @@ which is used to import the attachments into Jira in the following section. A ch
 Now you are ready to import all of the attachments. Execute the following command:
 
 ```
-$ ruby 16-jira_import_attachments.rb # => data/jira/jira-attachments-import.csv
+$ ruby 17-jira_import_attachments.rb # => data/jira/jira-attachments-import.csv
 ```
 
 ### Update ticket status
@@ -259,8 +287,14 @@ $ ruby 16-jira_import_attachments.rb # => data/jira/jira-attachments-import.csv
 Now you are ready to update the Jira tickets in line with the original Assembla state. Execute the following command:
 
 ```
-$ ruby 17-jira_update_status.rb # => data/jira/jira-update-status.csv
+$ ruby 18-jira_update_status.rb # => data/jira/jira-update-status.csv
 ```
+
+### Transitions
+
+There are a number of pre-defined transitions which are used by Jira when changing the issue status:
+
+...
 
 ## Field translations
 
