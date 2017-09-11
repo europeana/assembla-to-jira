@@ -4,17 +4,36 @@ A collection of advanced tooling for a complete data migration from [Assembla](h
 
 ## Introduction
 
-Have you ever wanted to use JIRA instead of Assembla, but you find the switch too risky because you already have so much important project data in place in Assembla?
+Have you ever wanted to use JIRA instead of Assembla, but were afraid that the switch to Jira was too risky because you already have so much important data in Assembla?
 
-JIRA does offer a number of standard add-ons to make migration easier, but unfortunately it does not offer any tools for Assembla.
+JIRA does offer a number of standard add-ons to make migration easier, but unfortunately it does not offer any tools for migrating to Assembla.
 
-However, you are now in luck. By using these Assembla-to-Jira migration tools, it should be possible to export all of the relevant Assemebla space data and then import most (if not all) of that data into a Jira project.
+However, you are now in luck! By using these Assembla-to-Jira migration tools, it should be very easy to export all of the relevant Assemebla data and import most (if not all) of it into a Jira project.
 
 Usage is made of the [Assembla API](http://api-docs.assembla.cc/content/api_reference.html) and the [JIRA API](https://docs.atlassian.com/jira/REST/cloud/) in order to hook up both environments and make the data transformations.
 
-Most of the actions can be done automatically via a pipeline of scripts, after proper configuration of parameters in the `.env` file.
+Most of the actions can be done automatically via a pipeline of scripts, after proper configuration of the required parameters in the `.env` file.
 
-However, there are a few manual actions required since the Jira API does not support all possible actions, but these are minimal. It is important NOT to skip these manual changes as the successful migration depends on them.
+However, there are a few manual actions required since the Jira API does not support all possible actions, but these are minimal. It is important NOT to skip these manual changes, as the successful migration depends on them.
+
+## Installation
+
+The toolset has been written with the [Ruby programming language](https://www.ruby-lang.org). In order to be able to use it, you will have to have downloaded and installed the following on your computer:
+
+* [Ruby](https://www.ruby-lang.org/en/downloads)
+* [Bundler](http://bundler.io)
+* [Git](https://git-scm.com/downloads)
+
+Once this has been done, you can checkout and install the toolset from the github repository.
+
+```
+$ git clone https://github.com/kgish/assembla-to-jira.git
+$ cd assembla-to-jira
+$ gem install bundler
+$ bundle install
+```
+
+At this point everything should be ready to use as explained in the following sections.
 
 ## Pipeline Steps
 
