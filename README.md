@@ -185,10 +185,10 @@ $ ruby 11-jira_get_projects.rb
 ```
 POST /rest/api/2/user
 {
-    'name': user['login'],
-    'password': user['login'],
-    'emailAddress': user['email'],
-    'displayName': user['name']
+  name: user['login'],
+  password: user['login'],
+  emailAddress: user['email'],
+  displayName: user['name']
 }
 ```
 
@@ -209,29 +209,29 @@ as defined in the `.env` file as `JIRA_API_UNKNOWN_USER`.
 ```
 POST /rest/api/2/issue
 {
-    'create': {},
-    'fields': {
-      'project': { 'id': project_id },
-      'summary': summary,
-      'issuetype': { 'id': issue_type[:id] },
-      'assignee': { 'name': assignee_name },
-      'reporter': { 'name': reporter_name },
-      'priority': { 'name': priority_name },
-      'labels': labels,
-      'description': description,
-      ...
-      'customfield_assembla_id': ticket_number,
-      'customfield_assembla_theme': theme_name,
-      'customfield_assembla_status': status_name,
-      'customfield_assembla_milestone': milestone[:name],
-      'customfield_rank': story_rank,
+  create: {},
+  fields: {
+    project: { id: project_id },
+    summary: summary,
+    issuetype: { id: issue_type[:id] },
+    assignee: { name: assignee_name },
+    reporter: { name: reporter_name },
+    priority: { name: priority_name },
+    labels: labels,
+    description: description,
+    ...
+    customfield_assembla_id: ticket_number,
+    customfield_assembla_theme: theme_name,
+    customfield_assembla_status: status_name,
+    customfield_assembla_milestone: milestone[:name],
+    customfield_rank: story_rank,
 
-      'customfield_assembla_reporter': UNKNOWN_USER, # if reporter is missing
-      'customfield_assembla_assignee': '',           # if assignee cannot be assigned issues
-      'customfield_epic_name: EPIC_NAME,             # if issue type is epic
-      'parent': { 'id': parent_id },                 # if issue type is sub-task
-      ...
-    }
+    customfield_assembla_reporter: UNKNOWN_USER, # if reporter is missing
+    customfield_assembla_assignee: '',           # if assignee cannot be assigned issues
+    customfield_epic_name: EPIC_NAME,            # if issue type is epic
+    parent: { id: parent_id },                   # if issue type is sub-task
+    ...
+  }
 }
 ```
 
@@ -309,6 +309,21 @@ $ ruby 17-jira_update_status.rb # => data/jira/jira-update-status.csv
 ```
 
 ### Update ticket associations
+
+```
+POST /rest/api/2/issueLink
+{
+  type: {
+    name: name
+  },
+  inwardIssue: {
+    id: ticket1_id
+  },
+  outwardIssue: {
+    id: ticket2_id
+  }
+}
+```
 
 Now you are ready to update the Jira tickets to reflect the original Assembla associations: `parent`, `child`, `related`, `duplicate`, `sibling`, `story`, `subtask`, `dependent` and `block`. Execute the following command:
 
