@@ -87,26 +87,26 @@ end
 # 8 - Block (ticket2 blocks ticket1)
 # 9 - Unknown
 
-@jira_associations_tickets = []
-
-@relationship_tickets.each_with_index do |ticket, index|
-  puts "#{ticket['ticket_id']} => '#{ticket}'"
-  # assembla_ticket_id = ticket['id']
-  # assembla_ticket_status = ticket['status']
-  # jira_ticket_id = @assembla_id_to_jira[ticket['id']]
-  # result = jira_update_association(jira_ticket_id, assembla_ticket_status, index + 1)
-  # @jira_associations_tickets << {
-  #   result: result.nil? ? 'NOK' : 'OK',
-  #   assembla_ticket_id: assembla_ticket_id,
-  #   assembla_ticket_status: assembla_ticket_status,
-  #   jira_ticket_id: jira_ticket_id,
-  #   jira_transition_from_id: result.nil? ? 0 : result[:transition][:from][:id],
-  #   jira_transition_from_name: result.nil? ? 0 : result[:transition][:from][:name],
-  #   jira_transition_to_id: result.nil? ? 0 : result[:transition][:to][:id],
-  #   jira_transition_to_name: result.nil? ? 0 : result[:transition][:to][:name]
-  # }
-end
-
-puts "\nTotal updates: #{@jira_associations_tickets.length}"
-associations_tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-associations.csv"
-write_csv_file(associations_tickets_jira_csv, @jira_associations_tickets)
+# @jira_associations_tickets = []
+#
+# @relationship_tickets.each_with_index do |ticket, index|
+#   puts "#{ticket['ticket_id']} => '#{ticket}'"
+#   assembla_ticket_id = ticket['id']
+#   assembla_ticket_status = ticket['status']
+#   jira_ticket_id = @assembla_id_to_jira[ticket['id']]
+#   result = jira_update_association(jira_ticket_id, assembla_ticket_status, index + 1)
+#   @jira_associations_tickets << {
+#     result: result.nil? ? 'NOK' : 'OK',
+#     assembla_ticket_id: assembla_ticket_id,
+#     assembla_ticket_status: assembla_ticket_status,
+#     jira_ticket_id: jira_ticket_id,
+#     jira_transition_from_id: result.nil? ? 0 : result[:transition][:from][:id],
+#     jira_transition_from_name: result.nil? ? 0 : result[:transition][:from][:name],
+#     jira_transition_to_id: result.nil? ? 0 : result[:transition][:to][:id],
+#     jira_transition_to_name: result.nil? ? 0 : result[:transition][:to][:name]
+#   }
+# end
+#
+# puts "\nTotal updates: #{@jira_associations_tickets.length}"
+# associations_tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-associations.csv"
+# write_csv_file(associations_tickets_jira_csv, @jira_associations_tickets)
