@@ -102,7 +102,6 @@ The same applies to the following additional (default) fields:
 * Rank
 * Assignee
 * Labels
-* Resolution
 
 ![](images/jira-configure-screen.png)
 
@@ -352,7 +351,7 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 * **project**
 * fixVersions
 * aggregatetimespent
-* resolution (done, won't do. duplicate)
+* resolution (done, won't do, duplicate)
 * resolutiondate
 * workratio
 * lastViewed
