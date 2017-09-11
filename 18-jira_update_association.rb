@@ -29,9 +29,11 @@ tickets_created_on = get_tickets_created_on
 
 if tickets_created_on
   puts "Filter newer than: #{tickets_created_on}"
-  @associations_assembla.select! { |association| @assembla_id_to_jira[association['ticket_id']]}
+  @associations_assembla.select! { |association| @assembla_id_to_jira[association['ticket_id']] }
 end
-puts "Total Assembla associations: #{@associations_assembla.length}"
+
+@total_assembla_associations = @associations_assembla.length
+puts "Total Assembla associations: #{@total_assembla_associations}"
 
 # Collect ticket statuses
 @relationship_names = {}
@@ -87,26 +89,54 @@ end
 # 8 - Block (ticket2 blocks ticket1)
 # 9 - Unknown
 
-# @jira_associations_tickets = []
-#
-# @relationship_tickets.each_with_index do |ticket, index|
-#   puts "#{ticket['ticket_id']} => '#{ticket}'"
-#   assembla_ticket_id = ticket['id']
-#   assembla_ticket_status = ticket['status']
-#   jira_ticket_id = @assembla_id_to_jira[ticket['id']]
-#   result = jira_update_association(jira_ticket_id, assembla_ticket_status, index + 1)
-#   @jira_associations_tickets << {
-#     result: result.nil? ? 'NOK' : 'OK',
-#     assembla_ticket_id: assembla_ticket_id,
-#     assembla_ticket_status: assembla_ticket_status,
-#     jira_ticket_id: jira_ticket_id,
-#     jira_transition_from_id: result.nil? ? 0 : result[:transition][:from][:id],
-#     jira_transition_from_name: result.nil? ? 0 : result[:transition][:from][:name],
-#     jira_transition_to_id: result.nil? ? 0 : result[:transition][:to][:id],
-#     jira_transition_to_name: result.nil? ? 0 : result[:transition][:to][:name]
-#   }
-# end
-#
-# puts "\nTotal updates: #{@jira_associations_tickets.length}"
-# associations_tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-associations.csv"
-# write_csv_file(associations_tickets_jira_csv, @jira_associations_tickets)
+def jira_update_association(name, ticket1_id, ticket2_id, counter)
+  result = nil
+  url = "#{URL_JIRA_ISSUES}/#{ticket1_id}/#{ticket2_id}/dummy"
+  payload = {
+    name: name
+  }.to_json
+  begin
+    percentage = ((counter * 100) / @total_assembla_associations).round.to_s.rjust(3)
+    # RestClient::Request.execute(method: :post, url: url, payload: payload, headers: JIRA_HEADERS)
+    puts "#{percentage}% [#{counter}|#{@total_assembla_tickets} PUT #{url} '#{name}' => OK"
+    result = true
+  rescue RestClient::ExceptionWithResponse => e
+    rest_client_exception(e, 'PUT', url, payload)
+  rescue => e
+    puts "#{percentage}% [#{counter}|#{@total_assembla_tickets} PUT #{url} #{payload.inspect} => NOK (#{e.message})"
+  end
+  result
+end
+
+@jira_associations_tickets = []
+
+@associations_assembla.each_with_index do |association, index|
+  name = association['relationship_name']
+  skip = name.match('unknown')
+  assembla_ticket1_id = association['ticket1_id']
+  assembla_ticket2_id = association['ticket2_id']
+  jira_ticket1_id = @assembla_id_to_jira[assembla_ticket1_id]
+  jira_ticket2_id = @assembla_id_to_jira[assembla_ticket2_id]
+  unless skip
+    results = jira_update_association(name, jira_ticket1_id, jira_ticket2_id, index + 1)
+  end
+  result = if skip
+             'SKIP'
+           elsif results
+             'OK'
+           else
+             'NOK'
+           end
+  @jira_associations_tickets << {
+    result: result,
+    assembla_ticket1_id: assembla_ticket1_id,
+    jira_ticket1_id: jira_ticket1_id,
+    assembla_ticket2_id: assembla_ticket2_id,
+    jira_ticket2_id: jira_ticket2_id,
+    relationship_name: name
+  }
+end
+
+puts "\nTotal updates: #{@jira_associations_tickets.length}"
+associations_tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-associations.csv"
+write_csv_file(associations_tickets_jira_csv, @jira_associations_tickets)
