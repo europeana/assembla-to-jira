@@ -526,6 +526,7 @@ With such a complicated tool, there'll always be some loose ends and/or addition
 * Completed date for closed issues
 * Ignored markdown: image, ticket number, user name and code snippets
 * Assign original authors to tickets, comments, attachments on creation
+* Assembla folowers and notification list
 * Refactor code as there is some redundant code and cleanup is needed
 
 ## References

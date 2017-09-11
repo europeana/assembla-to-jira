@@ -173,6 +173,8 @@ def write_csv_file(filename, results)
   puts filename
   CSV.open(filename, 'wb') do |csv|
     results.each_with_index do |result, index|
+      # TODO: This assumes that the first record contains all of the possible
+      # keys which is not necessarily true.
       csv << result.keys if index.zero?
       row = []
       result.keys.each do |field|

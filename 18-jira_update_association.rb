@@ -92,8 +92,25 @@ end
 def jira_update_association(name, ticket1_id, ticket2_id, counter)
   result = nil
   url = "#{URL_JIRA_ISSUES}/#{ticket1_id}/#{ticket2_id}/dummy"
+
   payload = {
-    name: name
+    update: {
+      issuelinks: [
+        {
+          add: {
+            type: {
+              name: name
+            },
+            inwardIssue: {
+              id: ticket1_id
+            },
+            outwardIssue: {
+              id: ticket2_id
+            }
+          }
+        }
+      ]
+    }
   }.to_json
   begin
     percentage = ((counter * 100) / @total_assembla_associations).round.to_s.rjust(3)
