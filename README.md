@@ -517,6 +517,16 @@ gsub(/@([^@]*)@/, '{\1}')
 * If issue is an epic then the epic name custom field is required.
 * XSRF check failed => This is a known [bug](https://confluence.atlassian.com/jirakb/rest-api-calls-with-a-browser-user-agent-header-may-fail-csrf-checks-802591455.html).
 
+## To do
+
+With such a complicated tool, there'll always be some loose ends and/or additional work to be done at a later time. Hopefully in the not so distant future, I'll have some time to tackle one or more of the following items:
+
+* Transition ticket status to blocked, testable, ready for acceptance, in acceptance testing, ready for deploy, e.g. in line with the original Assembla workflow
+* Update tickets with associations (related, duplicate, dependent, blocked)
+* Completed date for closed issues
+* Ignored markdown: image, ticket number, user name and code snippets
+* Assign original authors to tickets, comments, attachments on creation
+
 ## References
 
 * Assembla
