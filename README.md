@@ -43,6 +43,8 @@ Like a pipeline, each script processes data and generates a dump file to store t
 
 The reason for doing this that if something goes wrong you do not lose everything and can restart from the previous step.
 
+Each step will generate a log of the results in the form of a csv file for reference purposes, e.g. detecting which requests failed and why. For example, importing tickets will create the `data/jira/jira-tickets.csv` file.
+
 ### Assembla export
 
 1. Space
@@ -64,7 +66,8 @@ The reason for doing this that if something goes wrong you do not lose everythin
 14. Import ticket comments
 15. Download ticket attachments
 16. Import ticket attachments
-17. Update ticket status
+17. Update ticket status (resolutions)
+18. Update ticket associations
 
 ## Preparations
 
@@ -250,9 +253,8 @@ For the individual issue types `data/jira/jira-tickets-{issue-type}.csv` where `
 
 ### Import comments
 
-`POST /rest/api/2/issue/{issueIdOrKey}/comment`
-
 ```
+POST /rest/api/2/issue/{issueIdOrKey}/comment
 {
   body: "comments go here..."
 }
@@ -306,6 +308,13 @@ Now you are ready to update the Jira tickets in line with the original Assembla 
 $ ruby 17-jira_update_status.rb # => data/jira/jira-update-status.csv
 ```
 
+### Update ticket associations
+
+Now you are ready to update the Jira tickets to reflect the original Assembla associations: `parent`, `child`, `related`, `duplicate`, `sibling`, `story`, `subtask`, `dependent` and `block`. Execute the following command:
+
+```
+$ ruby 18-jira_update_association.rb # => data/jira/jira-update-associations.csv
+```
 
 ## Ticket field convertions
 
