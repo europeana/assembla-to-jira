@@ -117,7 +117,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
   ticket_number = ticket['number']
   summary = reformat_markdown(ticket['summary'])
   created_on = ticket['created_on']
-  completed_date = date_format_yyyy_mm_dd(ticket['created_date'])
+  completed_date = date_format_yyyy_mm_dd(ticket['completed_date'])
   reporter_name = @user_id_to_login[ticket['reporter_id']]
   assignee_name = @user_id_to_login[ticket['assigned_to_id']]
   priority_name = @priority_id_to_name[ticket['priority']]

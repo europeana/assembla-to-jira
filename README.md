@@ -89,15 +89,21 @@ The issue type `spike` or `bug` will be defined for any tickets whose summary st
 ![](images/jira-issue-types.png)
 
 Create the following custom fields (text field read-only):
-* Assembla-id
-* Assembla-theme
-* Assembla-status
-* Assembla-milestone
-* Assembla-reporter
-* Assembla-assignee
-* Assembla-completed
 
-IMPORTANT: Include each custom field in the project's `Simple Issue Tracking Create Issue` and `Simple Issue Tracking Edit/View Issue` screens, otherwise the ticket import will fail with the error message `Field 'field-name' cannot be set. It is not on the appropriate screen, or unknown`.
+* Assembla-Id
+* Assembla-Theme
+* Assembla-Status
+* Assembla-Milestone
+* Assembla-Reporter
+* Assembla-Assignee
+* Assembla-Completed
+
+and assign them to the following screens:
+
+* Simple Issue Tracking Create Issue
+* Simple Issue Tracking Edit/View Issue
+
+Otherwise the ticket import will fail with the error message `Field 'field-name' cannot be set. It is not on the appropriate screen, or unknown`.
 
 ![](images/jira-custom-fields.png)
 
@@ -570,6 +576,8 @@ gsub(/@([^@]*)@/, '{\1}')
 * Error "User cannot be assigned issues." => activate, login as user and then deactivate.
 * If issue is an epic then the epic name custom field is required.
 * XSRF check failed => This is a known [bug](https://confluence.atlassian.com/jirakb/rest-api-calls-with-a-browser-user-agent-header-may-fail-csrf-checks-802591455.html).
+* otherwise the ticket import will fail with the error message `Field 'field-name' cannot be set. It is not on the appropriate screen, or unknown`, ensure that the custom field 'field-name' has been created and assigned to the required screens (see above).
+* Error `key='customfield_10100 (Assembla-Completed)', reason='Operation value must be a number'`, ensure that the custom field is the correct type: text field read-only.
 
 ## To do
 
