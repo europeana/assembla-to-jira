@@ -36,7 +36,7 @@ OUTPUT_DIR_ASSEMBLA = "#{OUTPUT_DIR}/assembla"
 OUTPUT_DIR_JIRA = "#{OUTPUT_DIR}/jira"
 
 # The following custom fields MUST be defined AND associated with the proper screens
-CUSTOM_FIELD_NAMES = %w(Assembla-Id Assembla-Milestone Assembla-Theme Assembla-Status Assembla-Reporter Assembla-Assignee Epic\ Name Rank Story\ Points)
+CUSTOM_FIELD_NAMES = %w(Assembla-Id Assembla-Milestone Assembla-Theme Assembla-Status Assembla-Reporter Assembla-Assignee Assembla-Completed Epic\ Name Rank Story\ Points)
 
 def get_tickets_created_on
   env = ENV['TICKETS_CREATED_ON']
@@ -60,8 +60,26 @@ def headers_user_login(user_login)
   { 'Authorization': "Basic #{Base64.encode64(user_login + ':' + user_login)}", 'Content-Type': 'application/json' }
 end
 
+def date_format_yyyy_mm_dd(dt)
+  return dt unless dt.is_a?(String) && dt.length.positive?
+  begin
+    date = DateTime.parse(dt)
+  rescue
+    return dt
+  end
+  year = date.year
+  month = "%02d" % date.month
+  day = "%02d" % date.day
+  "#{year}-#{month}-#{day}"
+end
+
 def date_time(dt)
-  date = DateTime.parse(dt)
+  return dt unless dt.is_a?(String) && dt.length.positive?
+  begin
+    date = DateTime.parse(dt)
+  rescue
+    return dt
+  end
   day = "%02d" % date.day
   month = %w(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)[date.month-1]
   year = date.year
@@ -172,12 +190,18 @@ end
 def write_csv_file(filename, results)
   puts filename
   CSV.open(filename, 'wb') do |csv|
-    results.each_with_index do |result, index|
-      # TODO: This assumes that the first record contains all of the possible
-      # keys which is not necessarily true.
-      csv << result.keys if index.zero?
-      row = []
+    # Scan whole file to collect all possible field names so that
+    # the list of columns is complete.
+    fields = []
+    results.each do |result|
       result.keys.each do |field|
+        fields << field unless fields.include?(field)
+      end
+    end
+    csv << fields
+    results.each do |result|
+      row = []
+      fields.each do |field|
         row.push(result[field])
       end
       csv << row

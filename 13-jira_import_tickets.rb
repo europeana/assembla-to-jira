@@ -117,6 +117,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
   ticket_number = ticket['number']
   summary = reformat_markdown(ticket['summary'])
   created_on = ticket['created_on']
+  completed_date = date_format_yyyy_mm_dd(ticket['created_date'])
   reporter_name = @user_id_to_login[ticket['reporter_id']]
   assignee_name = @user_id_to_login[ticket['assigned_to_id']]
   priority_name = @priority_id_to_name[ticket['priority']]
@@ -164,6 +165,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
       "#{@customfield_name_to_id['Assembla-Theme']}": theme_name,
       "#{@customfield_name_to_id['Assembla-Status']}": status_name,
       "#{@customfield_name_to_id['Assembla-Milestone']}": milestone[:name],
+      "#{@customfield_name_to_id['Assembla-Completed']}": completed_date,
       "#{@customfield_name_to_id['Rank']}": story_rank,
 
       # TODO: "customfield_10105"=>"Field 'customfield_10105' cannot be set. It is not on the appropriate screen, or unknown."

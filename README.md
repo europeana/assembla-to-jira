@@ -94,6 +94,7 @@ Create the following custom fields (text field read-only):
 * Assembla-milestone
 * Assembla-reporter
 * Assembla-assignee
+* Assembla-completed
 
 IMPORTANT: Include each custom field in the project's `Simple Issue Tracking Create Issue` and `Simple Issue Tracking Edit/View Issue` screens, otherwise the ticket import will fail with the error message `Field 'field-name' cannot be set. It is not on the appropriate screen, or unknown`.
 
@@ -341,14 +342,14 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 * **summary**
 * **description**
 * **priority** (1 - Highest, 2 - High, 3 - Medium, 4 - Low, 5 - Lowest)
-* completed_date
+* **completed_date**
 * component_id
 * **created_on**
 * permission_type
 * **importance** (Sorting criteria for Assembla Planner) => 10104 Rank
 * is_story (true or false, if true hierarchy_type = 2)
 * **milestone_id** => 10103 Sprint
-* notification_list
+* **notification_list**
 * **space_id**
 * **state**
     * 0 - closed, 1 - open
@@ -363,7 +364,7 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 * total_working_hours
 * **assigned_to_id**
 * **reporter_id**
-* custom_fields
+* **custom_fields** (theme)
 * **hierarchy_type** (0 - No plan level, 1 - Subtask, 2 - Story, 3 - Epic)
 * due_date
 
@@ -379,7 +380,7 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 * resolutiondate
 * workratio
 * lastViewed
-* watches
+* **watches**
 * thumbnail
 * **created**
 * **priority** (1 - Highest, 2 - High, 3 - Medium, 4 - Low, 5 - Lowest)
@@ -387,12 +388,12 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 * timeestimate
 * aggregatetimeoriginalestimate
 * versions
-* issuelinks
+* **issuelinks**
 * **assignee**
 * **updated**
 * **status** (todo, done)
 * components
-* issuekey
+* **issuekey**
 * timeoriginalestimate
 * **description**
 * timetracking
@@ -438,6 +439,8 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 * **10400 Assembla**
 
 ### Associations
+
+The Assembly associations are converted into Jira issue links.
 
 ```
 0 - Parent (ticket2 is parent of ticket1 and ticket1 is child of ticket2)
@@ -537,12 +540,13 @@ gsub(/@([^@]*)@/, '{\1}')
 With such a complicated tool, there'll always be some loose ends and/or additional work to be done at a later time. Hopefully in the not so distant future, I'll have some time to tackle one or more of the following items:
 
 * Transition ticket status to blocked, testable, ready for acceptance, in acceptance testing, ready for deploy, e.g. in line with the original Assembla workflow
-* Update tickets with associations (related, duplicate, dependent, blocked)
+* Convert Assembla associations (related, duplicate, dependent, blocked) to Jira issue links
 * Completed date for closed issues
-* Ignored markdown: image, ticket number, user name and code snippets
+* Implement components
+* Implement extra markdown: image, ticket number, user name and code snippets
 * Assign original authors to tickets, comments, attachments on creation
-* Assembla folowers and notification list
-* Refactor code as there is some redundant code and cleanup is needed
+* Convert Assembla notification list to Jira followers
+* Refactor code
 
 ## References
 
