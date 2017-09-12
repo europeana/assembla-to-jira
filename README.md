@@ -583,14 +583,13 @@ gsub(/@([^@]*)@/, '{\1}')
 
 With such a complicated tool, there'll always be some loose ends and/or additional work to be done at a later time. Hopefully in the not so distant future, I'll have some time to tackle one or more of the following items:
 
-* Transition ticket status to blocked, testable, ready for acceptance, in acceptance testing, ready for deploy, e.g. in line with the original Assembla workflow
 * Convert Assembla associations (related, duplicate, dependent, blocked) to Jira issue links
-* Completed date for closed issues
+* Transition ticket status to blocked, testable, ready for acceptance, in acceptance testing, ready for deploy, e.g. in line with the original Assembla workflow
 * Implement components
 * Implement extra markdown: image, ticket number, user name and code snippets
 * Assign original authors to tickets, comments, attachments on creation
 * Convert Assembla notification list to Jira followers
-* Refactor code
+* Refactor and cleanup code, removing duplication and rubocop warnings.
 
 ## References
 
