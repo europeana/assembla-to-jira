@@ -78,16 +78,45 @@ puts "\nTotal tickets: #{@relationship_tickets.keys.length}"
   puts "#{ticket_id}: #{names.join(',')}"
 end
 
-# 0 - Parent (ticket2 is parent of ticket1 and ticket1 is child of ticket2)
-# 1 - Child  (ticket2 is child of ticket1 and ticket2 is parent of ticket1)
-# 2 - Related (ticket2 is related to ticket1)
-# 3 - Duplicate (ticket2 is duplication of ticket1)
-# 4 - Sibling (ticket2 is sibling of ticket1)
-# 5 - Story (ticket2 is story and ticket1 is subtask of the story)
-# 6 - Subtask (ticket2 is subtask of a story and ticket1 is the story)
-# 7 - Dependent (ticket2 depends on ticket1)
-# 8 - Block (ticket2 blocks ticket1)
-# 9 - Unknown
+# ---------------------------------------------------------------------------
+#
+# Assembla associations:
+#
+# |  #  | Name      | Ticket2           | Ticket1       |
+# | --- | --------- | ----------------- | ------------- |
+# |  0  | Parent    | is parent of      | is child of   |
+# |  1  | Child     | is child of       | is parent of  |
+# |  2  | Related   | related to        |               |
+# |  3  | Duplicate | is duplication of |               |
+# |  4  | Sibling   | is sibling of     |               |
+# |  5  | Story     | is story          | is subtask of |
+# |  6  | Subtask   | is subtask of     | is story      |
+# |  7  | Dependent | depends on        |               |
+# |  8  | Block     | blocks            |               |
+#
+# Jira issue link types:
+#
+# | Name      | Inward           | Outward    |
+# | --------- | ---------------- | ---------- |
+# | Blocks    | is blocked by    | blocks     |
+# | Cloners   | is cloned by     | clones     |
+# | Duplicate | is duplicated by | duplicates |
+# | Relates   | relates to       | relates to |
+#
+# POST /rest/api/2/issueLink
+# {
+#   type: {
+#     name: name
+#   },
+#   inwardIssue: {
+#     id: ticket1_id
+#   },
+#   outwardIssue: {
+#     id: ticket2_id
+#   }
+# }
+#
+# ---------------------------------------------------------------------------
 
 def jira_update_association(name, ticket1_id, ticket2_id, counter)
   result = nil
