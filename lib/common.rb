@@ -505,6 +505,8 @@ end
 # [[url:URL|TEXT]] => [TEXT|URL]
 # [[url:URL]] => [URL|URL]
 #
+# @username => [~username]
+#
 # Code snippet => ignore
 #
 # Wiki links => ignore
@@ -522,7 +524,8 @@ def reformat_markdown(content)
     markdown << line.
         gsub(/\[\[url:(.*)\|(.*)\]\]/, '[\2|\1]').
         gsub(/\[\[url:(.*)\]\]/, '[\1|\1]').
-        gsub(/@([^@]*)@/, '{\1}')
+        gsub(/@([^@]*)@/, '{\1}').
+        gsub(/@([^ $]*)( |$)/, '*[~\1]\2*')
   end
   markdown.join("\n")
 end

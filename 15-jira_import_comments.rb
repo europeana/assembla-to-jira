@@ -60,8 +60,8 @@ def jira_create_comment(issue_id, user_id, comment, counter)
   result = nil
   url = "#{URL_JIRA_ISSUES}/#{issue_id}/comment"
   user_login = @user_id_to_login[user_id]
-  author_link = user_login ? "[~#{user_login}]" : 'unknown (#{user_id})'
-  body = "Author #{author_link} | Created on #{date_time(comment['created_on'])}\n\n#{comment['comment']}"
+  author_link = user_login ? "[~#{user_login}]" : "unknown (#{user_id})"
+  body = "Author #{author_link} | Created on #{date_time(comment['created_on'])}\n\n#{reformat_markdown(comment['comment'])}"
   payload = {
     body: body
   }.to_json
