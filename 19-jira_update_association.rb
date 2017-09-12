@@ -122,6 +122,8 @@ def jira_update_association(name, ticket1_id, ticket2_id, counter)
   result = nil
   url = "#{URL_JIRA_ISSUES}/#{ticket1_id}/#{ticket2_id}/dummy"
 
+
+
   payload = {
     update: {
       issuelinks: [

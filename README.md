@@ -55,8 +55,8 @@ Each step will generate a log of the results in the form of a csv file for refer
 ### Jira import
 
 5. Create projects
-6. Get issue types
-7. Get issue link types
+6. Create issue link types
+7. Get issue types
 8. Get issue priorities
 9. Get issue resolutions
 10. Get user roles
@@ -177,16 +177,21 @@ You can run the import in a number of stages, output files being generated at ea
 $ ruby 05-jira_create_projects.rb # => data/jira/jira-projects.csv
 ```
 
+### Create issue link types
+
+```
+$ ruby 07-jira_create_issuelink_types.rb # => data/jira/jira-issuelink-types.csv
+```
+
 ### Get general information
 
 ```
-$ ruby 06-jira_get_issue_types.rb
-$ ruby 07-jira_get_issuelink_types.rb
-$ ruby 08-jira_get_priorities.rb
-$ ruby 09-jira_get_resolutions.rb
-$ ruby 10-jira_get_roles.rb
-$ ruby 11-jira_get_statuses.rb
-$ ruby 12-jira_get_projects.rb
+$ ruby 07-jira_get_issue_types.rb # => data/jira/jira-issue-types.csv
+$ ruby 08-jira_get_priorities.rb  # => data/jira/jira-priorities.csv
+$ ruby 09-jira_get_resolutions.rb # => data/jira/jira-resolutions.csv
+$ ruby 10-jira_get_roles.rb       # => data/jira/jira-roles.csv
+$ ruby 11-jira_get_statuses.rb    # => data/jira/jira-statuses.csv
+$ ruby 12-jira_get_projects.rb    # => data/jira/jira-projects.csv
 ```
 
 ### Import users
