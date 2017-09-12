@@ -13,7 +13,7 @@ users_csv = "#{dirname_assembla}/report-users.csv"
 users = csv_to_array(users_csv)
 @user_id_to_login = {}
 users.each do |user|
-  @user_id_to_login[user['id']] = user['login']
+  @user_id_to_login[user['id']] = user['login'].sub(/@.*$/,'')
 end
 
 # Assembla attachments
