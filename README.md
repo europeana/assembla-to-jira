@@ -56,18 +56,19 @@ Each step will generate a log of the results in the form of a csv file for refer
 
 5. Create projects
 6. Get issue types
-7. Get issue priorities
-8. Get issue resolutions
-9. Get user roles
-10. Get issue statuses
-11. Get projects
-12. Import users
-13. Import tickets
-14. Import ticket comments
-15. Download ticket attachments
-16. Import ticket attachments
-17. Update ticket status (resolutions)
-18. Update ticket associations
+7. Get issue link types
+8. Get issue priorities
+9. Get issue resolutions
+10. Get user roles
+11. Get issue statuses
+12. Get projects
+13. Import users
+14. Import tickets
+15. Import ticket comments
+16. Download ticket attachments
+17. Import ticket attachments
+18. Update ticket status (resolutions)
+19. Update ticket associations
 
 ## Preparations
 
@@ -174,11 +175,12 @@ $ ruby 05-jira_create_projects.rb # => data/jira/jira-projects.csv
 
 ```
 $ ruby 06-jira_get_issue_types.rb
-$ ruby 07-jira_get_priorities.rb
-$ ruby 08-jira_get_resolutions.rb
-$ ruby 09-jira_get_roles.rb
-$ ruby 10-jira_get_statuses.rb
-$ ruby 11-jira_get_projects.rb
+$ ruby 07-jira_get_issuelink_types.rb
+$ ruby 08-jira_get_priorities.rb
+$ ruby 09-jira_get_resolutions.rb
+$ ruby 10-jira_get_roles.rb
+$ ruby 11-jira_get_statuses.rb
+$ ruby 12-jira_get_projects.rb
 ```
 
 ### Import users
@@ -196,7 +198,7 @@ POST /rest/api/2/user
 Read in the Assembla user file `data/:space/:project/users.csv` and create the Jira users if they do not already exist.
 
 ```
-$ ruby 12-jira_import_users.rb # => data/jira/jira-users.csv
+$ ruby 13-jira_import_users.rb # => data/jira/jira-users.csv
 ```
 
 The following user:
@@ -239,7 +241,7 @@ POST /rest/api/2/issue
 Now you are ready to import all of the tickets. Execute the following command:
 
 ```
-$ ruby 13-jira_import_tickets.rb # => data/jira/jira-tickets.csv
+$ ruby 14-jira_import_tickets.rb # => data/jira/jira-tickets.csv
 ```
 
 Results are saved in the output file `data/jira/jira-tickets-all.csv` with the following columns:
@@ -264,7 +266,7 @@ POST /rest/api/2/issue/{issueIdOrKey}/comment
 Now you are ready to import all of the comments. Execute the following command:
 
 ```
-$ ruby 14-jira_import_comments.rb # => data/jira/jira-comments.csv
+$ ruby 15-jira_import_comments.rb # => data/jira/jira-comments.csv
 ```
 
 Results are saved in the output file `data/jira/jira-comments.csv` with the following columns:
@@ -280,7 +282,7 @@ Before the attachments can be imported, they must first be downloaded to a local
 This is accomplished by executing the following command:
 
 ```
-$ ruby 15-jira_download_attachments.rb # => data/jira/jira-attachments-download.csv
+$ ruby 16-jira_download_attachments.rb # => data/jira/jira-attachments-download.csv
 ```
 
 The downloaded attachments are placed in the `data/jira/attachments` directory with the same filename, and the meta information is logged to the file `data/jira/jira-attachments-download.csv` containing the following columns:
@@ -298,7 +300,7 @@ which is used to import the attachments into Jira in the following section. A ch
 Now you are ready to import all of the attachments. Execute the following command:
 
 ```
-$ ruby 16-jira_import_attachments.rb # => data/jira/jira-attachments-import.csv
+$ ruby 17-jira_import_attachments.rb # => data/jira/jira-attachments-import.csv
 ```
 
 ### Update ticket status
@@ -306,10 +308,44 @@ $ ruby 16-jira_import_attachments.rb # => data/jira/jira-attachments-import.csv
 Now you are ready to update the Jira tickets in line with the original Assembla state. Execute the following command:
 
 ```
-$ ruby 17-jira_update_status.rb # => data/jira/jira-update-status.csv
+$ ruby 18-jira_update_status.rb # => data/jira/jira-update-status.csv
 ```
 
 ### Update ticket associations
+
+For the default Assembla associations the relationship names are:
+
+|  #  | Name      | Ticket2           | Ticket1       |
+| --- | --------- | ----------------- | ------------- |
+|  0  | Parent    | is parent of      | is child of   |
+|  1  | Child     | is child of       | is parent of  |
+|  2  | Related   | related to        |               |
+|  3  | Duplicate | is duplication of |               |
+|  4  | Sibling   | is sibling of     |               |
+|  5  | Story     | is story          | is subtask of |
+|  6  | Subtask   | is subtask of     | is story      |
+|  7  | Dependent | depends on        |               |
+|  8  | Block     | blocks            |               |
+
+0 - Parent (ticket2 is parent of ticket1 and ticket1 is child of ticket2)
+1 - Child  (ticket2 is child of ticket1 and ticket2 is parent of ticket1)
+2 - Related (ticket2 is related to ticket1)
+3 - Duplicate (ticket2 is duplication of ticket1)
+4 - Sibling (ticket2 is sibling of ticket1)
+5 - Story (ticket2 is story and ticket1 is subtask of the story)
+6 - Subtask (ticket2 is subtask of a story and ticket1 is the story)
+7 - Dependent (ticket2 depends on ticket1)
+8 - Block (ticket2 blocks ticket1)
+
+For the default Jira issue link types we have:
+
+| Name      | Inward           | Outward    |
+| --------- | ---------------- | ---------- |
+| Blocks    | is blocked by    | blocks     |
+| Cloners   | is cloned by     | clones     |
+| Duplicate | is duplicated by | duplicates |
+| Relates   | relates to       | relates to |
+
 
 ```
 POST /rest/api/2/issueLink
@@ -326,10 +362,10 @@ POST /rest/api/2/issueLink
 }
 ```
 
-Now you are ready to update the Jira tickets to reflect the original Assembla associations: `parent`, `child`, `related`, `duplicate`, `sibling`, `story`, `subtask`, `dependent` and `block`. Execute the following command:
+Now you are ready to update the Jira tickets to reflect the original Assembla associations. Execute the following command:
 
 ```
-$ ruby 18-jira_update_association.rb # => data/jira/jira-update-associations.csv
+$ ruby 19-jira_update_association.rb # => data/jira/jira-update-associations.csv
 ```
 
 ## Ticket field convertions

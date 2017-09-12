@@ -30,6 +30,7 @@ URL_JIRA_ROLES = "#{JIRA_API_HOST}/role"
 URL_JIRA_STATUSES = "#{JIRA_API_HOST}/status"
 URL_JIRA_FIELDS = "#{JIRA_API_HOST}/field"
 URL_JIRA_ISSUES = "#{JIRA_API_HOST}/issue"
+URL_JIRA_ISSUELINK_TYPES = "#{JIRA_API_HOST}/issueLinkType"
 
 OUTPUT_DIR = 'data'
 OUTPUT_DIR_ASSEMBLA = "#{OUTPUT_DIR}/assembla"
@@ -377,6 +378,24 @@ def jira_get_issue_types
     end
   rescue => e
     puts "GET #{URL_JIRA_ISSUE_TYPES} => NOK (#{e.message})"
+  end
+  result
+end
+
+def jira_get_issuelink_types
+  result = nil
+  begin
+    response = RestClient::Request.execute(method: :get, url: URL_JIRA_ISSUELINK_TYPES, headers: JIRA_HEADERS)
+    result = JSON.parse(response)
+    result = result['issueLinkTypes']
+    if result
+      result.each do |r|
+        r.delete_if { |k, _| k.to_s =~ /self/i }
+      end
+      puts "GET #{URL_JIRA_ISSUELINK_TYPES} => OK (#{result.length})"
+    end
+  rescue => e
+    puts "GET #{URL_JIRA_ISSUELINK_TYPES} => NOK (#{e.message})"
   end
   result
 end
