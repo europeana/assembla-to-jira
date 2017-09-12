@@ -357,7 +357,6 @@ For the default Jira issue link types we have:
 | Duplicate | is duplicated by | duplicates |
 | Relates   | relates to       | relates to |
 
-
 ```
 POST /rest/api/2/issueLink
 {
@@ -588,7 +587,6 @@ gsub(/@([^@]*)@/, '{\1}')
 
 With such a complicated tool, there'll always be some loose ends and/or additional work to be done at a later time. Hopefully in the not so distant future, I'll have some time to tackle one or more of the following items:
 
-* Convert Assembla associations (related, duplicate, dependent, blocked) to Jira issue links
 * Transition ticket status to blocked, testable, ready for acceptance, in acceptance testing, ready for deploy, e.g. in line with the original Assembla workflow
 * Implement components
 * Implement extra markdown: image, ticket number, user name and code snippets
