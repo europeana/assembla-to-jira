@@ -532,6 +532,8 @@ The names of these newly defined transtitions MUST be the same as the Assembla s
 
 For the time being components have not yet been implemented.
 
+According to the Assembla API Documentation: `Ticket components API is deprecated. Please use custom fields.`
+
 ## Markdown
 
 The [Assembla markdown](http://assemble.io/docs/Cheatsheet-Markdown.html) syntax is differeent from [JIRA Markdown](https://jira.atlassian.com/secure/WikiRendererHelpAction.jspa?section=all). Therefore, the certain markdown notations need to be translated ast push follows.
@@ -599,9 +601,9 @@ With such a complicated tool, there'll always be some loose ends and/or addition
 
 * Transition ticket status to blocked, testable, ready for acceptance, in acceptance testing, ready for deploy, e.g. in line with the original Assembla workflow
 * Implement components
-* Implement extra markdown: image, ticket number, user name and code snippets
+* Implement extra markdown: image, ticket number and code snippets
 * Assign original authors to tickets, comments, attachments on creation
-* Convert Assembla notification list to Jira followers
+* Convert Assembla `followers` and `notification list` to the relevant Jira followers
 * Refactor and cleanup code, removing duplication and rubocop warnings.
 
 ## References
