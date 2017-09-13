@@ -574,7 +574,6 @@ Numbered - Bullet list
 ### Ignore (will be ignored and passed through unchanged)
 
 ```
-[[image:IMAGE]]
 Code snippet
 Wiki links
 [[ticket:NUMBER]]
@@ -585,6 +584,8 @@ Wiki links
 ### Reformat (will be reformatted into Jira markdown)
 
 ```
+[[image:IMAGE]] => !name(IMAGE)|thumbnail!
+[[image:IMAGE|text]] => !name(IMAGE)|thumbnail!
 @login => [~login]
 @inline code@ => {inline code}
 [[url:URL|TEXT]] => [TEXT|URL]

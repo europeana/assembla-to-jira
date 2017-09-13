@@ -502,7 +502,8 @@ end
 # Numbered list => same
 # Numbered - Bullet list => same?
 #
-# [[image:IMAGE]] => ignore
+# [[image:IMAGE]] => !name(IMAGE)|thumbnail!
+# [[image:IMAGE|text]] => !name(IMAGE)|thumbnail!
 #
 # [[url:URL|TEXT]] => [TEXT|URL]
 # [[url:URL]] => [URL|URL]
