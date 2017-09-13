@@ -372,6 +372,14 @@ POST /rest/api/2/issueLink
 }
 ```
 
+However, since Jira already takes care of a number of issue links during issue creation (story, subtask, etc), we should disable them in the `.env` configuration file like this:
+
+```
+ASSEMBLA_SKIP_ASSOCIATIONS=parent,child,story,subtask
+```
+
+If for some reason you do not want to do this, simple comment out the line, or if you prefer to skip other Assembla association just edit the line.
+
 Now you are ready to update the Jira tickets to reflect the original Assembla associations. Execute the following command:
 
 ```

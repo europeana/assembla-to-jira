@@ -153,7 +153,7 @@ end
 
 @associations_assembla.each_with_index do |association, index|
   name = association['relationship_name']
-  skip = name.match('unknown')
+  skip = ASSEMBLA_SKIP_ASSOCIATIONS.include?(name.split.first)
   assembla_ticket1_id = association['ticket1_id']
   assembla_ticket2_id = association['ticket2_id']
   jira_ticket1_id = @assembla_id_to_jira[assembla_ticket1_id]
