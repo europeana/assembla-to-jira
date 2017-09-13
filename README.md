@@ -16,6 +16,8 @@ Most of the actions can be done automatically via a pipeline of scripts, after p
 
 However, there are a few manual actions required since the Jira API does not support all possible actions, but these are minimal. It is important NOT to skip these manual changes, as the successful migration depends on them.
 
+If you need help, please check out the [support](https://github.com/kgish/assembla-to-jira#support) section.
+
 ## Installation
 
 The toolset has been written with the [Ruby programming language](https://www.ruby-lang.org). In order to be able to use it, you will have to have downloaded and installed the following on your computer:
@@ -130,6 +132,7 @@ ASSEMBLA_API_KEY=api-key
 ASSEMBLA_API_SECRET=api-secret
 ASSEMBLA_URL_TICKETS=https://app.assembla.com/spaces/space_1/tickets
 ASSEMBLA_SPACES=space_1,space_2,space_3
+ASSEMBLA_SKIP_ASSOCIATIONS=parent,child,story,subtask
 JIRA_API_HOST=https://europeana.atlassian.net/rest/api/2
 JIRA_API_PROJECT_NAME=project_name
 JIRA_API_ADMIN_USERNAME=john.doe
@@ -607,7 +610,7 @@ With such a complicated tool, there'll always be some loose ends and/or addition
 * Implement components
 * Implement extra markdown: image, ticket number and code snippets
 * Assign original authors to tickets, comments, attachments on creation
-* Convert Assembla `followers` and `notification list` to the relevant Jira followers
+* Convert Assembla `followers` and `notification list` to the relevant Jira watchers
 * Refactor and cleanup code, removing duplication and rubocop warnings.
 
 ## References
@@ -627,6 +630,10 @@ With such a complicated tool, there'll always be some loose ends and/or addition
 Licensed under the EUPL V.1.1.
 
 For full details, see [LICENSE.md](LICENSE.md).
+
+## Support
+
+If you require assistance with the migration or need some functionality that is not yet present in the latest version, then I can certainly help you. Feel free to contact me!
 
 ## Author
 

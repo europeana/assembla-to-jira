@@ -7,48 +7,57 @@ required_issuelink_types = [
   {
     name: 'Blocks',
     inward: 'is blocked by',
-    outward: 'blocks'
+    outward: 'blocks',
+    app: 'jira'
   },
   {
     name: 'Duplicate',
     inward: 'is duplicated by',
-    outward: 'duplicates'
+    outward: 'duplicates',
+    app: 'jira'
   },
   {
     name: 'Relates',
     inward: 'relates to',
-    outward: 'relates to'
+    outward: 'relates to',
+    app: 'jira'
   },
   # ASSEMBLA
   {
     name: 'Parent',
     inward: 'is parent of',
-    outward: 'is child of'
+    outward: 'is child of',
+    app: 'assembla'
   },
   {
     name: 'Child',
     inward: 'is child of',
-    outward: 'is parent of'
+    outward: 'is parent of',
+    app: 'assembla'
   },
   {
     name: 'Sibling',
     inward: 'is sibling of',
-    outward: 'is sibling of'
+    outward: 'is sibling of',
+    app: 'assembla'
   },
   {
     name: 'Story',
     inward: 'is story with subtask',
-    outward: 'is subtask of story'
+    outward: 'is subtask of story',
+    app: 'assembla'
   },
   {
     name: 'Subtask',
     inward: 'is subtask of story',
-    outward: 'is story with subtask'
+    outward: 'is story with subtask',
+    app: 'assembla'
   },
   {
     name: 'Dependent',
     inward: 'depends on',
-    outward: 'depended on by'
+    outward: 'depended on by',
+    app: 'assembla'
   }
 ]
 
@@ -83,9 +92,18 @@ end
 actual_issuelink_types = jira_get_issuelink_types
 required_issuelink_types.each do |required_issuelink_type|
   name = required_issuelink_type[:name]
-  unless actual_issuelink_types.detect { |issuelink_type| issuelink_type['name'] == name }
-    jira_create_issuelink_type(required_issuelink_type)
+  app = required_issuelink_type[:app]
+  # next if app == 'assembla' && ASSEMBLA_SKIP_ASSOCIATIONS.include?(name.downcase)
+  if app == 'assembla' && ASSEMBLA_SKIP_ASSOCIATIONS.include?(name.downcase)
+    puts "Ignore '#{name}' (skip)"
+    next
   end
+  if actual_issuelink_types.detect { |issuelink_type| issuelink_type['name'] == name }
+    puts "Ignore '#{name}' (exists)"
+    next
+  end
+  puts "Create '#{name}'"
+  jira_create_issuelink_type(required_issuelink_type)
 end
 
 FileUtils.mkdir_p(OUTPUT_DIR_JIRA) unless File.directory?(OUTPUT_DIR_JIRA)
