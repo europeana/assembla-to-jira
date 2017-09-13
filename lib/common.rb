@@ -507,7 +507,7 @@ end
 # [[url:URL|TEXT]] => [TEXT|URL]
 # [[url:URL]] => [URL|URL]
 #
-# @username => [~username]
+# @login => [~login]
 #
 # Code snippet => ignore
 #
@@ -518,16 +518,19 @@ end
 # [[user:NAME]] => ignore
 # [[user:NAME|TEXT]] => ignore
 
-def reformat_markdown(content)
+def reformat_markdown(content, list_of_logins)
   return content if content.nil? or content.length.zero?
   lines = content.split("\n")
   markdown = []
   lines.each do |line|
     markdown << line.
-        gsub(/\[\[url:(.*)\|(.*)\]\]/, '[\2|\1]').
-        gsub(/\[\[url:(.*)\]\]/, '[\1|\1]').
-        gsub(/@([^@]*)@/, '{\1}').
-        gsub(/@([^ $]*)( |$)/, '*[~\1]\2*')
+      gsub(/\[\[url:(.*)\|(.*)\]\]/, '[\2|\1]').
+      gsub(/\[\[url:(.*)\]\]/, '[\1|\1]').
+      gsub(/@([^@]*)@( |$)/, '{\1}\2').
+      gsub(/@([a-zA-Z.-_]*)/) do |name|
+        name = name[1..-1].strip
+        list_of_logins[name] ? "[~#{name}]" : "@#{name}"
+      end
   end
   markdown.join("\n")
 end

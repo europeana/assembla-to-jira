@@ -562,6 +562,7 @@ Wiki links
 ### Reformat (will be reformatted into Jira markdown)
 
 ```
+@login => [~login]
 @inline code@ => {inline code}
 [[url:URL|TEXT]] => [TEXT|URL]
 [[url:URL]] => [URL|URL]
@@ -571,13 +572,14 @@ For the content available in the ticket summaries, descriptions and comments we 
 
 ```
 [summary, description, comments].each do |content|
-  content = reformat_markdown(content)
+  content = reformat_markdown(content, list_of_logins)
 end
 ```
 
 where reformat_markdown will do the following global substitutions:
 
 ```
+gsub(/@([a-zA-Z._-]+)/[~\1] if \1 list_of_logins.include?(\1)
 gsub(/\[\[url:(.*)\|(.*)\]\]/, '[\2|\1]')
 gsub(/\[\[url:(.*)\]\]/, '[\1|\1]')
 gsub(/@([^@]*)@/, '{\1}')

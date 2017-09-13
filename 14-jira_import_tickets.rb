@@ -115,7 +115,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
   project_id = @project['id']
   ticket_id = ticket['id']
   ticket_number = ticket['number']
-  summary = reformat_markdown(ticket['summary'])
+  summary = reformat_markdown(ticket['summary'], @list_of_logins)
   created_on = ticket['created_on']
   completed_date = date_format_yyyy_mm_dd(ticket['completed_date'])
   reporter_name = @user_id_to_login[ticket['reporter_id']]
@@ -134,7 +134,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
                 end
   description += "Author #{author_name} | "
   description += "Created on #{date_time(created_on)}\n\n"
-  description += "#{reformat_markdown(ticket['description'])}"
+  description += "#{reformat_markdown(ticket['description'], @list_of_logins)}"
 
   labels = get_labels(ticket)
 
@@ -303,9 +303,13 @@ end
 
 puts "\nUsers:"
 
+# TODO: Move to common.rb
 @user_id_to_login = {}
+@list_of_logins = {}
 @users_assembla.each do |user|
-  @user_id_to_login[user['id']] = user['login'].sub(/@.*$/,'')
+  login = user['login'].sub(/@.*$/,'')
+  @user_id_to_login[user['id']] = login
+  @list_of_logins[login] = true
 end
 
 @user_id_to_login.each do |k,v|

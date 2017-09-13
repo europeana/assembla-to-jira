@@ -9,11 +9,16 @@ space = get_space(SPACE_NAME)
 dirname_assembla = get_output_dirname(space, 'assembla')
 
 # Assembla users
-users_csv = "#{dirname_assembla}/report-users.csv"
-users = csv_to_array(users_csv)
+assembla_users_csv = "#{dirname_assembla}/report-users.csv"
+@users_assembla = csv_to_array(assembla_users_csv)
+
+# TODO: Move to common.rb
 @user_id_to_login = {}
-users.each do |user|
-  @user_id_to_login[user['id']] = user['login'].sub(/@.*$/,'')
+@list_of_logins = {}
+@users_assembla.each do |user|
+  login = user['login'].sub(/@.*$/,'')
+  @user_id_to_login[user['id']] = login
+  @list_of_logins[login] = true
 end
 
 # Assembla comments
@@ -61,7 +66,7 @@ def jira_create_comment(issue_id, user_id, comment, counter)
   url = "#{URL_JIRA_ISSUES}/#{issue_id}/comment"
   user_login = @user_id_to_login[user_id]
   author_link = user_login ? "[~#{user_login}]" : "unknown (#{user_id})"
-  body = "Author #{author_link} | Created on #{date_time(comment['created_on'])}\n\n#{reformat_markdown(comment['comment'])}"
+  body = "Author #{author_link} | Created on #{date_time(comment['created_on'])}\n\n#{reformat_markdown(comment['comment'], @list_of_logins)}"
   payload = {
     body: body
   }.to_json
@@ -92,7 +97,7 @@ end
   user_id = comment['user_id']
   issue_id = @assembla_id_to_jira[ticket_id]
   user_login = @user_id_to_login[user_id],
-  comment['comment'] = reformat_markdown(comment['comment'])
+  comment['comment'] = reformat_markdown(comment['comment'], @list_of_logins)
   result = jira_create_comment(issue_id, user_id, comment, index + 1)
   next unless result
   comment_id = result['id']
