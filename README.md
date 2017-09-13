@@ -397,12 +397,14 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 * **description**
 * **priority** (1 - Highest, 2 - High, 3 - Medium, 4 - Low, 5 - Lowest)
 * **completed_date**
-* component_id
+* component_id (deprecated)
 * **created_on**
 * permission_type
 * **importance** (Sorting criteria for Assembla Planner) => 10104 Rank
 * is_story (true or false, if true hierarchy_type = 2)
 * **milestone_id** => 10103 Sprint
+* **tags**
+* followers
 * **notification_list**
 * **space_id**
 * **state**
@@ -418,9 +420,11 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
 * total_working_hours
 * **assigned_to_id**
 * **reporter_id**
-* **custom_fields** (theme)
+* **custom_fields** (=> theme)
 * **hierarchy_type** (0 - No plan level, 1 - Subtask, 2 - Story, 3 - Epic)
+* is_support
 * due_date
+* picture_url
 
 ### Jira issue fields:
 
