@@ -139,12 +139,12 @@ def jira_update_association(name, ticket1_id, ticket2_id, counter)
   begin
     percentage = ((counter * 100) / @total_assembla_associations).round.to_s.rjust(3)
     RestClient::Request.execute(method: :post, url: url, payload: payload, headers: JIRA_HEADERS)
-    puts "#{percentage}% [#{counter}|#{@total_assembla_associations} PUT #{url} '#{name}' => OK"
+    puts "#{percentage}% [#{counter}|#{@total_assembla_associations}] PUT #{url} '#{name}' => OK"
     result = true
   rescue RestClient::ExceptionWithResponse => e
     rest_client_exception(e, 'PUT', url, payload)
   rescue => e
-    puts "#{percentage}% [#{counter}|#{@total_assembla_associations} PUT #{url} #{payload.inspect} => NOK (#{e.message})"
+    puts "#{percentage}% [#{counter}|#{@total_assembla_associations}] PUT #{url} #{payload.inspect} => NOK (#{e.message})"
   end
   result
 end

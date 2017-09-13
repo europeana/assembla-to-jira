@@ -76,12 +76,12 @@ def jira_create_comment(issue_id, user_id, comment, counter)
     # response = RestClient::Request.execute(method: :post, url: url, payload: payload, headers: headers_user_login(user_login))
     result = JSON.parse(response.body)
     percentage = ((counter * 100) / @comments_total).round.to_s.rjust(3)
-    puts "#{percentage}% [#{counter}|#{@comments_total} POST #{url} => OK"
+    puts "#{percentage}% [#{counter}|#{@comments_total}] POST #{url} => OK"
   rescue RestClient::ExceptionWithResponse => e
     # TODO: use following helper method for all RestClient calls in other files.
     rest_client_exception(e, 'POST', url)
   rescue => e
-    puts "#{percentage}% [#{counter}|#{@comments_total} POST #{url} => NOK (#{e.message})"
+    puts "#{percentage}% [#{counter}|#{@comments_total}] POST #{url} => NOK (#{e.message})"
   end
   result
 end

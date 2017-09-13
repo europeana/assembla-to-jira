@@ -171,12 +171,12 @@ def jira_update_status(issue_id, status, counter)
   begin
     percentage = ((counter * 100) / @total_assembla_tickets).round.to_s.rjust(3)
     RestClient::Request.execute(method: :post, url: url, payload: payload, headers: JIRA_HEADERS)
-    puts "#{percentage}% [#{counter}|#{@total_assembla_tickets} POST #{url} '#{transition[:from][:name]}' to '#{transition[:to][:name]}' => OK"
+    puts "#{percentage}% [#{counter}|#{@total_assembla_tickets}] POST #{url} '#{transition[:from][:name]}' to '#{transition[:to][:name]}' => OK"
     result = { transition: transition }
   rescue RestClient::ExceptionWithResponse => e
     rest_client_exception(e, 'POST', url, payload)
   rescue => e
-    puts "#{percentage}% [#{counter}|#{@total_assembla_tickets} POST #{url} #{payload.inspect} => NOK (#{e.message})"
+    puts "#{percentage}% [#{counter}|#{@total_assembla_tickets}] POST #{url} #{payload.inspect} => NOK (#{e.message})"
   end
   if result
     # If the issue has been closed (done) we set the resolution to the appropriate value

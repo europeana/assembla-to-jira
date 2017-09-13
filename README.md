@@ -71,6 +71,7 @@ Each step will generate a log of the results in the form of a csv file for refer
 17. Import ticket attachments
 18. Update ticket status (resolutions)
 19. Update ticket associations
+20. Update ticket watchers
 
 ## Preparations
 
@@ -389,6 +390,19 @@ Now you are ready to update the Jira tickets to reflect the original Assembla as
 $ ruby 19-jira_update_association.rb # => data/jira/jira-update-associations.csv
 ```
 
+### Update ticket watchers
+
+```
+POST /rest/api/2/issue/{issueIdOrKey}/watchers
+'"username"'
+```
+
+Now you are ready to convert the Assembla followers list to the Jira issue watchers list. Execute the following command:
+
+```
+$ ruby 20-jira_update_watchers.rb # => data/jira/jira-update-watchers.csv
+```
+
 ## Ticket field convertions
 
 Most of the ticket fields are converted from Assembla to Jira via a one-to-one mapping and are indicated as **bold** below.
@@ -610,7 +624,6 @@ With such a complicated tool, there'll always be some loose ends and/or addition
 * Implement components
 * Implement extra markdown: image, ticket number and code snippets
 * Assign original authors to tickets, comments, attachments on creation
-* Convert Assembla `followers` and `notification list` to the relevant Jira watchers
 * Refactor and cleanup code, removing duplication and rubocop warnings.
 
 ## References
