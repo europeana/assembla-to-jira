@@ -8,7 +8,7 @@ Have you ever wanted to use JIRA instead of Assembla, but were afraid that the s
 
 JIRA does offer a number of standard add-ons to make migration easier, but unfortunately it does not offer any tools for migrating to Assembla.
 
-However, you are now in luck! By using these Assembla-to-Jira migration tools, it should be very easy to export all of the relevant Assemebla data and import most (if not all) of it into a Jira project.
+However, you are now in luck! By using these Assembla-to-Jira migration tools, it should be very easy to export all of the relevant Assembla data and import most (if not all) of it into a Jira project.
 
 Usage is made of the [Assembla API](http://api-docs.assembla.cc/content/api_reference.html) and the [JIRA API](https://docs.atlassian.com/jira/REST/cloud/) in order to hook up both environments and make the data transformations.
 
@@ -75,9 +75,9 @@ Each step will generate a log of the results in the form of a csv file for refer
 
 ## Preparations
 
-You will need to goto to the Jira website and login as admin.
+You will need to go to to the Jira website and login as admin.
 
-Optionally create the new project. This not necessary, as during the imoprt the existence of the project will be checked and created on the fly if needed.
+Optionally create the new project. This not necessary, as during the import the existence of the project will be checked and created on the fly if needed.
 
 Define the project `.env` file as `ASSEMBLA_SPACES=project_name`.
 
@@ -219,7 +219,7 @@ $ ruby 13-jira_import_users.rb # => data/jira/jira-users.csv
 
 The following user:
 
-* unknown.user@europeana.eu
+* unknown.user@example.org
 
 as defined in the `.env` file as `JIRA_API_UNKNOWN_USER`.
 
@@ -408,7 +408,7 @@ Now you are ready to convert the Assembla followers list to the Jira issue watch
 $ ruby 20-jira_update_watchers.rb # => data/jira/jira-update-watchers.csv
 ```
 
-## Ticket field convertions
+## Ticket field conversions
 
 Most of the ticket fields are converted from Assembla to Jira via a one-to-one mapping and are indicated as **bold** below.
 
@@ -552,7 +552,7 @@ For Assembla tickets marked as `in progress` the imported Jira issue will be set
 
 IMPORTANT: all the other statuses will be ignored unless the administrator modifies the workflow for the given Jira project to include them explicitly.
 
-The names of these newly defined transtitions MUST be the same as the Assembla status names in order for the status migration to work properly.
+The names of these newly defined transitions MUST be the same as the Assembla status names in order for the status migration to work properly.
 
 ### Components
 
@@ -562,7 +562,7 @@ According to the Assembla API Documentation: `Ticket components API is deprecate
 
 ## Markdown
 
-The [Assembla markdown](http://assemble.io/docs/Cheatsheet-Markdown.html) syntax is differeent from [JIRA Markdown](https://jira.atlassian.com/secure/WikiRendererHelpAction.jspa?section=all). Therefore, the certain markdown notations need to be translated ast push follows.
+The [Assembla markdown](http://assemble.io/docs/Cheatsheet-Markdown.html) syntax is different from [JIRA Markdown](https://jira.atlassian.com/secure/WikiRendererHelpAction.jspa?section=all). Therefore, the certain markdown notations will need to be translated as follows.
 
 ### Equivalent (no changes required)
 
@@ -635,7 +635,7 @@ gsub(/\[\[image:(.*)(\|(.*))?\]\]/i) { |image| markdown_image(image, list_of_ima
 
 ## To do
 
-With such a complicated tool, there'll always be some loose ends and/or additional work to be done at a later time. Hopefully in the not so distant future, I'll have some time to tackle one or more of the following items:
+With such a complicated tool, there will always be some loose ends and/or additional work to be done at a later time. Hopefully in the not so distant future, I'll have some time to tackle one or more of the following items:
 
 * Transition ticket status to blocked, testable, ready for acceptance, in acceptance testing, ready for deploy, e.g. in line with the original Assembla workflow.
 * Convert Assembla milestones and cardwalls to Jira sprints and agile scrum board.
