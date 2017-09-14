@@ -592,7 +592,7 @@ Wiki links
 [[image:IMAGE]] => !name(IMAGE)|thumbnail!
 [[image:IMAGE|text]] => !name(IMAGE)|thumbnail!
 @login => [~login]
-@inline code@ => {inline code}
+@inline code@ => {{inline code}} (monospaced)
 [[url:URL|TEXT]] => [TEXT|URL]
 [[url:URL]] => [URL|URL]
 ```

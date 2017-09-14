@@ -503,7 +503,7 @@ end
 # h2. TITLE => same
 # *bold* => same
 # _italic_ => same
-# @inline code@ => {inline code}
+# @inline code@ => {{inline code}} (monospaced)
 #
 # Bullet list => same
 # Numbered list => same
@@ -565,7 +565,7 @@ def reformat_markdown(content, list_of_logins, list_of_images, content_type)
     markdown << line.
         gsub(/\[\[url:(.*)\|(.*)\]\]/i, '[\2|\1]').
         gsub(/\[\[url:(.*)\]\]/i, '[\1|\1]').
-        gsub(/@([^@]*)@( |$)/, '{\1}\2').
+        gsub(/@([^@]*)@( |$)/, '{{\1}}\2').
         gsub(/@([a-z.-_]*)/i) { |name| markdown_name(name, list_of_logins) }.
         gsub(/\[\[image:(.*)(\|(.*))?\]\]/i) { |image| markdown_image(image, list_of_images, content_type) }
   end
