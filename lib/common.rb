@@ -22,6 +22,8 @@ JIRA_API_HOST = ENV['JIRA_API_HOST'].freeze
 JIRA_API_ADMIN_USER = ENV['JIRA_API_ADMIN_USER'].freeze
 JIRA_API_UNKNOWN_USER = ENV['JIRA_API_UNKNOWN_USER'].freeze
 
+JIRA_API_IMAGES_THUMBNAIL = (ENV['JIRA_API_IMAGES_THUMBNAIL'] || 'description:false,comments:true').freeze
+
 JIRA_HEADERS = { 'Authorization': "Basic #{Base64.encode64(JIRA_API_ADMIN_USER + ':' + ENV['JIRA_API_ADMIN_PASSWORD'])}", 'Content-Type': 'application/json', 'Accept': 'application/json' }
 
 URL_JIRA_PROJECTS = "#{JIRA_API_HOST}/project"
@@ -447,7 +449,8 @@ def jira_create_user(user)
   payload = {
       name: username,
       password: username,
-      emailAddress: user['email'] || "#{username}@europeana.eu",
+      #TODO: Make the following configurable and not hard-coded.
+      emailAddress: user['email'] || "#{username}@example.org",
       displayName: user['name'],
   }.to_json
   begin
@@ -490,6 +493,10 @@ def goodbye(message)
   exit
 end
 
+def warning(message)
+  puts "\nWARNING: #{message}"
+end
+
 # Take original Assembla markdown and reformat it to the relevant Jira markdown.
 #
 # h1. TITLE => same
@@ -519,19 +526,48 @@ end
 # [[user:NAME]] => ignore
 # [[user:NAME|TEXT]] => ignore
 
-def reformat_markdown(content, list_of_logins)
+@cache_markdown_names = {}
+
+def markdown_name(name, list_of_logins)
+  name = name[1..-1].sub(/@.*$/,'').strip
+  return @cache_markdown_names[name] if @cache_markdown_names[name]
+  ok = list_of_logins[name]
+  result = ok ? "[~#{name}]" : "@#{name}"
+  puts "Reformat markdown name='#{name}' => #{ok ? '' : 'N'}OK" unless ok
+  @cache_markdown_names[name] = result
+end
+
+@content_types_thumbnail = {}
+
+JIRA_API_IMAGES_THUMBNAIL.split(',').each do |item|
+  content_type, thumbnail = item.split(':')
+  @content_types_thumbnail[content_type] = thumbnail !~ /false|no|0/i
+  # puts "@content_types_thumbnail['#{content_type}'] = #{@content_types_thumbnail[content_type]}"
+end
+
+def markdown_image(image, list_of_images, content_type)
+  _, id, text = image[2...-2].split(/:|\|/)
+  name = list_of_images[id]
+  if name
+    result = "!#{name}#{@content_types_thumbnail[content_type] ? '|thumbnail' : ''}!"
+  else
+    result = image
+    puts "Reformat markdown image='#{image}', id='#{id}', text='#{text}' => NOK"
+  end
+  result
+end
+
+def reformat_markdown(content, list_of_logins, list_of_images, content_type)
   return content if content.nil? or content.length.zero?
   lines = content.split("\n")
   markdown = []
   lines.each do |line|
     markdown << line.
-      gsub(/\[\[url:(.*)\|(.*)\]\]/, '[\2|\1]').
-      gsub(/\[\[url:(.*)\]\]/, '[\1|\1]').
-      gsub(/@([^@]*)@( |$)/, '{\1}\2').
-      gsub(/@([a-zA-Z.-_]*)/) do |name|
-        name = name[1..-1].strip
-        list_of_logins[name] ? "[~#{name}]" : "@#{name}"
-      end
+        gsub(/\[\[url:(.*)\|(.*)\]\]/i, '[\2|\1]').
+        gsub(/\[\[url:(.*)\]\]/i, '[\1|\1]').
+        gsub(/@([^@]*)@( |$)/, '{\1}\2').
+        gsub(/@([a-z.-_]*)/i) { |name| markdown_name(name, list_of_logins) }.
+        gsub(/\[\[image:(.*)(\|(.*))?\]\]/i) { |image| markdown_image(image, list_of_images, content_type) }
   end
   markdown.join("\n")
 end
@@ -542,7 +578,6 @@ def rest_client_exception(e, method, url, payload = {})
     err = JSON.parse(e.response)
   rescue
     err = {}
-    message = e.response
   end
   if err['errors'] && !err['errors'].empty?
     message = err['errors'].map { |k, v| "#{k}: #{v}" }.join(' | ')
@@ -555,6 +590,8 @@ def rest_client_exception(e, method, url, payload = {})
     end
   elsif err['status-code']
     message = "Status code: #{err['status-code']}"
+  elsif e.class == RestClient::NotFound
+    message = '404 Not Found'
   else
     message = err.inspect[0...250]
   end

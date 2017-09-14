@@ -1,0 +1,366 @@
+/home/kiffin/.rvm/rubies/ruby-2.4.1/bin/ruby -e $stdout.sync=true;$stderr.sync=true;load($0=ARGV.shift) /home/kiffin/projects/assembla-to-jira/15-jira_import_tickets.rb
+GET https://api.assembla.com/v1/spaces => OK (3)
+Milestones: 6
+Tags: 889
+Associations: 1705
+Users: 37
+Filter newer than: 2017-06-01
+Tickets: 2379 => 183 ∆2196
+Attachments: 120
+
+GET localhost:8080/rest/api/2/project name='Europeana Collections TEST' => OK
+Found project 'Europeana Collections TEST' id='10000' key='ECT'
+
+Users:
+cWKuYcipur5Ri9dmr6QqzO adrianmurphy
+bt2bnGU54r4AGmacwqjQYw andyjmaclean
+cb4vRS9Yur4z_3acwqjQYw antoine.isaac
+d558KWlWir56pcacwqEsg8 ash.marriott
+cMuCb2-6qr44oHacwqEsg8 Bobdenotter
+a7Pf3g-R0r4QpcacwqjQXA ceciledevarenne
+bkKLRyDCqr5OBcdmr6CpXy cneud
+cl1v4sh9ir5yotacwqjQWU cr.marcelino
+aisqVAXBWr5BSPdmr6bg7m cskodras
+cTfzKcJ7ar4Q2NacwqjQWU dasha.m
+ahQtmgU58r4zF-acwqjQXA DavidHaskiya
+cwZkNGhCyr5RNcdmr6CpXy douglaskmccarthy
+bXMeYqC3Wr5ONcdmr6bg7m eduardo.silvanavarrete
+cmuqxWQaKr4PeeacwqjQYw gsergiu79
+dBiEJemFir5kH_acwqEsg8 hugo.manguinhas
+a-BH2sx84r55fnacwqjQYw kgish
+cYmlQgIHar5yo_acwqjQYw KirstendeHoog
+bmoXZQr3Kr5OojacwqjQXA lbiedinger
+d1wa3YlUWr5BDSdmr6bg7m LodewijkEvers
+dETNZisw4r5ktcacwqjQYw luthien
+dKRBw8g9Or5AhcacwqEsg8 Maggy
+d0nCxMv8yr5OWZdmr6QqzO MattNader
+dIzmWyv8yr5Q_cacwqEsg8 MdeVos
+djQ1OaATWr4Of6acwqjQYw Michelle.vanduijn
+bGM7-ADR0r54o0dmr6QqzO mirjamverloop
+dZv-ooQier5lRdacwqjQXA nfreire
+b8Yzt4LNmr5ioUacwqjQXA PabloUceda
+b-AqTih9ir5ykEacwqjQWU panagiotiskyrou639031
+dCshx-Oc4r5R_dacwqjQXA patrick.ehlert
+dIVPvAzkmr4RFoacwqjQWU PavelKats
+aybbJ63Vur4BxmacwqjQYw renekok
+cRC53GqbGr5zuIdmr6bg7m rgraf
+bE4VAKECur4RFgacwqEsg8 richard.doe
+dWf1QGOlir5ku_acwqjQXA stzanakis
+d6jVQyU8Gr44kvacwqEsg9 timharbour
+bKssOGxg8r5ykmdmr6CpXy timothy.d.hill982002
+aYKS189Yur4zT-acwqjQXA vcharles
+
+Unknown user:
+GET localhost:8080/rest/api/2/user?username=unknown.user => OK ({"key":"unknown.user","name":"unknown.user","emailAddress":"unknown.user@europeana.eu","displayName":"unknown.user","active":true})
+Found Jira unknown user 'unknown.user' => OK
+
+Milestones:
+10228213 Roadmap
+11714193 Sprint 52
+11740123 Sprint 53
+10599863 14-18 Collection Backlog
+10179483 Newspapers Collection Backlog
+7270973 Backlog
+
+Issue types:
+10002 task
+10003 sub-task
+10000 epic
+10001 story
+10004 spike
+10100 bug
+
+Priorities:
+GET localhost:8080/rest/api/2/priority => (5)
+1 Highest
+2 High
+3 Medium
+4 Low
+5 Lowest
+
+Jira fields:
+GET localhost:8080/rest/api/2/field => (54)
+aggregateprogress 'Σ Progress'
+aggregatetimeestimate 'Σ Remaining Estimate'
+aggregatetimeoriginalestimate 'Σ Original Estimate'
+aggregatetimespent 'Σ Time Spent'
+assignee 'Assignee'
+attachment 'Attachment'
+comment 'Comment'
+components 'Component/s'
+created 'Created'
+creator 'Creator'
+description 'Description'
+duedate 'Due Date'
+environment 'Environment'
+fixVersions 'Fix Version/s'
+issuekey 'Key'
+issuelinks 'Linked Issues'
+issuetype 'Issue Type'
+labels 'Labels'
+lastViewed 'Last Viewed'
+priority 'Priority'
+progress 'Progress'
+project 'Project'
+reporter 'Reporter'
+resolution 'Resolution'
+resolutiondate 'Resolved'
+security 'Security Level'
+status 'Status'
+subtasks 'Sub-Tasks'
+summary 'Summary'
+thumbnail 'Images'
+timeestimate 'Remaining Estimate'
+timeoriginalestimate 'Original Estimate'
+timespent 'Time Spent'
+timetracking 'Time Tracking'
+updated 'Updated'
+versions 'Affects Version/s'
+votes 'Votes'
+watches 'Watchers'
+worklog 'Log Work'
+workratio 'Work Ratio'
+
+Jira custom fields:
+customfield_10000 'Epic Link'
+customfield_10001 'Epic Status'
+customfield_10002 'Epic Name'
+customfield_10003 'Epic Color'
+customfield_10004 'Sprint'
+customfield_10005 'Rank'
+customfield_10006 'Story Points'
+
+Jira custom Assembla fields:
+customfield_10007 'Assembla-Id'
+customfield_10008 'Assembla-Milestone'
+customfield_10009 'Assembla-Theme'
+customfield_10010 'Assembla-Status'
+customfield_10011 'Assembla-Reporter'
+customfield_10012 'Assembla-Assignee'
+customfield_10101 'Assembla-Completed'
+
+Total tickets: 183
+
+Sanity check:
+Total epic: 6
+Total story: 131
+Total task: 5
+Total spike: 13
+Total bug: 20
+Total sub-task: 8
+Total all: 183
+Sanity check => OK
+
+  0% [1|6|1|183 EPIC] POST localhost:8080/rest/api/2/issue 2269 => OK (id='34600' key='ECT-24104') retries = 0
+  1% [2|6|2|183 EPIC] POST localhost:8080/rest/api/2/issue 2281 => OK (id='34601' key='ECT-24105') retries = 0
+  1% [3|6|3|183 EPIC] POST localhost:8080/rest/api/2/issue 2306 => OK (id='34602' key='ECT-24106') retries = 0
+  2% [4|6|4|183 EPIC] POST localhost:8080/rest/api/2/issue 2345 => OK (id='34603' key='ECT-24107') retries = 0
+  2% [5|6|5|183 EPIC] POST localhost:8080/rest/api/2/issue 2405 => OK (id='34604' key='ECT-24108') retries = 0
+  3% [6|6|6|183 EPIC] POST localhost:8080/rest/api/2/issue 2414 => OK (id='34605' key='ECT-24109') retries = 0
+Total epic: 6
+data/jira/jira-tickets-epic.csv
+  3% [1|131|7|183 STORY] POST localhost:8080/rest/api/2/issue 2224 => OK (id='34606' key='ECT-24110') retries = 0
+  4% [2|131|8|183 STORY] POST localhost:8080/rest/api/2/issue 2227 => OK (id='34607' key='ECT-24111') retries = 0
+  4% [3|131|9|183 STORY] POST localhost:8080/rest/api/2/issue 2228 => OK (id='34608' key='ECT-24112') retries = 0
+  5% [4|131|10|183 STORY] POST localhost:8080/rest/api/2/issue 2230 => OK (id='34609' key='ECT-24113') retries = 0
+  6% [5|131|11|183 STORY] POST localhost:8080/rest/api/2/issue 2231 => OK (id='34610' key='ECT-24114') retries = 0
+  6% [6|131|12|183 STORY] POST localhost:8080/rest/api/2/issue 2232 => OK (id='34611' key='ECT-24115') retries = 0
+  7% [7|131|13|183 STORY] POST localhost:8080/rest/api/2/issue 2234 => OK (id='34612' key='ECT-24116') retries = 0
+  7% [8|131|14|183 STORY] POST localhost:8080/rest/api/2/issue 2236 => OK (id='34613' key='ECT-24117') retries = 0
+  8% [9|131|15|183 STORY] POST localhost:8080/rest/api/2/issue 2237 => OK (id='34614' key='ECT-24118') retries = 0
+  8% [10|131|16|183 STORY] POST localhost:8080/rest/api/2/issue 2238 => OK (id='34615' key='ECT-24119') retries = 0
+  9% [11|131|17|183 STORY] POST localhost:8080/rest/api/2/issue 2239 => OK (id='34616' key='ECT-24120') retries = 0
+  9% [12|131|18|183 STORY] POST localhost:8080/rest/api/2/issue 2240 => OK (id='34617' key='ECT-24121') retries = 0
+ 10% [13|131|19|183 STORY] POST localhost:8080/rest/api/2/issue 2241 => OK (id='34618' key='ECT-24122') retries = 0
+ 10% [14|131|20|183 STORY] POST localhost:8080/rest/api/2/issue 2243 => OK (id='34619' key='ECT-24123') retries = 0
+ 11% [15|131|21|183 STORY] POST localhost:8080/rest/api/2/issue 2244 => OK (id='34620' key='ECT-24124') retries = 0
+ 12% [16|131|22|183 STORY] POST localhost:8080/rest/api/2/issue 2245 => OK (id='34621' key='ECT-24125') retries = 0
+ 12% [17|131|23|183 STORY] POST localhost:8080/rest/api/2/issue 2246 => OK (id='34622' key='ECT-24126') retries = 0
+ 13% [18|131|24|183 STORY] POST localhost:8080/rest/api/2/issue 2247 => OK (id='34623' key='ECT-24127') retries = 0
+Reformat markdown name='collection' => NOK
+ 13% [19|131|25|183 STORY] POST localhost:8080/rest/api/2/issue 2248 => OK (id='34624' key='ECT-24128') retries = 0
+ 14% [20|131|26|183 STORY] POST localhost:8080/rest/api/2/issue 2249 => OK (id='34625' key='ECT-24129') retries = 0
+ 14% [21|131|27|183 STORY] POST localhost:8080/rest/api/2/issue 2250 => OK (id='34626' key='ECT-24130') retries = 0
+ 15% [22|131|28|183 STORY] POST localhost:8080/rest/api/2/issue 2251 => OK (id='34627' key='ECT-24131') retries = 0
+ 15% [23|131|29|183 STORY] POST localhost:8080/rest/api/2/issue 2252 => OK (id='34628' key='ECT-24132') retries = 0
+ 16% [24|131|30|183 STORY] POST localhost:8080/rest/api/2/issue 2253 => OK (id='34629' key='ECT-24133') retries = 0
+ 16% [25|131|31|183 STORY] POST localhost:8080/rest/api/2/issue 2254 => OK (id='34630' key='ECT-24134') retries = 0
+ 17% [26|131|32|183 STORY] POST localhost:8080/rest/api/2/issue 2255 => OK (id='34631' key='ECT-24135') retries = 0
+ 18% [27|131|33|183 STORY] POST localhost:8080/rest/api/2/issue 2256 => OK (id='34632' key='ECT-24136') retries = 0
+ 18% [28|131|34|183 STORY] POST localhost:8080/rest/api/2/issue 2257 => OK (id='34633' key='ECT-24137') retries = 0
+ 19% [29|131|35|183 STORY] POST localhost:8080/rest/api/2/issue 2259 => OK (id='34634' key='ECT-24138') retries = 0
+ 19% [30|131|36|183 STORY] POST localhost:8080/rest/api/2/issue 2260 => OK (id='34635' key='ECT-24139') retries = 0
+ 20% [31|131|37|183 STORY] POST localhost:8080/rest/api/2/issue 2261 => OK (id='34636' key='ECT-24140') retries = 0
+ 20% [32|131|38|183 STORY] POST localhost:8080/rest/api/2/issue 2262 => OK (id='34637' key='ECT-24141') retries = 0
+ 21% [33|131|39|183 STORY] POST localhost:8080/rest/api/2/issue 2263 => OK (id='34638' key='ECT-24142') retries = 0
+ 21% [34|131|40|183 STORY] POST localhost:8080/rest/api/2/issue 2264 => OK (id='34639' key='ECT-24143') retries = 0
+ 22% [35|131|41|183 STORY] POST localhost:8080/rest/api/2/issue 2265 => OK (id='34640' key='ECT-24144') retries = 0
+ 22% [36|131|42|183 STORY] POST localhost:8080/rest/api/2/issue 2266 => OK (id='34641' key='ECT-24145') retries = 0
+ 23% [37|131|43|183 STORY] POST localhost:8080/rest/api/2/issue 2267 => OK (id='34642' key='ECT-24146') retries = 0
+ 24% [38|131|44|183 STORY] POST localhost:8080/rest/api/2/issue 2275 => OK (id='34643' key='ECT-24147') retries = 0
+ 24% [39|131|45|183 STORY] POST localhost:8080/rest/api/2/issue 2277 => OK (id='34644' key='ECT-24148') retries = 0
+ 25% [40|131|46|183 STORY] POST localhost:8080/rest/api/2/issue 2279 => OK (id='34645' key='ECT-24149') retries = 0
+ 25% [41|131|47|183 STORY] POST localhost:8080/rest/api/2/issue 2280 => OK (id='34646' key='ECT-24150') retries = 0
+ 26% [42|131|48|183 STORY] POST localhost:8080/rest/api/2/issue 2282 => OK (id='34647' key='ECT-24151') retries = 0
+ 26% [43|131|49|183 STORY] POST localhost:8080/rest/api/2/issue 2283 => OK (id='34648' key='ECT-24152') retries = 0
+ 27% [44|131|50|183 STORY] POST localhost:8080/rest/api/2/issue 2284 => OK (id='34649' key='ECT-24153') retries = 0
+ 27% [45|131|51|183 STORY] POST localhost:8080/rest/api/2/issue 2285 => OK (id='34650' key='ECT-24154') retries = 0
+ 28% [46|131|52|183 STORY] POST localhost:8080/rest/api/2/issue 2286 => OK (id='34651' key='ECT-24155') retries = 0
+ 28% [47|131|53|183 STORY] POST localhost:8080/rest/api/2/issue 2287 => OK (id='34652' key='ECT-24156') retries = 0
+ 29% [48|131|54|183 STORY] POST localhost:8080/rest/api/2/issue 2288 => OK (id='34653' key='ECT-24157') retries = 0
+ 30% [49|131|55|183 STORY] POST localhost:8080/rest/api/2/issue 2289 => OK (id='34654' key='ECT-24158') retries = 0
+ 30% [50|131|56|183 STORY] POST localhost:8080/rest/api/2/issue 2290 => OK (id='34655' key='ECT-24159') retries = 0
+ 31% [51|131|57|183 STORY] POST localhost:8080/rest/api/2/issue 2291 => OK (id='34656' key='ECT-24160') retries = 0
+ 31% [52|131|58|183 STORY] POST localhost:8080/rest/api/2/issue 2299 => OK (id='34657' key='ECT-24161') retries = 0
+ 32% [53|131|59|183 STORY] POST localhost:8080/rest/api/2/issue 2300 => OK (id='34658' key='ECT-24162') retries = 0
+ 32% [54|131|60|183 STORY] POST localhost:8080/rest/api/2/issue 2301 => OK (id='34659' key='ECT-24163') retries = 0
+ 33% [55|131|61|183 STORY] POST localhost:8080/rest/api/2/issue 2302 => OK (id='34660' key='ECT-24164') retries = 0
+ 33% [56|131|62|183 STORY] POST localhost:8080/rest/api/2/issue 2303 => OK (id='34661' key='ECT-24165') retries = 0
+ 34% [57|131|63|183 STORY] POST localhost:8080/rest/api/2/issue 2304 => OK (id='34662' key='ECT-24166') retries = 0
+ 34% [58|131|64|183 STORY] POST localhost:8080/rest/api/2/issue 2305 => OK (id='34663' key='ECT-24167') retries = 0
+ 35% [59|131|65|183 STORY] POST localhost:8080/rest/api/2/issue 2307 => OK (id='34664' key='ECT-24168') retries = 0
+ 36% [60|131|66|183 STORY] POST localhost:8080/rest/api/2/issue 2309 => OK (id='34665' key='ECT-24169') retries = 0
+ 36% [61|131|67|183 STORY] POST localhost:8080/rest/api/2/issue 2310 => OK (id='34666' key='ECT-24170') retries = 0
+ 37% [62|131|68|183 STORY] POST localhost:8080/rest/api/2/issue 2311 => OK (id='34667' key='ECT-24171') retries = 0
+ 37% [63|131|69|183 STORY] POST localhost:8080/rest/api/2/issue 2312 => OK (id='34668' key='ECT-24172') retries = 0
+ 38% [64|131|70|183 STORY] POST localhost:8080/rest/api/2/issue 2313 => OK (id='34669' key='ECT-24173') retries = 0
+ 38% [65|131|71|183 STORY] POST localhost:8080/rest/api/2/issue 2315 => OK (id='34670' key='ECT-24174') retries = 0
+ 39% [66|131|72|183 STORY] POST localhost:8080/rest/api/2/issue 2316 => OK (id='34671' key='ECT-24175') retries = 0
+ 39% [67|131|73|183 STORY] POST localhost:8080/rest/api/2/issue 2317 => OK (id='34672' key='ECT-24176') retries = 0
+ 40% [68|131|74|183 STORY] POST localhost:8080/rest/api/2/issue 2319 => OK (id='34673' key='ECT-24177') retries = 0
+ 40% [69|131|75|183 STORY] POST localhost:8080/rest/api/2/issue 2322 => OK (id='34674' key='ECT-24178') retries = 0
+ 41% [70|131|76|183 STORY] POST localhost:8080/rest/api/2/issue 2323 => OK (id='34675' key='ECT-24179') retries = 0
+ 42% [71|131|77|183 STORY] POST localhost:8080/rest/api/2/issue 2327 => OK (id='34676' key='ECT-24180') retries = 0
+ 42% [72|131|78|183 STORY] POST localhost:8080/rest/api/2/issue 2328 => OK (id='34677' key='ECT-24181') retries = 0
+ 43% [73|131|79|183 STORY] POST localhost:8080/rest/api/2/issue 2329 => OK (id='34678' key='ECT-24182') retries = 0
+Reformat markdown name='EuropeanaEU' => NOK
+ 43% [74|131|80|183 STORY] POST localhost:8080/rest/api/2/issue 2332 => OK (id='34679' key='ECT-24183') retries = 0
+ 44% [75|131|81|183 STORY] POST localhost:8080/rest/api/2/issue 2335 => OK (id='34680' key='ECT-24184') retries = 0
+ 44% [76|131|82|183 STORY] POST localhost:8080/rest/api/2/issue 2337 => OK (id='34681' key='ECT-24185') retries = 0
+ 45% [77|131|83|183 STORY] POST localhost:8080/rest/api/2/issue 2338 => OK (id='34682' key='ECT-24186') retries = 0
+ 45% [78|131|84|183 STORY] POST localhost:8080/rest/api/2/issue 2340 => OK (id='34683' key='ECT-24187') retries = 0
+ 46% [79|131|85|183 STORY] POST localhost:8080/rest/api/2/issue 2341 => OK (id='34684' key='ECT-24188') retries = 0
+ 46% [80|131|86|183 STORY] POST localhost:8080/rest/api/2/issue 2343 => OK (id='34685' key='ECT-24189') retries = 0
+ 47% [81|131|87|183 STORY] POST localhost:8080/rest/api/2/issue 2344 => OK (id='34686' key='ECT-24190') retries = 0
+ 48% [82|131|88|183 STORY] POST localhost:8080/rest/api/2/issue 2346 => OK (id='34687' key='ECT-24191') retries = 0
+ 48% [83|131|89|183 STORY] POST localhost:8080/rest/api/2/issue 2347 => OK (id='34688' key='ECT-24192') retries = 0
+ 49% [84|131|90|183 STORY] POST localhost:8080/rest/api/2/issue 2353 => OK (id='34689' key='ECT-24193') retries = 0
+ 49% [85|131|91|183 STORY] POST localhost:8080/rest/api/2/issue 2355 => OK (id='34690' key='ECT-24194') retries = 0
+ 50% [86|131|92|183 STORY] POST localhost:8080/rest/api/2/issue 2356 => OK (id='34691' key='ECT-24195') retries = 0
+ 50% [87|131|93|183 STORY] POST localhost:8080/rest/api/2/issue 2357 => OK (id='34692' key='ECT-24196') retries = 0
+ 51% [88|131|94|183 STORY] POST localhost:8080/rest/api/2/issue 2358 => OK (id='34693' key='ECT-24197') retries = 0
+ 51% [89|131|95|183 STORY] POST localhost:8080/rest/api/2/issue 2359 => OK (id='34694' key='ECT-24198') retries = 0
+ 52% [90|131|96|183 STORY] POST localhost:8080/rest/api/2/issue 2360 => OK (id='34695' key='ECT-24199') retries = 0
+ 53% [91|131|97|183 STORY] POST localhost:8080/rest/api/2/issue 2361 => OK (id='34696' key='ECT-24200') retries = 0
+ 53% [92|131|98|183 STORY] POST localhost:8080/rest/api/2/issue 2362 => OK (id='34697' key='ECT-24201') retries = 0
+ 54% [93|131|99|183 STORY] POST localhost:8080/rest/api/2/issue 2364 => OK (id='34698' key='ECT-24202') retries = 0
+ 54% [94|131|100|183 STORY] POST localhost:8080/rest/api/2/issue 2365 => OK (id='34699' key='ECT-24203') retries = 0
+ 55% [95|131|101|183 STORY] POST localhost:8080/rest/api/2/issue 2366 => OK (id='34700' key='ECT-24204') retries = 0
+ 55% [96|131|102|183 STORY] POST localhost:8080/rest/api/2/issue 2368 => OK (id='34701' key='ECT-24205') retries = 0
+ 56% [97|131|103|183 STORY] POST localhost:8080/rest/api/2/issue 2370 => OK (id='34702' key='ECT-24206') retries = 0
+ 56% [98|131|104|183 STORY] POST localhost:8080/rest/api/2/issue 2371 => OK (id='34703' key='ECT-24207') retries = 0
+ 57% [99|131|105|183 STORY] POST localhost:8080/rest/api/2/issue 2372 => OK (id='34704' key='ECT-24208') retries = 0
+ 57% [100|131|106|183 STORY] POST localhost:8080/rest/api/2/issue 2373 => OK (id='34705' key='ECT-24209') retries = 0
+ 58% [101|131|107|183 STORY] POST localhost:8080/rest/api/2/issue 2374 => OK (id='34706' key='ECT-24210') retries = 0
+ 59% [102|131|108|183 STORY] POST localhost:8080/rest/api/2/issue 2375 => OK (id='34707' key='ECT-24211') retries = 0
+ 59% [103|131|109|183 STORY] POST localhost:8080/rest/api/2/issue 2376 => OK (id='34708' key='ECT-24212') retries = 0
+ 60% [104|131|110|183 STORY] POST localhost:8080/rest/api/2/issue 2380 => OK (id='34709' key='ECT-24213') retries = 0
+ 60% [105|131|111|183 STORY] POST localhost:8080/rest/api/2/issue 2381 => OK (id='34710' key='ECT-24214') retries = 0
+ 61% [106|131|112|183 STORY] POST localhost:8080/rest/api/2/issue 2382 => OK (id='34711' key='ECT-24215') retries = 0
+ 61% [107|131|113|183 STORY] POST localhost:8080/rest/api/2/issue 2385 => OK (id='34712' key='ECT-24216') retries = 0
+ 62% [108|131|114|183 STORY] POST localhost:8080/rest/api/2/issue 2386 => OK (id='34713' key='ECT-24217') retries = 0
+ 62% [109|131|115|183 STORY] POST localhost:8080/rest/api/2/issue 2387 => OK (id='34714' key='ECT-24218') retries = 0
+ 63% [110|131|116|183 STORY] POST localhost:8080/rest/api/2/issue 2389 => OK (id='34715' key='ECT-24219') retries = 0
+ 63% [111|131|117|183 STORY] POST localhost:8080/rest/api/2/issue 2390 => OK (id='34716' key='ECT-24220') retries = 0
+ 64% [112|131|118|183 STORY] POST localhost:8080/rest/api/2/issue 2391 => OK (id='34717' key='ECT-24221') retries = 0
+ 65% [113|131|119|183 STORY] POST localhost:8080/rest/api/2/issue 2399 => OK (id='34718' key='ECT-24222') retries = 0
+ 65% [114|131|120|183 STORY] POST localhost:8080/rest/api/2/issue 2400 => OK (id='34719' key='ECT-24223') retries = 0
+ 66% [115|131|121|183 STORY] POST localhost:8080/rest/api/2/issue 2401 => OK (id='34720' key='ECT-24224') retries = 0
+ 66% [116|131|122|183 STORY] POST localhost:8080/rest/api/2/issue 2402 => OK (id='34721' key='ECT-24225') retries = 0
+ 67% [117|131|123|183 STORY] POST localhost:8080/rest/api/2/issue 2404 => OK (id='34722' key='ECT-24226') retries = 0
+ 67% [118|131|124|183 STORY] POST localhost:8080/rest/api/2/issue 2406 => OK (id='34723' key='ECT-24227') retries = 0
+ 68% [119|131|125|183 STORY] POST localhost:8080/rest/api/2/issue 2407 => OK (id='34724' key='ECT-24228') retries = 0
+ 68% [120|131|126|183 STORY] POST localhost:8080/rest/api/2/issue 2408 => OK (id='34725' key='ECT-24229') retries = 0
+ 69% [121|131|127|183 STORY] POST localhost:8080/rest/api/2/issue 2409 => OK (id='34726' key='ECT-24230') retries = 0
+ 69% [122|131|128|183 STORY] POST localhost:8080/rest/api/2/issue 2412 => OK (id='34727' key='ECT-24231') retries = 0
+ 70% [123|131|129|183 STORY] POST localhost:8080/rest/api/2/issue 2413 => OK (id='34728' key='ECT-24232') retries = 0
+ 71% [124|131|130|183 STORY] POST localhost:8080/rest/api/2/issue 2415 => OK (id='34729' key='ECT-24233') retries = 0
+ 71% [125|131|131|183 STORY] POST localhost:8080/rest/api/2/issue 2416 => OK (id='34730' key='ECT-24234') retries = 0
+ 72% [126|131|132|183 STORY] POST localhost:8080/rest/api/2/issue 2417 => OK (id='34731' key='ECT-24235') retries = 0
+ 72% [127|131|133|183 STORY] POST localhost:8080/rest/api/2/issue 2418 => OK (id='34732' key='ECT-24236') retries = 0
+Reformat markdown name='ca8a7193' => NOK
+ 73% [128|131|134|183 STORY] POST localhost:8080/rest/api/2/issue 2419 => OK (id='34733' key='ECT-24237') retries = 0
+ 73% [129|131|135|183 STORY] POST localhost:8080/rest/api/2/issue 2420 => OK (id='34734' key='ECT-24238') retries = 0
+ 74% [130|131|136|183 STORY] POST localhost:8080/rest/api/2/issue 2421 => OK (id='34735' key='ECT-24239') retries = 0
+ 74% [131|131|137|183 STORY] POST localhost:8080/rest/api/2/issue 2422 => OK (id='34736' key='ECT-24240') retries = 0
+Total story: 131
+data/jira/jira-tickets-story.csv
+ 75% [1|5|138|183 TASK] POST localhost:8080/rest/api/2/issue 2293 => OK (id='34737' key='ECT-24241') retries = 0
+Reformat markdown name='ITEM.blank?' => NOK
+Reformat markdown name='ITEM' => NOK
+Reformat markdown name='collection.present?' => NOK
+Reformat markdown name='collection.key' => NOK
+Reformat markdown name='ITEM.map' => NOK
+ 75% [2|5|139|183 TASK] POST localhost:8080/rest/api/2/issue 2354 => OK (id='34738' key='ECT-24242') retries = 0
+Reformat markdown name='entity' => NOK
+ 76% [3|5|140|183 TASK] POST localhost:8080/rest/api/2/issue 2369 => OK (id='34739' key='ECT-24243') retries = 0
+ 77% [4|5|141|183 TASK] POST localhost:8080/rest/api/2/issue 2377 => OK (id='34740' key='ECT-24244') retries = 0
+Reformat markdown name='timestamp' => NOK
+Reformat markdown name='version' => NOK
+ 77% [5|5|142|183 TASK] POST localhost:8080/rest/api/2/issue 2384 => OK (id='34741' key='ECT-24245') retries = 0
+Total task: 5
+data/jira/jira-tickets-task.csv
+Reformat markdown name='id:s' => NOK
+ 78% [1|13|143|183 SPIKE] POST localhost:8080/rest/api/2/issue 2268 => OK (id='34742' key='ECT-24246') retries = 0
+ 78% [2|13|144|183 SPIKE] POST localhost:8080/rest/api/2/issue 2297 => OK (id='34743' key='ECT-24247') retries = 0
+ 79% [3|13|145|183 SPIKE] POST localhost:8080/rest/api/2/issue 2308 => OK (id='34744' key='ECT-24248') retries = 0
+ 79% [4|13|146|183 SPIKE] POST localhost:8080/rest/api/2/issue 2325 => OK (id='34745' key='ECT-24249') retries = 0
+ 80% [5|13|147|183 SPIKE] POST localhost:8080/rest/api/2/issue 2326 => OK (id='34746' key='ECT-24250') retries = 0
+ 80% [6|13|148|183 SPIKE] POST localhost:8080/rest/api/2/issue 2334 => OK (id='34747' key='ECT-24251') retries = 0
+ 81% [7|13|149|183 SPIKE] POST localhost:8080/rest/api/2/issue 2336 => OK (id='34748' key='ECT-24252') retries = 0
+ 81% [8|13|150|183 SPIKE] POST localhost:8080/rest/api/2/issue 2348 => OK (id='34749' key='ECT-24253') retries = 0
+ 82% [9|13|151|183 SPIKE] POST localhost:8080/rest/api/2/issue 2349 => OK (id='34750' key='ECT-24254') retries = 0
+ 83% [10|13|152|183 SPIKE] POST localhost:8080/rest/api/2/issue 2352 => OK (id='34751' key='ECT-24255') retries = 0
+ 83% [11|13|153|183 SPIKE] POST localhost:8080/rest/api/2/issue 2379 => OK (id='34752' key='ECT-24256') retries = 0
+ 84% [12|13|154|183 SPIKE] POST localhost:8080/rest/api/2/issue 2383 => OK (id='34753' key='ECT-24257') retries = 0
+ 84% [13|13|155|183 SPIKE] POST localhost:8080/rest/api/2/issue 2398 => OK (id='34754' key='ECT-24258') retries = 0
+Total spike: 13
+data/jira/jira-tickets-spike.csv
+ 85% [1|20|156|183 BUG] POST localhost:8080/rest/api/2/issue 2226 => OK (id='34755' key='ECT-24259') retries = 0
+ 85% [2|20|157|183 BUG] POST localhost:8080/rest/api/2/issue 2229 => OK (id='34756' key='ECT-24260') retries = 0
+ 86% [3|20|158|183 BUG] POST localhost:8080/rest/api/2/issue 2233 => OK (id='34757' key='ECT-24261') retries = 0
+ 86% [4|20|159|183 BUG] POST localhost:8080/rest/api/2/issue 2258 => OK (id='34758' key='ECT-24262') retries = 0
+ 87% [5|20|160|183 BUG] POST localhost:8080/rest/api/2/issue 2292 => OK (id='34759' key='ECT-24263') retries = 0
+ 87% [6|20|161|183 BUG] POST localhost:8080/rest/api/2/issue 2295 => OK (id='34760' key='ECT-24264') retries = 0
+ 88% [7|20|162|183 BUG] POST localhost:8080/rest/api/2/issue 2296 => OK (id='34761' key='ECT-24265') retries = 0
+ 89% [8|20|163|183 BUG] POST localhost:8080/rest/api/2/issue 2320 => OK (id='34762' key='ECT-24266') retries = 0
+ 89% [9|20|164|183 BUG] POST localhost:8080/rest/api/2/issue 2321 => OK (id='34763' key='ECT-24267') retries = 0
+ 90% [10|20|165|183 BUG] POST localhost:8080/rest/api/2/issue 2324 => OK (id='34764' key='ECT-24268') retries = 0
+ 90% [11|20|166|183 BUG] POST localhost:8080/rest/api/2/issue 2330 => OK (id='34765' key='ECT-24269') retries = 0
+ 91% [12|20|167|183 BUG] POST localhost:8080/rest/api/2/issue 2331 => OK (id='34766' key='ECT-24270') retries = 0
+Reformat markdown image='[[image:a35kVeqiyr573ddmr6QqzO|Screen Shot 2017-05-24 at 15.37.42.png]]', id='a35kVeqiyr573ddmr6QqzO', text='Screen Shot 2017-05-24 at 15.37.42.png' => NOK
+Reformat markdown image='[[image:cbX014qiyr54kPacwqjQYw|Screen Shot 2017-05-24 at 15.39.44.png]]', id='cbX014qiyr54kPacwqjQYw', text='Screen Shot 2017-05-24 at 15.39.44.png' => NOK
+ 91% [13|20|168|183 BUG] POST localhost:8080/rest/api/2/issue 2333 => OK (id='34767' key='ECT-24271') retries = 0
+ 92% [14|20|169|183 BUG] POST localhost:8080/rest/api/2/issue 2339 => OK (id='34768' key='ECT-24272') retries = 0
+ 92% [15|20|170|183 BUG] POST localhost:8080/rest/api/2/issue 2342 => OK (id='34769' key='ECT-24273') retries = 0
+ 93% [16|20|171|183 BUG] POST localhost:8080/rest/api/2/issue 2350 => OK (id='34770' key='ECT-24274') retries = 0
+ 93% [17|20|172|183 BUG] POST localhost:8080/rest/api/2/issue 2351 => OK (id='34771' key='ECT-24275') retries = 0
+ 94% [18|20|173|183 BUG] POST localhost:8080/rest/api/2/issue 2367 => OK (id='34772' key='ECT-24276') retries = 0
+ 95% [19|20|174|183 BUG] POST localhost:8080/rest/api/2/issue 2388 => OK (id='34773' key='ECT-24277') retries = 0
+ 95% [20|20|175|183 BUG] POST localhost:8080/rest/api/2/issue 2411 => OK (id='34774' key='ECT-24278') retries = 0
+Total bug: 20
+data/jira/jira-tickets-bug.csv
+ 96% [1|8|176|183 TASK] POST localhost:8080/rest/api/2/issue 2225 => OK (id='34775' key='ECT-24279') retries = 1
+ 96% [2|8|177|183 TASK] POST localhost:8080/rest/api/2/issue 2242 => OK (id='34776' key='ECT-24280') retries = 1
+ 97% [3|8|178|183 SUB-TASK] POST localhost:8080/rest/api/2/issue 2392 => OK (id='34777' key='ECT-24281') retries = 0
+ 97% [4|8|179|183 SUB-TASK] POST localhost:8080/rest/api/2/issue 2393 => OK (id='34778' key='ECT-24282') retries = 0
+ 98% [5|8|180|183 SUB-TASK] POST localhost:8080/rest/api/2/issue 2394 => OK (id='34779' key='ECT-24283') retries = 0
+ 98% [6|8|181|183 SUB-TASK] POST localhost:8080/rest/api/2/issue 2395 => OK (id='34780' key='ECT-24284') retries = 0
+ 99% [7|8|182|183 SUB-TASK] POST localhost:8080/rest/api/2/issue 2396 => OK (id='34781' key='ECT-24285') retries = 0
+100% [8|8|183|183 SUB-TASK] POST localhost:8080/rest/api/2/issue 2397 => OK (id='34782' key='ECT-24286') retries = 0
+Total sub-task: 8
+data/jira/jira-tickets-sub-task.csv
+Total all: 183
+data/jira/jira-tickets-all.csv
+
+Process finished with exit code 0

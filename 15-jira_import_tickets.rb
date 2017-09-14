@@ -40,13 +40,22 @@ if tickets_created_on
 else
   puts "Tickets: #{@tickets_assembla.length}"
 end
-puts
 
 # --- JIRA Tickets --- #
 
 issue_types_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-issue-types.csv"
+attachments_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-attachments-download.csv"
 
 @issue_types_jira = csv_to_array(issue_types_jira_csv)
+@attachments_jira = csv_to_array(attachments_jira_csv)
+
+@list_of_images = {}
+@attachments_jira.each do |attachment|
+  @list_of_images[attachment['assembla_attachment_id']] = attachment['filename']
+end
+
+puts "Attachments: #{@attachments_jira.length}"
+puts
 
 @jira_issues = []
 @fields_jira = []
@@ -115,7 +124,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
   project_id = @project['id']
   ticket_id = ticket['id']
   ticket_number = ticket['number']
-  summary = reformat_markdown(ticket['summary'], @list_of_logins)
+  summary = reformat_markdown(ticket['summary'], @list_of_logins, @list_of_images, 'summary')
   created_on = ticket['created_on']
   completed_date = date_format_yyyy_mm_dd(ticket['completed_date'])
   reporter_name = @user_id_to_login[ticket['reporter_id']]
@@ -134,7 +143,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
                 end
   description += "Author #{author_name} | "
   description += "Created on #{date_time(created_on)}\n\n"
-  description += "#{reformat_markdown(ticket['description'], @list_of_logins)}"
+  description += "#{reformat_markdown(ticket['description'], @list_of_logins, @list_of_images, 'description')}"
 
   labels = get_labels(ticket)
 

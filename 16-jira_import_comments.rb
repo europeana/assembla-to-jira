@@ -46,6 +46,18 @@ tickets_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-all.csv"
   @assembla_id_to_jira[assembla_id] = jira_id
 end
 
+# Jira attachments (images)
+attachments_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-attachments-download.csv"
+@attachments_jira = csv_to_array(attachments_jira_csv)
+
+@list_of_images = {}
+@attachments_jira.each do |attachment|
+  @list_of_images[attachment['assembla_attachment_id']] = attachment['filename']
+end
+
+puts "Attachments: #{@attachments_jira.length}"
+puts
+
 # --- Filter by date if TICKET_CREATED_ON is defined --- #
 tickets_created_on = get_tickets_created_on
 
@@ -66,7 +78,7 @@ def jira_create_comment(issue_id, user_id, comment, counter)
   url = "#{URL_JIRA_ISSUES}/#{issue_id}/comment"
   user_login = @user_id_to_login[user_id]
   author_link = user_login ? "[~#{user_login}]" : "unknown (#{user_id})"
-  body = "Author #{author_link} | Created on #{date_time(comment['created_on'])}\n\n#{reformat_markdown(comment['comment'], @list_of_logins)}"
+  body = "Author #{author_link} | Created on #{date_time(comment['created_on'])}\n\n#{reformat_markdown(comment['comment'], @list_of_logins, @list_of_images, 'comments')}"
   payload = {
     body: body
   }.to_json
@@ -97,7 +109,7 @@ end
   user_id = comment['user_id']
   issue_id = @assembla_id_to_jira[ticket_id]
   user_login = @user_id_to_login[user_id],
-  comment['comment'] = reformat_markdown(comment['comment'], @list_of_logins)
+  comment['comment'] = reformat_markdown(comment['comment'], @list_of_logins, @list_of_images, 'comments')
   result = jira_create_comment(issue_id, user_id, comment, index + 1)
   next unless result
   comment_id = result['id']

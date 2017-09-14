@@ -65,9 +65,9 @@ Each step will generate a log of the results in the form of a csv file for refer
 11. Get issue statuses
 12. Get projects
 13. Import users
-14. Import tickets
-15. Import ticket comments
-16. Download ticket attachments
+14. Download ticket attachments
+15. Import tickets
+16. Import ticket comments
 17. Import ticket attachments
 18. Update ticket status (resolutions)
 19. Update ticket associations
@@ -139,6 +139,7 @@ JIRA_API_PROJECT_NAME=project_name
 JIRA_API_ADMIN_USERNAME=john.doe
 JIRA_API_ADMIN_PASSWORD=secret
 JIRA_API_UNKNOWN_USER=unknown.user
+JIRA_API_IMAGES_THUMBNAIL=description:false,comments:true
 TICKETS_CREATED_ON=YYYY-MM-DD
 DEBUG=false
 ```
@@ -222,6 +223,28 @@ The following user:
 
 as defined in the `.env` file as `JIRA_API_UNKNOWN_USER`.
 
+### Download attachments
+
+Before the attachments can be imported, they must first be downloaded to a local directory after which they can be imported into Jira.
+
+This is accomplished by executing the following command:
+
+```
+$ ruby 14-jira_download_attachments.rb # => data/jira/jira-attachments-download.csv
+```
+
+The downloaded attachments are placed in the `data/jira/attachments` directory with the same filename, and the meta information is logged to the file `data/jira/jira-attachments-download.csv` containing the following columns:
+
+```
+created_at|assembla_ticket_id|jira_ticket_id|filename|content_type
+```
+
+which is used to import the attachments into Jira in the following section. A check is made if the file already exists in order to avoid name collisions.
+
+Note that in Jira images are treated as attachments and can be accessed that way via `[[image:IMAGE|NAME]]`.
+
+Important: this step needs to be done before importing tickets (next section) in order that the markdown for embedded attachment (images) will work correctly.
+
 ### Import tickets
 
 ```
@@ -256,7 +279,7 @@ POST /rest/api/2/issue
 Now you are ready to import all of the tickets. Execute the following command:
 
 ```
-$ ruby 14-jira_import_tickets.rb # => data/jira/jira-tickets.csv
+$ ruby 15-jira_import_tickets.rb # => data/jira/jira-tickets.csv
 ```
 
 Results are saved in the output file `data/jira/jira-tickets-all.csv` with the following columns:
@@ -281,7 +304,7 @@ POST /rest/api/2/issue/{issueIdOrKey}/comment
 Now you are ready to import all of the comments. Execute the following command:
 
 ```
-$ ruby 15-jira_import_comments.rb # => data/jira/jira-comments.csv
+$ ruby 16-jira_import_comments.rb # => data/jira/jira-comments.csv
 ```
 
 Results are saved in the output file `data/jira/jira-comments.csv` with the following columns:
@@ -290,29 +313,11 @@ Results are saved in the output file `data/jira/jira-comments.csv` with the foll
 jira_comment_id|jira_ticket_id|assembla_comment_id|assembla_ticket_id|user_login|body
 ```
 
-### Download attachments
-
-Before the attachments can be imported, they must first be downloaded to a local directory after which they can be imported into Jira.
-
-This is accomplished by executing the following command:
-
-```
-$ ruby 16-jira_download_attachments.rb # => data/jira/jira-attachments-download.csv
-```
-
-The downloaded attachments are placed in the `data/jira/attachments` directory with the same filename, and the meta information is logged to the file `data/jira/jira-attachments-download.csv` containing the following columns:
-
-```
-created_at|assembla_ticket_id|jira_ticket_id|filename|content_type
-```
-
-which is used to import the attachments into Jira in the following section. A check is made if the file already exists in order to avoid name collisions.
-
 ### Import attachments
 
 `curl -D- -u admin:admin -X POST -H "X-Atlassian-Token: no-check" -F "file=@myfile.txt" api/2/issue/{issueIdOrKey}/attachments`
 
-Now you are ready to import all of the attachments. Execute the following command:
+Now you are ready to import all of the attachments that were downloaded earlier. Execute the following command:
 
 ```
 $ ruby 17-jira_import_attachments.rb # => data/jira/jira-attachments-import.csv
@@ -592,6 +597,16 @@ Wiki links
 [[url:URL]] => [URL|URL]
 ```
 
+Note that the images will have original or thumbnail sizes depending on the value of `JIRA_API_IMAGES_THUMBNAIL` in the `.env` file.
+
+So for example:
+
+```
+JIRA_API_IMAGES_THUMBNAIL=description:false,comments:true
+```
+
+would insert original size images in the Jira issue description and thumbnail images in the Jira issue comments (which happens to be the default).
+
 For the content available in the ticket summaries, descriptions and comments we have:
 
 ```
@@ -621,11 +636,12 @@ gsub(/@([^@]*)@/, '{\1}')
 
 With such a complicated tool, there'll always be some loose ends and/or additional work to be done at a later time. Hopefully in the not so distant future, I'll have some time to tackle one or more of the following items:
 
-* Transition ticket status to blocked, testable, ready for acceptance, in acceptance testing, ready for deploy, e.g. in line with the original Assembla workflow
-* Implement components
-* Implement extra markdown: image, ticket number and code snippets
-* Assign original authors to tickets, comments, attachments on creation
+* Transition ticket status to blocked, testable, ready for acceptance, in acceptance testing, ready for deploy, e.g. in line with the original Assembla workflow.
+* Convert Assembla milestones and cardwalls to Jira sprints and agile scrum board.
+* Implement extra markdown: image, ticket number and code snippets.
+* Assign original authors to tickets, comments, attachments on creation.
 * Refactor and cleanup code, removing duplication and rubocop warnings.
+* Make more object-oriented using classes, etc.
 
 ## References
 
