@@ -618,10 +618,11 @@ end
 where reformat_markdown will do the following global substitutions:
 
 ```
-gsub(/@([a-zA-Z._-]+)/[~\1] if \1 list_of_logins.include?(\1)
 gsub(/\[\[url:(.*)\|(.*)\]\]/, '[\2|\1]')
 gsub(/\[\[url:(.*)\]\]/, '[\1|\1]')
 gsub(/@([^@]*)@/, '{\1}')
+gsub(/@([a-z.-_]*)/i) { |name| markdown_name(name, list_of_logins) }.
+gsub(/\[\[image:(.*)(\|(.*))?\]\]/i) { |image| markdown_image(image, list_of_images, content_type) }
 ```
 
 ## Trouble-shooting
