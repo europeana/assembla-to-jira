@@ -6,7 +6,5 @@ load './lib/common.rb'
 ASSEMBLA_SPACES.each do |name|
   project_name = name + (@debug ? ' TEST' : '')
   project = jira_get_project_by_name(project_name)
-  unless project
-    project = jira_create_project(project_name)
-  end
+  jira_create_project(project_name) unless project
 end

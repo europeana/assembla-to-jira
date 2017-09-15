@@ -16,7 +16,7 @@ users = csv_to_array(users_csv)
 users.each do |user|
   count = user['count']
   username = user['login']
-  username.sub!(/@.*$/,'')
+  username.sub!(/@.*$/, '')
   next if count == '0'
   u1 = jira_get_user(username)
   if u1
@@ -31,8 +31,8 @@ end
 
 write_csv_file(jira_users_csv, @jira_users)
 
-inactive_users = @jira_users.select{ |user| user['active'] == false}
+inactive_users = @jira_users.reject { |user| user['active'] }
 
 unless inactive_users.length.zero?
-  puts "The following users need to be activated: #{inactive_users.map{|user| user['name']}.join(', ')}"
+  puts "The following users need to be activated: #{inactive_users.map { |user| user['name'] }.join(', ')}"
 end

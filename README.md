@@ -639,8 +639,8 @@ With such a complicated tool, there will always be some loose ends and/or additi
 
 * Transition ticket status to blocked, testable, ready for acceptance, in acceptance testing, ready for deploy, e.g. in line with the original Assembla workflow.
 * Convert Assembla milestones and cardwalls to Jira sprints and agile scrum board.
-* Implement extra markdown: image, ticket number and code snippets.
-* Assign original authors to tickets, comments, attachments on creation.
+* Implement extra markdown: ticket number and code snippets.
+* Assign original authors as creators of tickets, comments, attachments on creation.
 * Refactor and cleanup code, removing duplication and rubocop warnings.
 * Make more object-oriented using classes, etc.
 

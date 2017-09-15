@@ -56,7 +56,7 @@ tickets = csv_to_array(tickets_assembla_csv)
 
 puts "Total tickets: #{@total_tickets}"
 
-create_csv_files(space,  name: 'tickets', results: tickets)
+create_csv_files(space, name: 'tickets', results: tickets)
 
 ITEMS.each do |item|
   total = 0
@@ -66,7 +66,7 @@ ITEMS.each do |item|
     ticket[name] = get_ticket_attr(space['id'], ticket['number'], name, counter: index + 1, total: @total_tickets, continue_onerror: true)
     ticket[name].each do |result|
       result.delete('ticket_id')
-      result = result.merge({ ticket_id: ticket['id'], ticket_number: ticket['number'] })
+      result = result.merge(ticket_id: ticket['id'], ticket_number: ticket['number'])
       if item[:relationship]
         rid = result['relationship']
         if rid
@@ -87,5 +87,5 @@ end
 ITEMS.each do |item|
   name = item[:name]
   name = (name.match?(/^ticket_/) ? '' : 'ticket_') + name
-  create_csv_files(space,  name: name, results: item[:results])
+  create_csv_files(space, name: name, results: item[:results])
 end

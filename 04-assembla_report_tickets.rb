@@ -20,7 +20,7 @@ report_tickets_csv = "#{dirname_assembla}/report-tickets.csv"
 @report_tickets = []
 
 # Sanity check just in case
-@tickets.each_with_index do |ticket, index|
+@tickets.each do |ticket|
   @report_tickets << {
     count: 0,
     id: ticket['id'],
@@ -37,7 +37,7 @@ end
   records = csv_to_array(file_csv)
   records.each do |record|
     ticket_id = record['ticket_id']
-    report_ticket = @report_tickets.find{ |report_ticket| report_ticket[:id] == ticket_id }
+    report_ticket = @report_tickets.detect { |t| t[:id] == ticket_id }
     if report_ticket
       report_ticket[:count] += 1
       report_ticket[file.to_sym] += 1
@@ -47,7 +47,6 @@ end
   end
 end
 
-@report_tickets.sort!{|x,y| y[:count] <=> x[:count]}
+@report_tickets.sort! { |x, y| y[:count] <=> x[:count] }
 
 write_csv_file(report_tickets_csv, @report_tickets)
-
