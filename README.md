@@ -73,6 +73,10 @@ Each step will generate a log of the results in the form of a csv file for refer
 19. Update ticket associations
 20. Update ticket watchers
 
+### Scrum board
+
+21. Create scrum board
+
 ## Preparations
 
 You will need to go to to the Jira website and login as admin.
@@ -128,20 +132,30 @@ You will also need to configure the `issue type scheme` for the project like thi
 An example configuration file `.env.example` is provided for you to define a number evironment parameters which affect the behavior.
 
 ```
+# --- General settings --- #
+TICKETS_CREATED_ON=YYYY-MM-DD
+DEBUG=false
+
+# --- Assembla settings --- #
 ASSEMBLA_API_HOST=https://api.assembla.com/v1
 ASSEMBLA_API_KEY=api-key
 ASSEMBLA_API_SECRET=api-secret
-ASSEMBLA_URL_TICKETS=https://app.assembla.com/spaces/space_1/tickets
+ASSEMBLA_URL_TICKETS=https://app.assembla.com/spaces/europeana-npc/tickets
 ASSEMBLA_SPACES=space_1,space_2,space_3
 ASSEMBLA_SKIP_ASSOCIATIONS=parent,child,story,subtask
-JIRA_API_HOST=https://europeana.atlassian.net/rest/api/2
-JIRA_API_PROJECT_NAME=project_name
+
+# --- Jira API settings --- #
+JIRA_API_HOST=https://jira.example.org/rest/api/2
+JIRA_API_PROJECT_NAME=Project Name
 JIRA_API_ADMIN_USERNAME=john.doe
 JIRA_API_ADMIN_PASSWORD=secret
 JIRA_API_UNKNOWN_USER=unknown.user
 JIRA_API_IMAGES_THUMBNAIL=description:false,comments:true
-TICKETS_CREATED_ON=YYYY-MM-DD
-DEBUG=false
+
+# --- Jira Agile settings --- #
+JIRA_AGILE_HOST=https://jira.example.org/rest/agile/1.0
+# Name of board and type (can be 'scrum' or 'kanban')
+JIRA_AGILE_BOARD=name:Name of Scrum Board,type:scrum
 ```
 
 By using the filter `TICKETS_CREATED_ON` you can limited the tickets to those that were created on or after the date indicated. So for example:
@@ -406,6 +420,38 @@ Now you are ready to convert the Assembla followers list to the Jira issue watch
 
 ```
 $ ruby 20-jira_update_watchers.rb # => data/jira/jira-update-watchers.csv
+```
+
+## Scrum Board
+
+You are now ready to setup the scrum board, create sprints, and assign issues to the correct sprints as well as the backlog. In the `.env` file, take notice of the following values:
+
+```
+JIRA_API_PROJECT_NAME=Project Name
+JIRA_AGILE_BOARD=name:Scrum Board Name,type:scrum
+```
+
+These will be used as placeholder values below.
+
+### Create the scrum board
+
+Go to the administrators dashboard and select the Boards > View all Boards button on the top navigation bar.
+
+Click the `Create board` button at the top right corner, from the dialog box hit the `Create a Scrum board` button. Select the `Board from an existing project` radio button.
+
+```
+Board name: Scrum Board Name
+Projects: Project Name
+```
+
+![](images/jira-all-boards.png)
+
+When the scrum board is created, all issues assigned to the project are automatically put in the backlog.
+
+Now you are ready to setup the sprints by executing the following command:
+
+```
+$ ruby 21-jira_create_sprints.rb # => data/jira/jira-create-sprints.csv
 ```
 
 ## Ticket field conversions
