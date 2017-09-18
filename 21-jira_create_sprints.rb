@@ -83,7 +83,7 @@ def jira_create_sprint(board, sprint)
     name: name,
     startDate: sprint['start_date'],
     endDate: sprint['due_date'],
-    originBoardId: board['id'],
+    originBoardId: board['id']
     # "goal": "sprint 1 goal"
   }.to_json
   begin
@@ -97,51 +97,6 @@ def jira_create_sprint(board, sprint)
     rest_client_exception(e, 'POST', url, payload)
   rescue => e
     puts "POST #{url} name='#{name}' => NOK (#{e.message})"
-  end
-  result
-end
-
-def jira_get_sprint_by_name(board, name)
-  result = nil
-  url = "#{URL_JIRA_BOARDS}/#{board['id']}/sprint"
-  begin
-    response = RestClient::Request.execute(method: :get, url: url, headers: JIRA_HEADERS)
-    body = JSON.parse(response.body)
-    # max_results = body['maxResults'].to_i
-    # start_at = body['startAt'].to_i
-    # is_last = body['isLast']
-    values = body['values']
-    if values
-      result = values.detect { |h| h['name'] == name }
-      if result
-        result.delete_if { |k, _| k =~ /self/i }
-        puts "GET #{url} name='#{name}' => FOUND"
-      else
-        puts "GET #{url} name='#{name}' => NOT FOUND"
-      end
-    end
-  rescue => e
-    puts "GET #{url} name='#{name}' => NOK (#{e.message})"
-  end
-  result
-end
-
-def jira_get_all_sprints(board)
-  result = nil
-  url = "#{URL_JIRA_BOARDS}/#{board['id']}/sprint"
-  begin
-    response = RestClient::Request.execute(method: :get, url: url, headers: JIRA_HEADERS)
-    body = JSON.parse(response.body)
-    # max_results = body['maxResults'].to_i
-    # start_at = body['startAt'].to_i
-    # is_last = body['isLast']
-    values = body['values']
-    if values
-      result = values
-      puts "GET #{url} #{values.length} sprints => OK"
-    end
-  rescue => e
-    puts "GET #{url} name='#{name}' => NOK (#{e.message})"
   end
   result
 end
@@ -176,7 +131,6 @@ def jira_update_sprint_state(sprint, state)
   name = sprint['name']
   start_date = sprint['startDate']
   end_date = sprint['endDate']
-  name = sprint['name']
   url = "#{URL_JIRA_SPRINTS}/#{sprint['id']}"
   payload = {
     name: name,
@@ -196,41 +150,15 @@ def jira_update_sprint_state(sprint, state)
   result
 end
 
-# DELETE /rest/agile/1.0/sprint/{sprintId}
-def jira_delete_sprint(board, sprint)
-  result = nil
-  sprint_id = sprint['id']
-  name = sprint['name']
-  url = "#{URL_JIRA_SPRINTS}/#{sprint_id}"
-  # jira_update_sprint_state(sprint, 'active')
-  # jira_update_sprint_state(sprint, 'future')
-  begin
-    RestClient::Request.execute(method: :delete, url: url, headers: JIRA_HEADERS)
-    puts "DELETE #{url} name='#{name}' => OK"
-  rescue RestClient::ExceptionWithResponse => e
-    rest_client_exception(e, 'DELETE', url)
-  rescue => e
-    puts "DELETE #{url} name='#{name}' => NOK (#{e.message})"
-  end
-  result
-end
-
-def jira_delete_all_sprints(board)
-  sprints = jira_get_all_sprints(board)
-  sprints.each do |sprint|
-    jira_delete_sprint(board, sprint)
-  end
-end
-
-project = @projects_jira.detect { |project| project['name'] == JIRA_PROJECT_NAME }
+project = @projects_jira.detect { |p| p['name'] == JIRA_PROJECT_NAME }
 goodbye("Cannot find project with name='#{JIRA_PROJECT_NAME}'") unless project
 
 @board = jira_get_board_by_name(@board_name)
 
 unless @board
-  goodbye("Cannot find board, please create:\n" +
-              "Board name: '#{@board_name}'\n" +
-              "Type:       '#{@board_type}'\n" +
+  goodbye("Cannot find board, please create:\n" \
+              "Board name: '#{@board_name}'\n" \
+              "Type:       '#{@board_type}'\n" \
               "Project:    '#{JIRA_PROJECT_NAME}'"
   )
 end
@@ -240,7 +168,6 @@ end
 
 # sprint: id,start_date,due_date,budget,title,user_id,created_at,created_by,space_id,description,is_completed,completed_date,updated_at,updated_by,release_level,release_notes,planner_type,pretty_release_level
 # next_sprint: id,state,name,startDate,endDate,originBoardId,assembla_id
-
 @sprints.each do |sprint|
   next_sprint = jira_create_sprint(@board, sprint)
   if next_sprint

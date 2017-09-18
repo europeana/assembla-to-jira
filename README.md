@@ -16,6 +16,8 @@ Most of the actions can be done automatically via a pipeline of scripts, after p
 
 However, there are a few manual actions required since the Jira API does not support all possible actions, but these are minimal. It is important NOT to skip these manual changes, as the successful migration depends on them.
 
+It is best to start with a fresh installation, e.g. one in which the desired project has not yet been created. Otherwise, unexpected problems may occur.
+
 If you need help, please check out the [support](https://github.com/kgish/assembla-to-jira#support) section.
 
 ## Installation
