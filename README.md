@@ -95,6 +95,10 @@ The issue type `spike` or `bug` will be defined for any tickets whose summary st
 
 ![](images/jira-issue-types.png)
 
+You will also need to configure the `issue type scheme` for the project like this:
+
+![](images/jira-issue-type-schemes.png)
+
 Create the following custom fields (text field read-only):
 
 * Assembla-Id
@@ -104,6 +108,8 @@ Create the following custom fields (text field read-only):
 * Assembla-Reporter
 * Assembla-Assignee
 * Assembla-Completed
+
+![](images/jira-select-field-type.png)
 
 and assign them to the following screens:
 
@@ -122,10 +128,6 @@ The same applies to the following additional (default) fields:
 * Labels
 
 ![](images/jira-configure-screen.png)
-
-You will also need to configure the `issue type scheme` for the project like this:
-
-![](images/jira-issue-type-schemes.png)
 
 ### Environment
 
