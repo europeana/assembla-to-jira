@@ -43,16 +43,18 @@ puts
 # Need to sort the sprints so that they appear in the correct order.
 @sprints.sort! { |x,y| y['start_date'] <=> x['start_date'] }
 
-puts "\nTotal sprints: #{@sprints.length}"
+puts "Total sprints: #{@sprints.length}"
 
 @sprints.each do |sprint|
   puts "* #{sprint['title']}"
 end
 puts
 
-def jira_get_board_by_name(name)
+# GET /rest/agile/1.0/board/{boardId}/sprint
+def jira_get_sprint(board, sprint)
+  name = sprint['title']
   result = nil
-  url = URL_JIRA_BOARDS
+  url = "#{URL_JIRA_BOARDS}/#{board['id']}/sprint"
   begin
     response = RestClient::Request.execute(method: :get, url: url, headers: JIRA_HEADERS)
     body = JSON.parse(response.body)
@@ -169,15 +171,16 @@ end
 # sprint: id,start_date,due_date,budget,title,user_id,created_at,created_by,space_id,description,is_completed,completed_date,updated_at,updated_by,release_level,release_notes,planner_type,pretty_release_level
 # next_sprint: id,state,name,startDate,endDate,originBoardId,assembla_id
 @sprints.each do |sprint|
-  next_sprint = jira_create_sprint(@board, sprint)
+  next_sprint = jira_get_sprint(@board, sprint) || jira_create_sprint(@board, sprint)
   if next_sprint
     @tickets_sprint = @tickets_jira.select { |ticket| ticket['milestone_name'] == sprint['title'] }
+    issues = @tickets_sprint.map { |ticket| ticket['jira_ticket_key'] }
     while @tickets_sprint.length.positive?
       @tickets_sprint_slice = @tickets_sprint.slice!(0,50)
       jira_update_sprint_state(next_sprint, 'active')
       jira_move_issues_to_sprint(next_sprint, @tickets_sprint_slice)
     end
-    @jira_sprints << next_sprint.merge(assembla_id: sprint['id'])
+    @jira_sprints << next_sprint.merge(issues: issues.join(',')).merge(assembla_id: sprint['id'])
   end
 end
 

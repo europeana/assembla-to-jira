@@ -489,6 +489,32 @@ def jira_get_user(username)
   result
 end
 
+def jira_get_board_by_name(name)
+  result = nil
+  url = URL_JIRA_BOARDS
+  begin
+    response = RestClient::Request.execute(method: :get, url: url, headers: JIRA_HEADERS)
+    body = JSON.parse(response.body)
+    # max_results = body['maxResults'].to_i
+    # start_at = body['startAt'].to_i
+    # is_last = body['isLast']
+    values = body['values']
+    if values
+      result = values.detect { |h| h['name'] == name }
+      if result
+        result.delete_if { |k, _| k =~ /self/i }
+        puts "GET #{url} name='#{name}' => FOUND"
+      else
+        puts "GET #{url} name='#{name}' => NOT FOUND"
+      end
+    end
+  rescue => e
+    puts "GET #{url} name='#{name}' => NOK (#{e.message})"
+  end
+  result
+end
+
+
 def goodbye(message)
   puts "\nGOODBYE: #{message}"
   exit

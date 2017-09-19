@@ -78,6 +78,7 @@ Each step will generate a log of the results in the form of a csv file for refer
 ### Scrum board
 
 21. Create scrum board
+22. Update scrum board
 
 ## Preparations
 
@@ -458,6 +459,16 @@ Now you are ready to setup the sprints by executing the following command:
 $ ruby 21-jira_create_sprints.rb # => data/jira/jira-create-sprints.csv
 ```
 
+### Update the scrum board
+
+The final step after the board and sprints have been created is to copy the Assembla cardwall columns (ticket statuses) to the Jira board and to order the issues by rank as they were in Assembla.
+
+In order to achieve this, execute the following command:
+
+```
+$ ruby 22-jira_update_board.rb # => data/jira/jira-update-board.csv
+```
+
 ## Ticket field conversions
 
 Most of the ticket fields are converted from Assembla to Jira via a one-to-one mapping and are indicated as **bold** below.
@@ -687,12 +698,12 @@ gsub(/\[\[image:(.*)(\|(.*))?\]\]/i) { |image| markdown_image(image, list_of_ima
 
 With such a complicated tool, there will always be some loose ends and/or additional work to be done at a later time. Hopefully in the not so distant future, I'll have some time to tackle one or more of the following items:
 
-* Transition ticket status to blocked, testable, ready for acceptance, in acceptance testing, ready for deploy, e.g. in line with the original Assembla workflow.
-* Convert Assembla milestones and cardwalls to Jira sprints and agile scrum board.
+* Implement Assembla cardwall columns (statuses = blocked, testable, ready for acceptance, in acceptance testing, ready for deploy) in line with the original Assembla workflow.
+* Create new project scrum board automatically using the API instead of requiring the user to create in manually.
+* Implement ranking
 * Implement extra markdown: ticket number and code snippets.
-* Assign original authors as creators of tickets, comments, attachments on creation.
-* Refactor and cleanup code, removing duplication and rubocop warnings.
-* Make more object-oriented using classes, etc.
+* Assign original authors as creators of tickets, comments, attachments on creation (this might not be possible)
+* Refactor: cleanup code, remove duplication, fix rubocop warnings, and make more object-oriented using classes.
 
 ## References
 
