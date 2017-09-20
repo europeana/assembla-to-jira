@@ -58,7 +58,7 @@ Each step will generate a log of the results in the form of a csv file for refer
 
 ### Jira import
 
-5. Create projects
+5. Create project (and board)
 6. Create issue link types
 7. Get issue types
 8. Get issue priorities
@@ -75,18 +75,16 @@ Each step will generate a log of the results in the form of a csv file for refer
 19. Update ticket associations
 20. Update ticket watchers
 
-### Scrum board
+### Scrum/Kanban board
 
-21. Create scrum board
-22. Update scrum board
+21. Create sprints
+22. Update board
 
 ## Preparations
 
 You will need to go to to the Jira website and login as admin.
 
-Optionally create the new project. This not necessary, as during the import the existence of the project will be checked and created on the fly if needed.
-
-Define the project `.env` file as `ASSEMBLA_SPACES=project_name`.
+Define the project `.env` file as `ASSEMBLA_SPACE=space-name`.
 
 Create the following new issue type:
 * Spike
@@ -123,7 +121,13 @@ Otherwise the ticket import will fail with the error message `Field 'field-name'
 
 ![](images/jira-custom-fields.png)
 
-The same applies to the following additional (default) fields:
+On the `View Field Configuration Page` ensure the same for:
+
+* Resolution
+
+![](images/jira-view-field-configuration.png)
+
+The same applies to the `Configure Screen Page` for the following additional (default) fields:
 
 * Epic Name
 * Rank
@@ -146,21 +150,24 @@ ASSEMBLA_API_HOST=https://api.assembla.com/v1
 ASSEMBLA_API_KEY=api-key
 ASSEMBLA_API_SECRET=api-secret
 ASSEMBLA_URL_TICKETS=https://app.assembla.com/spaces/europeana-npc/tickets
-ASSEMBLA_SPACES=space_1,space_2,space_3
+ASSEMBLA_SPACE=space-name
 ASSEMBLA_SKIP_ASSOCIATIONS=parent,child,story,subtask
 
 # --- Jira API settings --- #
 JIRA_API_HOST=https://jira.example.org/rest/api/2
 JIRA_API_PROJECT_NAME=Project Name
+# Project type must be scrum (default) or kanban
+JIRA_API_PROJECT_TYPE=scrum
 JIRA_API_ADMIN_USERNAME=john.doe
 JIRA_API_ADMIN_PASSWORD=secret
 JIRA_API_UNKNOWN_USER=unknown.user
 JIRA_API_IMAGES_THUMBNAIL=description:false,comments:true
+# Status mappings (from:to, if :to missing then same as from)
+JIRA_API_STATUSES=New:To Do,In Progress,Ready for Testing,Done,Invalid:Done
 
 # --- Jira Agile settings --- #
 JIRA_AGILE_HOST=https://jira.example.org/rest/agile/1.0
-# Name of board and type (can be 'scrum' or 'kanban')
-JIRA_AGILE_BOARD=name:Name of Scrum Board,type:scrum
+JIRA_BOARD_NAME=Name of Scrum Board
 ```
 
 By using the filter `TICKETS_CREATED_ON` you can limited the tickets to those that were created on or after the date indicated. So for example:
@@ -195,11 +202,31 @@ $ ruby 04-assembla_report_tickets.rb # => report-tickets.csv
 
 You can run the import in a number of stages, output files being generated at each point in the process.
 
-### Create projects
+### Create project (and board)
 
 ```
-$ ruby 05-jira_create_projects.rb # => data/jira/jira-projects.csv
+POST /rest/api/2/project
+{
+  key: project_key,
+  name: project_name,
+  projectTypeKey: 'software',
+  description: project_description,
+  projectTemplateKey: "com.pyxis.greenhopper.jira:gh-#{type}-template",
+  lead: username
+}
 ```
+
+where '#{type}' must be either 'scrum' or 'kanban'.
+
+```
+$ ruby 05-jira_create_project.rb
+```
+
+Depending on the value of `JIRA_API_PROJECT_TYPE` in the `.env` file, a scrum or kanban board will be created as well with board name `{projectKey} board`.
+
+The `projectKey` is usually just the abbreviation of the project name in all capitals. Here is an example of a project with key `ECT`:
+
+![](images/jira-all-boards.png)
 
 ### Create issue link types
 
@@ -433,25 +460,15 @@ You are now ready to setup the scrum board, create sprints, and assign issues to
 
 ```
 JIRA_API_PROJECT_NAME=Project Name
-JIRA_AGILE_BOARD=name:Scrum Board Name,type:scrum
+JIRA_API_PROJECT_TYPE=scrum
+JIRA_BOARD_NAME=name:Scrum Board Name
 ```
 
 These will be used as placeholder values below.
 
-### Create the scrum board
+### Create sprints
 
-Go to the administrators dashboard and select the Boards > View all Boards button on the top navigation bar.
-
-Click the `Create board` button at the top right corner, from the dialog box hit the `Create a Scrum board` button. Select the `Board from an existing project` radio button.
-
-```
-Board name: Scrum Board Name
-Projects: Project Name
-```
-
-![](images/jira-all-boards.png)
-
-When the scrum board is created, all issues assigned to the project are automatically put in the backlog.
+When the scrum board was created with the project, all issues are assigned to the project are automatically put in the backlog.
 
 Now you are ready to setup the sprints by executing the following command:
 
@@ -459,7 +476,9 @@ Now you are ready to setup the sprints by executing the following command:
 $ ruby 21-jira_create_sprints.rb # => data/jira/jira-create-sprints.csv
 ```
 
-### Update the scrum board
+The issues are redistibuted to the sprints they belong to and the most recent sprint is set as the `active` sprint.
+
+### Update board
 
 The final step after the board and sprints have been created is to copy the Assembla cardwall columns (ticket statuses) to the Jira board and to order the issues by rank as they were in Assembla.
 
@@ -468,6 +487,7 @@ In order to achieve this, execute the following command:
 ```
 $ ruby 22-jira_update_board.rb # => data/jira/jira-update-board.csv
 ```
+
 
 ## Ticket field conversions
 
@@ -699,6 +719,8 @@ gsub(/\[\[image:(.*)(\|(.*))?\]\]/i) { |image| markdown_image(image, list_of_ima
 With such a complicated tool, there will always be some loose ends and/or additional work to be done at a later time. Hopefully in the not so distant future, I'll have some time to tackle one or more of the following items:
 
 * Implement Assembla cardwall columns (statuses = blocked, testable, ready for acceptance, in acceptance testing, ready for deploy) in line with the original Assembla workflow.
+* Automatically create custom fields instead of requiring the user to do this manually (see above).
+* Data directory for Jira should have subdirectory per project `data/jira/:project-name`, e.g. like Assembla: `data/assembla/:space-name`
 * Create new project scrum board automatically using the API instead of requiring the user to create in manually.
 * Implement ranking
 * Implement extra markdown: ticket number and code snippets.

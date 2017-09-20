@@ -9,7 +9,7 @@ require 'base64'
 
 @debug = ENV['DEBUG'] == 'true'
 
-ASSEMBLA_SPACES = ENV['ASSEMBLA_SPACES'].split(',').freeze
+ASSEMBLA_SPACE = ENV['ASSEMBLA_SPACE'].freeze
 
 ASSEMBLA_API_HOST = ENV['ASSEMBLA_API_HOST'].freeze
 ASSEMBLA_API_KEY = ENV['ASSEMBLA_API_KEY'].freeze
@@ -23,6 +23,9 @@ JIRA_API_ADMIN_USER = ENV['JIRA_API_ADMIN_USER'].freeze
 JIRA_API_UNKNOWN_USER = ENV['JIRA_API_UNKNOWN_USER'].freeze
 
 JIRA_API_IMAGES_THUMBNAIL = (ENV['JIRA_API_IMAGES_THUMBNAIL'] || 'description:false,comments:true').freeze
+
+# Jira project type us 'scrum' by default
+JIRA_API_PROJECT_TYPE = (ENV['JIRA_API_PROJECT_TYPE'] || 'scrum').freeze
 
 JIRA_HEADERS = { 'Authorization': "Basic #{Base64.encode64(JIRA_API_ADMIN_USER + ':' + ENV['JIRA_API_ADMIN_PASSWORD'])}", 'Content-Type': 'application/json', 'Accept': 'application/json' }
 
@@ -44,6 +47,9 @@ OUTPUT_DIR_JIRA = "#{OUTPUT_DIR}/jira"
 
 # The following custom fields MUST be defined AND associated with the proper screens
 CUSTOM_FIELD_NAMES = %w(Assembla-Id Assembla-Milestone Assembla-Theme Assembla-Status Assembla-Reporter Assembla-Assignee Assembla-Completed Epic\ Name Rank Story\ Points)
+
+JIRA_AGILE_HOST = ENV['JIRA_AGILE_HOST']
+URL_JIRA_BOARDS = "#{JIRA_AGILE_HOST}/board"
 
 def get_tickets_created_on
   env = ENV['TICKETS_CREATED_ON']
@@ -187,11 +193,9 @@ def create_csv_file(space, item)
 end
 
 def export_items(list)
-  ASSEMBLA_SPACES.each do |space_name|
-    space = get_space(space_name)
-    items = get_items(list, space)
-    create_csv_files(space, items)
-  end
+  space = get_space(ASSEMBLA_SPACE)
+  items = get_items(list, space)
+  create_csv_files(space, items)
 end
 
 def write_csv_file(filename, results)
@@ -247,25 +251,49 @@ def jira_check_unknown_user(b)
   end
 end
 
-def jira_create_project(name)
+def jira_build_project_key(project_name)
+  # Max. length = 10
+  key = project_name.split(' ').map { |w| w[0].upcase }.join
+  key = project_name.upcase if key.length == 1
+  key = key[0..9] if key.length > 10
+  key
+end
+
+# Create project and scrum/kanban board
+# POST /rest/api/2/project
+# {
+#   key: project_key,
+#   name: project_name,
+#   projectTypeKey: 'software',
+#   description: project_description,
+#   projectTemplateKey: "com.pyxis.greenhopper.jira:gh-#{type}-template",
+#   lead: username
+# }
+#
+# where '#{type}' must be either 'scrum' or 'kanban'
+#
+def jira_create_project(project_name, project_type)
+  goodbye("Invalid project type=#{project_type}, must be 'scrum' or 'kanban'") unless %w(scrum kanban).include?(project_type)
   result = nil
+  key = jira_build_project_key(project_name)
   payload = {
-      key: name.split(' ').map {|w| w[0].upcase}.join,
-      name: name,
-      projectTypeKey: 'software',
-      description: "Description of project '#{name}'",
-      lead: JIRA_API_ADMIN_USER
+    key: key,
+    name: project_name,
+    projectTypeKey: 'software',
+    description: "Description of project '#{project_name}'",
+    projectTemplateKey: "com.pyxis.greenhopper.jira:gh-#{project_type}-template",
+    lead: JIRA_API_ADMIN_USER
   }.to_json
   begin
     response = RestClient::Request.execute(method: :post, url: URL_JIRA_PROJECTS, payload: payload, headers: JIRA_HEADERS)
     result = JSON.parse(response.body)
-    puts "POST #{URL_JIRA_PROJECTS} name='#{name}' => OK"
+    puts "POST #{URL_JIRA_PROJECTS} name='#{project_name}', key='#{key}' => OK"
   rescue RestClient::ExceptionWithResponse => e
     error = JSON.parse(e.response)
-    message = error['errors'].map { |k,v| "#{k}: #{v}"}.join(' | ')
-    puts "POST #{URL_JIRA_PROJECTS} name='#{name}' => NOK (#{message})"
+    message = error['errors'].map { |k, v| "#{k}: #{v}" }.join(' | ')
+    puts "POST #{URL_JIRA_PROJECTS} name='#{project_name}', key='#{key}' => NOK (#{message})"
   rescue => e
-    puts "POST #{URL_JIRA_PROJECTS} name='#{name}' => NOK (#{e.message})"
+    puts "POST #{URL_JIRA_PROJECTS} name='#{project_name}', key='#{key}' => NOK (#{e.message})"
   end
   result
 end
@@ -419,7 +447,7 @@ def jira_create_custom_field(name, description, type)
     puts "POST #{URL_JIRA_FIELDS} name='#{name}' => OK (#{result['id']})"
   rescue RestClient::ExceptionWithResponse => e
     error = JSON.parse(e.response)
-    message = error['errors'].map { |k,v| "#{k}: #{v}"}.join(' | ')
+    message = error['errors'].map { |k, v| "#{k}: #{v}" }.join(' | ')
     puts "POST #{URL_JIRA_FIELDS} name='#{name}' => NOK (#{message})"
   rescue => e
     puts "POST #{URL_JIRA_FIELDS} name='#{name}' => NOK (#{e.message})"
@@ -444,15 +472,15 @@ def jira_create_user(user)
   url = "#{JIRA_API_HOST}/user"
   username = user['login']
   email = user['email']
-  if email.nil? || email.length == 0
+  if email.nil? || email.empty?
     email = "#{username}@example.org"
   end
   payload = {
-      name: username,
-      password: username,
-      #TODO: Make the following configurable and not hard-coded.
-      emailAddress: user['email'] || "#{username}@example.org",
-      displayName: user['name'],
+    name: username,
+    password: username,
+    # TODO: Make the following configurable and not hard-coded.
+    emailAddress: email,
+    displayName: user['name'],
   }.to_json
   begin
     response = RestClient::Request.execute(method: :post, url: url, payload: payload, headers: JIRA_HEADERS)
@@ -462,7 +490,7 @@ def jira_create_user(user)
     result = body
   rescue RestClient::ExceptionWithResponse => e
     error = JSON.parse(e.response)
-    message = error['errors'].map { |k,v| "#{k}: #{v}"}.join(' | ')
+    message = error['errors'].map { |k, v| "#{k}: #{v}" }.join(' | ')
     goodbye("POST #{url} username='#{username}' => NOK (#{message})")
   rescue => e
     goodbye("POST #{url} username='#{username}' => NOK (#{e.message})")
@@ -489,9 +517,10 @@ def jira_get_user(username)
   result
 end
 
-def jira_get_board_by_name(name)
+def jira_get_board_by_project_name(project_name)
   result = nil
   url = URL_JIRA_BOARDS
+  key = jira_build_project_key(project_name)
   begin
     response = RestClient::Request.execute(method: :get, url: url, headers: JIRA_HEADERS)
     body = JSON.parse(response.body)
@@ -500,20 +529,19 @@ def jira_get_board_by_name(name)
     # is_last = body['isLast']
     values = body['values']
     if values
-      result = values.detect { |h| h['name'] == name }
+      result = values.detect { |h| h['name'].match(/^#{key}/) }
       if result
         result.delete_if { |k, _| k =~ /self/i }
-        puts "GET #{url} name='#{name}' => FOUND"
+        puts "GET #{url} name='#{project_name}', key='#{key}' => FOUND"
       else
-        puts "GET #{url} name='#{name}' => NOT FOUND"
+        puts "GET #{url} name='#{project_name}', key='#{key}' => NOT FOUND"
       end
     end
   rescue => e
-    puts "GET #{url} name='#{name}' => NOK (#{e.message})"
+    puts "GET #{url} name='#{project_name}', key='#{key}' => NOK (#{e.message})"
   end
   result
 end
-
 
 def goodbye(message)
   puts "\nGOODBYE: #{message}"
@@ -556,7 +584,7 @@ end
 @cache_markdown_names = {}
 
 def markdown_name(name, list_of_logins)
-  name = name[1..-1].sub(/@.*$/,'').strip
+  name = name[1..-1].sub(/@.*$/, '').strip
   return @cache_markdown_names[name] if @cache_markdown_names[name]
   ok = list_of_logins[name]
   result = ok ? "[~#{name}]" : "@#{name}"
@@ -585,16 +613,16 @@ def markdown_image(image, list_of_images, content_type)
 end
 
 def reformat_markdown(content, list_of_logins, list_of_images, content_type)
-  return content if content.nil? or content.length.zero?
+  return content if content.nil? || content.length.zero?
   lines = content.split("\n")
   markdown = []
   lines.each do |line|
     markdown << line.
-        gsub(/\[\[url:(.*)\|(.*)\]\]/i, '[\2|\1]').
-        gsub(/\[\[url:(.*)\]\]/i, '[\1|\1]').
-        gsub(/@([^@]*)@( |$)/, '{{\1}}\2').
-        gsub(/@([a-z.-_]*)/i) { |name| markdown_name(name, list_of_logins) }.
-        gsub(/\[\[image:(.*)(\|(.*))?\]\]/i) { |image| markdown_image(image, list_of_images, content_type) }
+                gsub(/\[\[url:(.*)\|(.*)\]\]/i, '[\2|\1]').
+                gsub(/\[\[url:(.*)\]\]/i, '[\1|\1]').
+                gsub(/@([^@]*)@( |$)/, '{{\1}}\2').
+                gsub(/@([a-z.-_]*)/i) { |name| markdown_name(name, list_of_logins) }.
+                gsub(/\[\[image:(.*)(\|(.*))?\]\]/i) { |image| markdown_image(image, list_of_images, content_type) }
   end
   markdown.join("\n")
 end

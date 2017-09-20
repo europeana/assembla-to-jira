@@ -11,12 +11,6 @@ JIRA_AGILE_HOST = ENV['JIRA_AGILE_HOST']
 URL_JIRA_BOARDS = "#{JIRA_AGILE_HOST}/board"
 URL_JIRA_SPRINTS = "#{JIRA_AGILE_HOST}/sprint"
 
-# JIRA_AGILE_BOARD=name:Board Name,type:scrum
-JIRA_AGILE_BOARD = ENV['JIRA_AGILE_BOARD']
-
-@board_name = JIRA_AGILE_BOARD.split(',')[0].split(':')[1]
-@board_type = JIRA_AGILE_BOARD.split(',')[1].split(':')[1]
-
 space = get_space(SPACE_NAME)
 dirname = get_output_dirname(space, 'assembla')
 
@@ -155,17 +149,8 @@ end
 project = @projects_jira.detect { |p| p['name'] == JIRA_PROJECT_NAME }
 goodbye("Cannot find project with name='#{JIRA_PROJECT_NAME}'") unless project
 
-@board = jira_get_board_by_name(@board_name)
+@board = jira_get_board_by_project_name(JIRA_PROJECT_NAME)
 
-unless @board
-  goodbye("Cannot find board, please create:\n" \
-              "Board name: '#{@board_name}'\n" \
-              "Type:       '#{@board_type}'\n" \
-              "Project:    '#{JIRA_PROJECT_NAME}'"
-  )
-end
-
-# jira_delete_all_sprints(@board)
 @jira_sprints = []
 
 # sprint: id,start_date,due_date,budget,title,user_id,created_at,created_by,space_id,description,is_completed,completed_date,updated_at,updated_by,release_level,release_notes,planner_type,pretty_release_level

@@ -5,6 +5,14 @@ load './lib/common.rb'
 SPACE_NAME = ENV['JIRA_API_PROJECT_NAME']
 JIRA_PROJECT_NAME = SPACE_NAME + (@debug ? ' TEST' : '')
 
+JIRA_API_STATUSES = ENV['JIRA_API_STATUSES']
+
+@assembla_status_to_jira = {}
+JIRA_API_STATUSES.split(',').each do |status|
+  from, to = status.split(':')
+  @assembla_status_to_jira[from.downcase] = to || from
+end
+
 space = get_space(SPACE_NAME)
 dirname_assembla = get_output_dirname(space, 'assembla')
 
@@ -38,6 +46,22 @@ puts "\nAssembla ticket statuses:"
 @assembla_statuses.keys.each do |key|
   puts "* #{key}: #{@assembla_statuses[key]}"
 end
+
+# Sanity check just in case
+@missing_statuses = []
+@assembla_statuses.keys.each do |key|
+  @missing_statuses << key unless @assembla_status_to_jira[key.downcase]
+end
+
+if @missing_statuses.length.positive?
+  puts "\nSanity check => NOK"
+  puts "The following statuses are missing:"
+  @missing_statuses.each do |status|
+    puts "* #{status}"
+  end
+  goodbye("Please fix in order to continue")
+end
+puts "Sanity check => OK"
 
 # Jira tickets
 resolutions_jira_csv = "#{OUTPUT_DIR_JIRA}/jira-resolutions.csv"

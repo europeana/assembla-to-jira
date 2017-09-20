@@ -5,15 +5,6 @@ load './lib/common.rb'
 SPACE_NAME = ENV['JIRA_API_PROJECT_NAME']
 JIRA_PROJECT_NAME = SPACE_NAME + (@debug ? ' TEST' : '')
 
-JIRA_AGILE_HOST = ENV['JIRA_AGILE_HOST']
-URL_JIRA_BOARDS = "#{JIRA_AGILE_HOST}/board"
-
-# JIRA_AGILE_BOARD=name:Board Name,type:scrum
-JIRA_AGILE_BOARD = ENV['JIRA_AGILE_BOARD']
-
-@board_name = JIRA_AGILE_BOARD.split(',')[0].split(':')[1]
-@board_type = JIRA_AGILE_BOARD.split(',')[1].split(':')[1]
-
 space = get_space(SPACE_NAME)
 dirname = get_output_dirname(space, 'assembla')
 
@@ -39,9 +30,9 @@ jira_tickets_csv = "#{OUTPUT_DIR_JIRA}/jira-tickets-all.csv"
 project = @projects_jira.detect { |p| p['name'] == JIRA_PROJECT_NAME }
 goodbye("Cannot find project with name='#{JIRA_PROJECT_NAME}'") unless project
 
-@board = jira_get_board_by_name(@board_name)
+@board = jira_get_board_by_project_name(JIRA_PROJECT_NAME)
 
-goodbye("Cannot find board name=#{@board_name}") unless @board
+goodbye('Cannot find board name') unless @board
 
 @board_columns.each do |col|
 
