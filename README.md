@@ -488,6 +488,18 @@ In order to achieve this, execute the following command:
 $ ruby 22-jira_update_board.rb # => data/jira/jira-update-board.csv
 ```
 
+### Create statuses
+
+```
+JIRA_API_STATUSES=New:To Do,In Progress,Blocked,Testable,Ready for Acceptance, \
+    In Acceptance Testing,Ready for Deploy,Done,Invalid:Done
+```
+
+![](images/jira-create-statuses.png)
+
+### Create workflow
+
+![](images/jira-create-workflow.png)
 
 ## Ticket field conversions
 
