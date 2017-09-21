@@ -121,6 +121,14 @@ and assign them to the following screens:
 
 Otherwise the ticket import will fail with the error message `Field 'field-name' cannot be set. It is not on the appropriate screen, or unknown`.
 
+Additionally the following already existing custom fields need to be assigned the the same screens:
+
+* Epic Link
+* Epic Name
+* Rank
+* Sprint
+* Story Points
+
 ![](images/jira-custom-fields.png)
 
 On the `View Field Configuration Page` ensure the same for:
