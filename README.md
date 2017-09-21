@@ -393,6 +393,7 @@ For the default Assembla associations the relationship names are:
 |  7  | Dependent | depends on        |               |
 |  8  | Block     | blocks            |               |
 
+```
 0 - Parent (ticket2 is parent of ticket1 and ticket1 is child of ticket2)
 1 - Child  (ticket2 is child of ticket1 and ticket2 is parent of ticket1)
 2 - Related (ticket2 is related to ticket1)
@@ -402,6 +403,7 @@ For the default Assembla associations the relationship names are:
 6 - Subtask (ticket2 is subtask of a story and ticket1 is the story)
 7 - Dependent (ticket2 depends on ticket1)
 8 - Block (ticket2 blocks ticket1)
+```
 
 For the default Jira issue link types we have:
 
@@ -731,6 +733,7 @@ gsub(/\[\[image:(.*)(\|(.*))?\]\]/i) { |image| markdown_image(image, list_of_ima
 With such a complicated tool, there will always be some loose ends and/or additional work to be done at a later time. Hopefully in the not so distant future, I'll have some time to tackle one or more of the following items:
 
 * Implement Assembla cardwall columns (statuses = blocked, testable, ready for acceptance, in acceptance testing, ready for deploy) in line with the original Assembla workflow.
+* For ticket links across spaces, retain the original external link.
 * Automatically create custom fields instead of requiring the user to do this manually (see above).
 * Data directory for Jira should have subdirectory per project `data/jira/:project-name`, e.g. like Assembla: `data/assembla/:space-name`
 * Create new project scrum board automatically using the API instead of requiring the user to create in manually.
