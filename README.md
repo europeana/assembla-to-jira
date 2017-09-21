@@ -100,7 +100,9 @@ You will also need to configure the `issue type scheme` for the project like thi
 
 ![](images/jira-issue-type-schemes.png)
 
-Create the following custom fields (text field read-only):
+### Custom fields
+
+After the project is created (see below), you will need to define manually the following custom fields (text field read-only):
 
 * Assembla-Id
 * Assembla-Theme
@@ -528,7 +530,7 @@ Most of the ticket fields are converted from Assembla to Jira via a one-to-one m
     * 0 - closed, 1 - open
 * **status** (new, in progress, blocked, testable, ready for acceptance,
           in acceptance testing, ready for deploy, done, invalid)
-* **story_importance** (1 - small, 4 - medium, 7 - large) => 10105 Story Points
+* **story_importance** (1 - small, 4 - medium, 7 - large) => 10105 Story Points (for stories only)
 * updated_at
 * working_hours
 * estimate
@@ -648,6 +650,10 @@ For Assembla tickets marked as `in progress` the imported Jira issue will be set
 IMPORTANT: all the other statuses will be ignored unless the administrator modifies the workflow for the given Jira project to include them explicitly.
 
 The names of these newly defined transitions MUST be the same as the Assembla status names in order for the status migration to work properly.
+
+### Story points
+
+The `story_importance` field for Assembla tickets is ONLY used for `story` type Jira issues.
 
 ### Components
 

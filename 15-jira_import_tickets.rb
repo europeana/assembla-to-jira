@@ -132,7 +132,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
   priority_name = @priority_id_to_name[ticket['priority']]
   status_name = ticket['status']
   story_rank = ticket['importance']
-  # story_points = ticket['story_importance']
+  story_points = ticket['story_importance']
 
   # Prepend the description text with a link to the original assembla ticket on the first line.
   description = "Assembla ticket [##{ticket_number}|#{ENV['ASSEMBLA_URL_TICKETS']}/#{ticket_number}] | "
@@ -175,10 +175,7 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
       "#{@customfield_name_to_id['Assembla-Status']}": status_name,
       "#{@customfield_name_to_id['Assembla-Milestone']}": milestone[:name],
       "#{@customfield_name_to_id['Assembla-Completed']}": completed_date,
-      "#{@customfield_name_to_id['Rank']}": story_rank,
-
-      # TODO: "customfield_10105"=>"Field 'customfield_10105' cannot be set. It is not on the appropriate screen, or unknown."
-      #"#{@customfield_name_to_id['Story Points']}": story_points
+      "#{@customfield_name_to_id['Rank']}": story_rank
     }
   }
 
@@ -194,10 +191,13 @@ def create_ticket_jira(ticket, counter, total, grand_counter, grand_total)
     payload[:fields][:assignee][:name] = ''
   end
 
-  if issue_type[:name] == 'epic'
+  case issue_type[:name]
+  when 'epic'
     epic_name = (summary =~ /^epic: /i ? summary[6..-1] : summary)
     payload[:fields]["#{@customfield_name_to_id['Epic Name']}".to_sym] = epic_name
-  elsif issue_type[:name] == 'sub-task'
+  when 'story'
+    payload[:fields]["#{@customfield_name_to_id['Story Points']}".to_sym] = story_points.to_i
+  when 'sub-task'
     parent_issue = get_parent_issue(ticket)
     payload[:fields][:parent] = {}
     payload[:fields][:parent][:id] = parent_issue ? parent_issue[:jira_ticket_id] : nil
