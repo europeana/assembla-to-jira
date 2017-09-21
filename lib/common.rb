@@ -612,12 +612,25 @@ def markdown_image(image, list_of_images, content_type)
   result
 end
 
+#
+# Reformat Assembla markdown to Jira markdown
+#
+# [[image:IMAGE]] => !name(IMAGE)|thumbnail!
+# [[image:IMAGE|text]] => !name(IMAGE)|thumbnail!
+# @login => [~login]
+# @inline code@ => {{inline code}} (monospaced)
+# [[url:URL|TEXT]] => [TEXT|URL]
+# [[url:URL]] => [URL|URL]
+# <pre><code> code-snippet </code></pre> => {code:java} code-snippet {code}
+#
 def reformat_markdown(content, list_of_logins, list_of_images, content_type)
   return content if content.nil? || content.length.zero?
   lines = content.split("\n")
   markdown = []
   lines.each do |line|
     markdown << line.
+                gsub(/<pre><code>/i,'{code:java}').
+                gsub(/<\/code><\/pre>/i,'{code}').
                 gsub(/\[\[url:(.*)\|(.*)\]\]/i, '[\2|\1]').
                 gsub(/\[\[url:(.*)\]\]/i, '[\1|\1]').
                 gsub(/@([^@]*)@( |$)/, '{{\1}}\2').

@@ -445,7 +445,7 @@ However, since Jira already takes care of a number of issue links during issue c
 ASSEMBLA_SKIP_ASSOCIATIONS=parent,child,story,subtask
 ```
 
-If for some reason you do not want to do this, simple comment out the line, or if you prefer to skip other Assembla association just edit the line.
+If for some reason you do not want to do this, simply comment out the line, or if you prefer to skip other Assembla association just edit the line.
 
 Now you are ready to update the Jira tickets to reflect the original Assembla associations. Execute the following command:
 
@@ -688,7 +688,6 @@ Numbered - Bullet list
 ### Ignore (will be ignored and passed through unchanged)
 
 ```
-Code snippet
 Wiki links
 [[ticket:NUMBER]]
 [[user:NAME]]
@@ -704,6 +703,24 @@ Wiki links
 @inline code@ => {{inline code}} (monospaced)
 [[url:URL|TEXT]] => [TEXT|URL]
 [[url:URL]] => [URL|URL]
+```
+
+### Code blocks
+
+In Assembla a block of code looks like this:
+
+```
+<pre><code>
+code-snippet
+</code></pre>
+```
+
+which will be transformed into Jira format like this:
+
+```
+{code:java}
+code-snippet
+{code}
 ```
 
 Note that the images will have original or thumbnail sizes depending on the value of `JIRA_API_IMAGES_THUMBNAIL` in the `.env` file.
