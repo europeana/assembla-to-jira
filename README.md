@@ -159,9 +159,11 @@ DEBUG=false
 ASSEMBLA_API_HOST=https://api.assembla.com/v1
 ASSEMBLA_API_KEY=api-key
 ASSEMBLA_API_SECRET=api-secret
-ASSEMBLA_URL_TICKETS=https://app.assembla.com/spaces/europeana-npc/tickets
+ASSEMBLA_URL_TICKETS=https://app.assembla.com/spaces/space-name/tickets
 ASSEMBLA_SPACE=space-name
 ASSEMBLA_SKIP_ASSOCIATIONS=parent,child,story,subtask
+# Ticket types extracted from ticket summary, e.g. starting with 'Spike: '
+ASSEMBLA_TYPES_IN_SUMMARY=epic,spike,bug
 
 # --- Jira API settings --- #
 JIRA_API_HOST=https://jira.example.org/rest/api/2
@@ -765,6 +767,7 @@ With such a complicated tool, there will always be some loose ends and/or additi
 
 * Implement Assembla cardwall columns (statuses = blocked, testable, ready for acceptance, in acceptance testing, ready for deploy) in line with the original Assembla workflow.
 * For ticket links across spaces, retain the original external link.
+* Assembla tickets with tag `bug` should be converted into Jira issue of type `bug`.
 * Automatically create custom fields instead of requiring the user to do this manually (see above).
 * Data directory for Jira should have subdirectory per project `data/jira/:project-name`, e.g. like Assembla: `data/assembla/:space-name`
 * Create new project scrum board automatically using the API instead of requiring the user to create in manually.

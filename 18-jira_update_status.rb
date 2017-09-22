@@ -30,12 +30,18 @@ end
 
 # Collect ticket statuses
 @assembla_statuses = {}
+@extra_summary_types = {}
 @tickets_assembla.each do |ticket|
   status = ticket['status']
+  summary = ticket['summary']
   if @assembla_statuses[status].nil?
     @assembla_statuses[status] = 0
   else
     @assembla_statuses[status] += 1
+  end
+  if summary.match(/^([A-Z]*):/)
+    t = summary.sub(/:.*$/, '\1')
+    @extra_summary_types[t] = true if !ASSEMBLA_TYPES_IN_SUMMARY.include?(t.downcase) && @extra_summary_types[t].nil?
   end
 end
 
@@ -45,6 +51,13 @@ puts "\nTotal Assembla tickets: #{@total_assembla_tickets}"
 puts "\nAssembla ticket statuses:"
 @assembla_statuses.keys.each do |key|
   puts "* #{key}: #{@assembla_statuses[key]}"
+end
+
+if @extra_summary_types.length.positive?
+  puts "\nExtra statuses detected in the summary (ignored): #{@extra_summary_types.length}"
+  @extra_summary_types.keys.sort.each do |type|
+    puts "* #{type}"
+  end
 end
 
 # Sanity check just in case
