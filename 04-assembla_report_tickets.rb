@@ -8,9 +8,7 @@
 
 load './lib/common.rb'
 
-SPACE_NAME = ENV['JIRA_API_PROJECT_NAME']
-
-space = get_space(SPACE_NAME)
+space = get_space(ASSEMBLA_SPACE)
 dirname_assembla = get_output_dirname(space, 'assembla')
 
 tickets_csv = "#{dirname_assembla}/tickets.csv"

@@ -2,8 +2,6 @@
 
 load './lib/common.rb'
 
-SPACE_NAME = ENV['JIRA_API_PROJECT_NAME']
-
 ALLOWED_ARGS = %w(comments attachments tags associations).freeze
 
 if ARGV[0].nil?
@@ -54,7 +52,7 @@ def get_ticket_attr(space_id, ticket_number, attr, opts)
   results
 end
 
-space = get_space(SPACE_NAME)
+space = get_space(ASSEMBLA_SPACE)
 dirname_assembla = get_output_dirname(space, 'assembla')
 
 tickets_assembla_csv = "#{dirname_assembla}/tickets.csv"
