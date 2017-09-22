@@ -51,8 +51,8 @@ Each step will generate a log of the results in the form of a csv file for refer
 
 ### Assembla export
 
-1. Space
-2. Tickets
+1. Space (space_tools, users, user roles, tags, milestones, ticket statuses, ticket custom fields, documents, wiki pages and tickets)
+2. Tickets (comments, attachments, tags, associatations)
 3. Report users
 4. Report tickets
 
@@ -716,6 +716,7 @@ Wiki links
 @inline code@ => {{inline code}} (monospaced)
 [[url:URL|TEXT]] => [TEXT|URL]
 [[url:URL]] => [URL|URL]
+#Assembla-ticket-number => Issue-Key
 ```
 
 ### Code blocks
@@ -778,6 +779,7 @@ With such a complicated tool, there will always be some loose ends and/or additi
 
 * Implement Assembla cardwall columns (statuses = blocked, testable, ready for acceptance, in acceptance testing, ready for deploy) in line with the original Assembla workflow.
 * For ticket links across spaces, retain the original external link.
+* Markdown conversion Assembla ticket number `#123` to Jira issue key `ECT-327`.
 * Assembla tickets with tag `bug` should be converted into Jira issue of type `bug`.
 * Automatically create custom fields instead of requiring the user to do this manually (see above).
 * Data directory for Jira should have subdirectory per project `data/jira/:project-name`, e.g. like Assembla: `data/assembla/:space-name`

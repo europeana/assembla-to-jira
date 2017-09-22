@@ -52,6 +52,7 @@ CUSTOM_FIELD_NAMES = %w(Assembla-Id Assembla-Milestone Assembla-Theme Assembla-S
 
 JIRA_AGILE_HOST = ENV['JIRA_AGILE_HOST']
 URL_JIRA_BOARDS = "#{JIRA_AGILE_HOST}/board"
+URL_JIRA_SPRINTS = "#{JIRA_AGILE_HOST}/sprint"
 
 def get_tickets_created_on
   env = ENV['TICKETS_CREATED_ON']

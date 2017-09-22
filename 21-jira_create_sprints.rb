@@ -7,10 +7,6 @@ JIRA_PROJECT_NAME = SPACE_NAME + (@debug ? ' TEST' : '')
 
 MILESTONE_PLANNER_TYPES = %w(none backlog current unknown)
 
-JIRA_AGILE_HOST = ENV['JIRA_AGILE_HOST']
-URL_JIRA_BOARDS = "#{JIRA_AGILE_HOST}/board"
-URL_JIRA_SPRINTS = "#{JIRA_AGILE_HOST}/sprint"
-
 space = get_space(SPACE_NAME)
 dirname = get_output_dirname(space, 'assembla')
 

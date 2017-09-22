@@ -72,7 +72,7 @@ if @missing_statuses.length.positive?
   @missing_statuses.each do |status|
     puts "* #{status}"
   end
-  goodbye("Please fix in order to continue")
+  goodbye("Update JIRA_API_STATUSES in .env file and create JIRA statuses if needed")
 end
 puts "Sanity check => OK"
 
