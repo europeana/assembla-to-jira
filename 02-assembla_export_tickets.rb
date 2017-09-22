@@ -4,6 +4,15 @@ load './lib/common.rb'
 
 SPACE_NAME = ENV['JIRA_API_PROJECT_NAME']
 
+ALLOWED_ARGS = %w(comments attachments tags associations).freeze
+
+if ARGV[0].nil?
+  puts "Export all: #{ALLOWED_ARGS.join(',')}"
+else
+  goodbye("Invalid arg='#{ARGV[0]}', must be one of: #{ALLOWED_ARGS.join(', ')}") unless ALLOWED_ARGS.include?(ARGV[0])
+  puts "Export only: #{ARGV[0]}"
+end
+
 ITEMS = [
   { name: 'ticket_comments' },
   # ticket-comments.csv
@@ -59,6 +68,10 @@ puts "Total tickets: #{@total_tickets}"
 create_csv_files(space, name: 'tickets', results: tickets)
 
 ITEMS.each do |item|
+  if ARGV[0] && !item[:name].match(/#{ARGV[0]}/)
+    puts "Skip #{item[:name]}"
+    next
+  end
   total = 0
   name = item[:name]
   item[:results] = []
@@ -85,6 +98,10 @@ ITEMS.each do |item|
 end
 
 ITEMS.each do |item|
+  if ARGV[0] && !item[:name].match(/#{ARGV[0]}/)
+    puts "Skip #{item[:name]}"
+    next
+  end
   name = item[:name]
   name = (name.match?(/^ticket_/) ? '' : 'ticket_') + name
   create_csv_files(space, name: name, results: item[:results])

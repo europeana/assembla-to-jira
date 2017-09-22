@@ -204,11 +204,22 @@ The output files are located in the directory `data/assembla/:space/:project` as
 $ ruby 01-assembla_export_space.rb # => space_tools.csv, users.csv, user_roles.csv tags.csv \
     milestones.csv, tickets-statuses.csv, tickets-custom-fields.csv, documents.csv, \
     wiki_pages.csv, tickets.csv
-$ ruby 02-assembla_export_tickets.rb # => ticket-comments.csv, ticket-attachments.csv, \
+$ ruby 02-assembla_export_tickets.rb [type] # => ticket-comments.csv, ticket-attachments.csv, \
     ticket-tags.csv, ticket-associations.csv
 $ ruby 03-assembla_report_users.rb # => report-users.csv
 $ ruby 04-assembla_report_tickets.rb # => report-tickets.csv
 ```
+
+Notice that executing `02-assembla_export_tickets.rb` can be very time consuming, so you might want to break it up into smaller chunks by passing the optional `type` (comments, attachments, tags or associations) as the first argument.
+
+```
+$ ruby 02-assembla_export_tickets.rb comments # => ticket-comments.csv
+$ ruby 02-assembla_export_tickets.rb attachments # => ticket-attachments.csv
+$ ruby 02-assembla_export_tickets.rb tags # => ticket-tags.csv
+$ ruby 02-assembla_export_tickets.rb associations # => ticket-associations.csv
+```
+
+This allows you to recover better to the previous step in case of failure, for example near the end where you would lose all the data in the dump files.
 
 ## Import data into Jira
 
